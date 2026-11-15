@@ -107,15 +107,15 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 |---|---|
 | Cooldown | 1.8s |
 | Mana | 15 |
-| First target range | 150px, within **40 degrees either side** of the aim vector (`cone_degrees` is the half-angle) |
+| First target range | **220px in every direction** (`cone_degrees` 180 = a full circle, so the aim does not matter) |
 | Jumps | 4 (so up to 5 targets) |
 | Jump radius | 60px from the previous target |
 | Damage | **22** to the first target, then x0.85 per jump (22, 19, 16, 14, 12, rounded for display) |
 
-- Behavior: instant. The first target is the nearest **active** enemy to the Wizard inside the aim cone. From
+- Behavior: instant. The first target is the nearest **active** enemy to the Wizard within range, in any direction. From
   each target the bolt jumps to the nearest active enemy not yet hit within the jump radius. It stops when there
   is no next target or the jump count is used.
-- **No target:** if no enemy is inside the cone, the cast does not happen (see `can_cast` in 6.2). No mana is
+- **No target:** if no enemy is within range, the cast does not happen (see `can_cast` in 6.2). No mana is
   spent and no cooldown starts. The HUD flashes the icon and plays the blip (`cast_failed`, reason `no_target`).
 - Visual: a jagged line is drawn from the Wizard to the first target and between each pair of targets,
   lasting about 0.15s. Each target gets the normal hit flash.
@@ -191,9 +191,7 @@ Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `phase`, `lightning`, `
 **Chain Lightning**
 - **Extra Jumps:** +2 jumps per level. (`lightning.jumps` add 2)
 - **Static Shock:** every target hit is stunned for 0.5s per level. (`lightning.stun` add 1)
-- **Wide Arc:** +25% jump radius per level and +10 degrees on the first-target cone half-angle.
-  (`lightning.radius` x1.25 and `lightning.cone_degrees` add 10; the behavior reads
-  `caster.value(d, &"cone_degrees", d.cone_degrees)`.)
+- **Wide Arc:** +25% jump radius per level. (`lightning.radius` x1.25)
 
 **Meteor Strike**
 - **Bigger Blast:** +25% radius per level. (`meteor.radius` x1.25)
@@ -307,7 +305,7 @@ New `AbilityData` fields: `target_range`, `cone_degrees`. Existing fields used: 
 |---|---|---|---|---|---|---|---|
 | Arcane Bolt | `bolt` | 0.65 | 0 | **10** | 200 | 4 | target_range 150 |
 | Phase Shift | `phase` | 1.8 | 12 | 8 (orbs) | - | 28 (orbit) | duration 0.8, speed_multiplier 1.5, immunity_after 0.2 |
-| Chain Lightning | `lightning` | **1.2** | 15 | **22** | 150 | 60 | cone_degrees 40 |
+| Chain Lightning | `lightning` | **1.2** | 15 | **22** | **220** | 60 | cone_degrees 180 (full circle) |
 | Meteor Strike | `meteor` | 5.0 | 29 | 90 | 120 | 64 | windup **0.7**, knockback 140 |
 
 Constants kept in the behavior scripts (as the Knight's are): bolt speed 260, lightning jumps 4 and falloff
@@ -442,3 +440,11 @@ phase ends (section 3.2).
   Arcane Focus.
 - Code: `OrbBelt` (a child node of the Player, created on first use), `Player.start_phase` takes the belt
   parameters, `Stats.set_conditional` and `clear_conditional`, `ArcaneFocus` (trait script instanced by the Player).
+
+## 17. Revision 5: Chain Lightning hits all around
+
+Decided by the product owner after play-testing: Chain Lightning struck nothing when the nearby enemies were beside
+or behind the aim ("no target"). It now targets the nearest enemy in **any direction** (`cone_degrees` 180, a full
+circle) and its first-target **range is 220px** (was 150px). The jump radius stays 60px. Wide Arc no longer widens a
+cone (there is none); it only extends the jump radius. The `no_target` rejection still happens when no enemy is within
+220px.
