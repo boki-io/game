@@ -35,6 +35,14 @@ func fire(pos: Vector2, dir: Vector2, speed: float, damage: float, range_px: flo
 	return true
 
 
+## Retires every bolt in flight (used when the hub changes character).
+func clear() -> void:
+	for child in get_children():
+		var p := child as PlayerProjectile
+		if p and p.active:
+			p.retire()
+
+
 func release(p: PlayerProjectile) -> void:
 	_live -= 1
 	_pool.append(p)

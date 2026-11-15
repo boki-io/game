@@ -8,6 +8,11 @@
 [ext_resource type="Script" path="res://scripts/ui/hub_info_panel.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/ui/debug_overlay.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/systems/damage_zones.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/systems/player_projectiles.gd" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="12"]
+[ext_resource type="Script" path="res://scripts/systems/effects.gd" id="13"]
 
 [node name="Hub" type="Node2D"]
 y_sort_enabled = true
@@ -26,6 +31,19 @@ script = ExtResource("3")
 [node name="Pedestals" type="Node2D" parent="World"]
 y_sort_enabled = true
 
+[node name="Players" type="Node2D" parent="World"]
+y_sort_enabled = true
+
+[node name="Zones" type="Node2D" parent="World"]
+script = ExtResource("10")
+
+[node name="PlayerProjectiles" type="Node2D" parent="World"]
+script = ExtResource("11")
+projectile_scene = ExtResource("12")
+
+[node name="Effects" type="Node2D" parent="World"]
+script = ExtResource("13")
+
 [node name="Door" type="Node2D" parent="."]
 position = Vector2(480, 0)
 script = ExtResource("5")
@@ -34,6 +52,16 @@ script = ExtResource("5")
 script = ExtResource("4")
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Hud" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("9")
 
 [node name="DebugOverlay" type="Label" parent="UI"]
 offset_left = 6.0
@@ -66,6 +94,22 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 8
 text = "< >  Browse      Enter  Choose      Esc  Menu"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Prompt" type="Label" parent="UI"]
+visible = false
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -62.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 8
+text = "F: Change character"
 horizontal_alignment = 1
 mouse_filter = 2
 

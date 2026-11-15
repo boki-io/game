@@ -72,8 +72,13 @@ func _init() -> void:
 	await _wait_idle()
 	_check(_scene_name() == "Hub", "hub scene loaded")
 	_check(Arena.world_size == Vector2i(960, 560), "hub arena size is not stale")
-	_check(root.get_node("PlayerRegistry").players.is_empty(), "no Player in the hub")
-	_check(current_scene.focus_index == 0 and _session.last_character == knight, "hub remembers the last character")
+	var players = root.get_node("PlayerRegistry").players
+	_check(players.size() == 1 and players[0].character == knight, "back in the hub as the Knight")
+	_check(current_scene.mode == current_scene.Mode.WALK, "return lands in walk mode")
+	_check(players[0].global_position.y > 40.0 and players[0].global_position.y < 80.0, "below the door")
+	for i in 90:
+		await physics_frame
+	_check(_scene_name() == "Hub", "the return does not re-enter the run")
 
 	_session.restart_run()
 	await _wait_idle()

@@ -19,6 +19,7 @@ tests/run_all.sh            # every test, one line each
 | `crowd_performance.gd` | 300 unkillable enemies on a stationary Player stay inside the physics budget |
 | `hub_data.gd` | Trait text in the data files matches the trait scripts' constants |
 | `hub_browse.gd` | Hub pedestals, browse input, the info panel's numbers against the data, a click, Choose |
+| `hub_walk.gd` | Walk mode: one Player, infinite mana, interact and `clear()`, confirm/interact lockout, the door |
 | `scene_flow.gd` | Hub to run to hub to run: Arena size, unpausing, the hub pause menu |
 
 ## Writing one

@@ -16,6 +16,12 @@ func _ready() -> void:
 	z_index = 5
 
 
+## Drops every pending burst and field (used when the hub changes character).
+func clear() -> void:
+	_zones.clear()
+	queue_redraw()
+
+
 ## Capsule along a..b. Hits every `interval` seconds, `ticks` times, the first one at once.
 func add_line(a: Vector2, b: Vector2, width: float, damage: float, interval: float, ticks: int) -> void:
 	_zones.append({kind = &"line", a = a, b = b, radius = width, damage = damage, interval = interval,

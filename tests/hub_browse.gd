@@ -95,10 +95,15 @@ func _init() -> void:
 		await physics_frame
 	_check(hub.focus_index == 0, "clicking a pedestal focuses it")
 
-	# Choose starts exactly one run.
-	_session.last_character = null
+	# Choose confirms exactly once: one Player of the focused character, in walk mode.
+	hub._focus(1, true)
+	await physics_frame
+	for i in 20:
+		await physics_frame  # past the mode lockout
 	hub._confirm()
 	hub._confirm()
-	_check(_session.last_character == chars[0], "Choose sets the character")
+	await physics_frame
+	_check(hub.mode == hub.Mode.WALK, "Choose enters walk mode")
+	_check(_players.players.size() == 1 and _players.players[0].character == chars[1], "exactly one Player of the chosen character")
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)

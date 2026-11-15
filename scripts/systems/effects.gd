@@ -24,6 +24,18 @@ func _ready() -> void:
 	z_index = 10  # above the y-sorted world
 
 
+## Drops every pending visual and number (used when the hub changes character).
+func clear() -> void:
+	_numbers.clear()
+	_fx.clear()
+	for child in get_children():
+		var sprite := child as AnimatedSprite2D
+		if sprite and sprite.visible:
+			sprite.stop()
+			_recycle_sprite(sprite)
+	queue_redraw()
+
+
 func damage_number(pos: Vector2, amount: float) -> void:
 	_add_number(pos, amount, DAMAGE_COLOR, "")
 

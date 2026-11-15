@@ -9,8 +9,9 @@ character's Q / E / R abilities. Proof of concept.
   R Meteor Strike. Trait: Arcane Focus (+25% damage after standing still for 1s).
 
 Each character has 18 to 19 upgrades. The game opens in the **hub**: look at each character on their pedestal
-(left / right or click), read their stats and abilities, and choose one. (Walking around the hub, training dummies
-and the door to the run come in the next milestones; for now choosing starts a run.)
+(left / right or click), read their stats and abilities, and choose one. Then walk around the hub as them (infinite
+mana, no damage; F next to a pedestal changes character) and walk through the door in the north wall to start a run.
+(Training dummies come in the next milestone.)
 
 ## Run it
 1. Install Godot 4.7 (`brew install --cask godot` on macOS).
@@ -27,6 +28,7 @@ The base size is set in `project.godot` (`display/window/size`); the HUD, menus,
 | Aim | Mouse | Right stick |
 | Ability Q / E / R | Q / E / R | X / Y / Right trigger |
 | Hub: browse / choose | A D or arrows, click, Enter | D-pad, A (South) |
+| Hub: change character / info | F / I | A (South) / Back |
 | Pause | Esc | Start |
 | Debug overlay | F3 | |
 

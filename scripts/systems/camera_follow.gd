@@ -11,6 +11,7 @@ const BLEND_TIME := 0.3
 var base_offset := Vector2.ZERO
 
 var _browse_tween: Tween
+var _offset_tween: Tween
 var _blend := 1.0  # 0..1 while blending from a browse position to following the player
 var _blend_from := Vector2.ZERO
 var _had_target := false
@@ -33,6 +34,17 @@ func _ready() -> void:
 	limit_right = Arena.world_size.x
 	limit_bottom = Arena.world_size.y
 	process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
+
+
+## Eases `base_offset` to `value` (the hub shifts the view between browse and walk mode).
+func set_base_offset(value: Vector2, time: float = 0.0) -> void:
+	if _offset_tween:
+		_offset_tween.kill()
+	if time <= 0.0:
+		base_offset = value
+		return
+	_offset_tween = create_tween()
+	_offset_tween.tween_property(self, "base_offset", value, time)
 
 
 ## Moves the camera to a world position over BROWSE_TIME. Only used while no player exists.
