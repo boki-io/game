@@ -138,7 +138,7 @@ func _physics_process(delta: float) -> void:
 	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	global_position = global_position.clamp(
 		Vector2(ARENA_PADDING, ARENA_PADDING),
-		Vector2(Arena.SIZE) - Vector2(ARENA_PADDING, ARENA_PADDING))
+		Vector2(Arena.world_size) - Vector2(ARENA_PADDING, ARENA_PADDING))
 	sprite.facing = facing
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)

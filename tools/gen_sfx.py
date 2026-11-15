@@ -91,4 +91,8 @@ save("lightning", seq(noise(0.04, 0.9, 0.6, 1.0, 0.0), [0.0] * int(SR * 0.015), 
 save("meteor_fall", mix(tone(1400, 140, 0.7, "sine", 0.8), noise(0.7, 0.05, 0.4, 0.8, 0.2)), 0.4)
 save("meteor_impact", mix(tone(110, 28, 0.6, "sine", 1.6), noise(0.45, 0.6, 0.04, 2.5, 0.0)), 0.9)
 save("focus_on", seq(tone(880, 880, 0.07, "triangle", 1.0), tone(1320, 1320, 0.12, "triangle", 1.6)), 0.4)
+save("hub_focus", tone(1100, 1000, 0.03, "sine", 1.5), 0.25)
+save("hub_choose", seq(tone(660, 660, 0.08, "triangle", 1.2), tone(990, 990, 0.18, "triangle", 1.6)), 0.5)
+save("door_open", mix(tone(90, 180, 0.5, "saw", 0.7), noise(0.5, 0.05, 0.25, 0.8, 0.3)), 0.45)
+save("door_enter", mix(tone(500, 120, 0.3, "sine", 1.2), noise(0.25, 0.4, 0.05, 1.5, 0.05)), 0.5)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))

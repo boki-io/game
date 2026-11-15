@@ -84,7 +84,7 @@ func _pick_type(t: float) -> EnemyData:
 
 ## A random point on the spawn ring around `around` that lies inside the arena, or null.
 func ring_position(around: Vector2) -> Variant:
-	var bounds := Rect2(Vector2.ZERO, Vector2(Arena.SIZE)).grow(-8.0)
+	var bounds := Rect2(Vector2.ZERO, Vector2(Arena.world_size)).grow(-8.0)
 	for i in 8:
 		var p := around + Vector2.from_angle(randf() * TAU) * ring_radius
 		if bounds.has_point(p):

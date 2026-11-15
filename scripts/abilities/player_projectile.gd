@@ -50,7 +50,7 @@ func _physics_process(delta: float) -> void:
 	global_position += _dir * step
 	_range_left -= step
 	_life -= delta
-	if _range_left <= 0.0 or _life <= 0.0 or not Rect2(Vector2.ZERO, Vector2(Arena.SIZE)).has_point(global_position):
+	if _range_left <= 0.0 or _life <= 0.0 or not Rect2(Vector2.ZERO, Vector2(Arena.world_size)).has_point(global_position):
 		retire()
 		return
 	var hits := EnemyGrid.query(global_position, RADIUS + HIT_PADDING)

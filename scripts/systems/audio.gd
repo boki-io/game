@@ -9,6 +9,7 @@ const SOUNDS := [
 	&"level_up", &"player_hurt", &"player_death", &"no_mana", &"menu_click",
 	&"dasher_charge", &"dasher_dash", &"ranged_windup", &"ranged_shot", &"projectile_hit",
 	&"bolt_fire", &"bolt_hit", &"focus_on", &"phase", &"lightning", &"meteor_fall", &"meteor_impact",
+	&"hub_focus", &"hub_choose", &"door_open", &"door_enter",
 ]
 
 var _streams: Dictionary = {}

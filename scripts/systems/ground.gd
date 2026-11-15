@@ -18,6 +18,6 @@ func _ready() -> void:
 	ts.tile_size = Vector2i(TILE, TILE)
 	ts.add_source(source, 0)
 	tile_set = ts
-	for x in Arena.SIZE.x / TILE:
-		for y in Arena.SIZE.y / TILE:
+	for x in Arena.world_size.x / TILE:
+		for y in Arena.world_size.y / TILE:
 			set_cell(Vector2i(x, y), 0, Vector2i((x + y) % 2, 0))

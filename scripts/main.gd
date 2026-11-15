@@ -28,7 +28,7 @@ func _ready() -> void:
 	_spawn_props()
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.character = GameSession.character
-	player.position = Vector2(Arena.SIZE) / 2.0
+	player.position = Vector2(Arena.world_size) / 2.0
 	players_root.add_child(player)
 	player.died.connect(run_manager.on_player_died)
 	player.xp.leveled_up.connect(func(_level: int) -> void: $UI/LevelUpMenu.queue_level_up(player))
@@ -38,11 +38,11 @@ func _ready() -> void:
 func _spawn_props() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1
-	var center := Vector2(Arena.SIZE) / 2.0
+	var center := Vector2(Arena.world_size) / 2.0
 	for i in PROP_COUNT:
 		var pos := Vector2(
-			rng.randf_range(PROP_MARGIN, Arena.SIZE.x - PROP_MARGIN),
-			rng.randf_range(PROP_MARGIN, Arena.SIZE.y - PROP_MARGIN))
+			rng.randf_range(PROP_MARGIN, Arena.world_size.x - PROP_MARGIN),
+			rng.randf_range(PROP_MARGIN, Arena.world_size.y - PROP_MARGIN))
 		if pos.distance_to(center) < 60.0:
 			continue
 		var prop := StaticBody2D.new()

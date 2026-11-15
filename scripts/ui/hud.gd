@@ -1,7 +1,8 @@
 class_name Hud
 extends Control
-## In-run HUD, drawn from one canvas item: HP and mana bars, four ability icons with a
+## HUD, drawn from one canvas item: HP and mana bars, four ability icons with a
 ## cooldown sweep (dimmed when mana is short), XP bar with level, countdown timer, kills.
+## Without a RunManager (the hub) only the mana bar and the ability icons are drawn.
 
 const BAR_SIZE := Vector2(90, 8)
 const ICON_RADIUS := 11.0
@@ -21,10 +22,16 @@ var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
 var _mana_flash := 0.0
 
 
-func bind(p: Player, rm: RunManager) -> void:
+func bind(p: Player, rm: RunManager = null) -> void:
 	player = p
 	run_manager = rm
 	player.caster.cast_failed.connect(_on_cast_failed)
+	player.tree_exiting.connect(_on_player_exiting.bind(p))
+
+
+func _on_player_exiting(p: Player) -> void:
+	if player == p:
+		player = null
 
 
 func _on_cast_failed(slot: StringName, reason: StringName) -> void:
@@ -46,9 +53,14 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if player == null or run_manager == null:
+	if not is_instance_valid(player):
 		return
 	var font := ThemeDB.fallback_font
+	if run_manager == null:
+		_draw_bar(Vector2(6, 6), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
+			_mana_flash > 0.0)
+		_draw_icons(font)
+		return
 	_draw_bar(Vector2(6, 6), player.health.current, player.health.max_health, Color("d84040"), "HP", font)
 	_draw_bar(Vector2(6, 17), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
 		_mana_flash > 0.0)
