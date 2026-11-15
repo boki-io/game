@@ -21,6 +21,8 @@ func _ready() -> void:
 	spawn_director.run_manager = run_manager
 	spawn_director.enemies_root = $World/Enemies
 	spawn_director.pickups = $Pickups
+	# Without a stage (main.tscn run from the editor) every modifier is 0%.
+	spawn_director.apply_stage(GameSession.current_stage if GameSession.current_stage else StageData.new())
 	var debug: Label = $UI/DebugOverlay
 	debug.run_manager = run_manager
 	debug.spawn_director = spawn_director

@@ -8,6 +8,8 @@ const RUN := "res://scenes/main.tscn"
 var character: CharacterData
 ## The character last taken into a run this session. Null at boot: the hub then starts in browse mode.
 var last_character: CharacterData
+## The stage being played. Null outside a run.
+var current_stage: StageData
 
 
 func _ready() -> void:

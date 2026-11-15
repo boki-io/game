@@ -14,6 +14,8 @@ extends Node
 @export var teleport_margin: float = 120.0  # px beyond the ring before an enemy is recycled
 
 var run_manager: RunManager
+## The stage being played. Its modifiers last for this stage only (a new arena is built for the next one).
+var stage := StageData.new()
 var pickups: Pickups
 var enemies_root: Node2D
 var alive := 0
@@ -35,6 +37,14 @@ func _ready() -> void:
 	for type in enemy_types:
 		_pools[type] = []
 		alive_by_type[type.id] = 0
+
+
+## Applies a stage's population modifier to the spawn rate and alive cap. Call once, before the stage starts.
+func apply_stage(data: StageData) -> void:
+	stage = data
+	start_rate = data.scaled_rate(start_rate)
+	end_rate = data.scaled_rate(end_rate)
+	alive_cap = data.scaled_cap(alive_cap)
 
 
 func _physics_process(delta: float) -> void:
@@ -114,5 +124,5 @@ func _acquire(type: EnemyData) -> Enemy:
 func _on_enemy_died(enemy: Enemy) -> void:
 	run_manager.kills += 1
 	if pickups:
-		pickups.spawn_gem(enemy.global_position, enemy.data.xp_drop)
+		pickups.spawn_gem(enemy.global_position, stage.scaled_xp(enemy.data.xp_drop))
 	release(enemy)
