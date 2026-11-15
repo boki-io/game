@@ -1,15 +1,20 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://bkmg07krli16a"]
 
-[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/audio/dash.wav" id="3"]
-[ext_resource type="Script" path="res://scripts/abilities/dash_slash_behavior.gd" id="2"]
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://1evv3m4yhi7q" path="res://scripts/abilities/dash_slash_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_jb65n"]
+[ext_resource type="AudioStream" uid="uid://8nipcp0x8pc0" path="res://assets/audio/dash.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m76rt"]
+atlas = ExtResource("2_jb65n")
+region = Rect2(160, 1568, 32, 32)
 
 [resource]
 script = ExtResource("1")
 id = &"dash"
 display_name = "Dash & Slash"
-cooldown = 1.5
-mana_cost = 10.0
+description = "Dash through enemies. You can't be hurt while dashing."
+icon = SubResource("AtlasTexture_m76rt")
 damage = 25.0
 range = 64.0
 radius = 28.0
@@ -19,4 +24,3 @@ immunity_after = 0.3
 knockback = 110.0
 behavior = ExtResource("2")
 sfx = ExtResource("3")
-description = "Dash through enemies. You can't be hurt while dashing."
