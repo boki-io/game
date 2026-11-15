@@ -7,7 +7,7 @@ extends StaticBody2D
 
 const THICKNESS := 16.0
 const LENGTHS := [48.0, 64.0, 96.0, 128.0, 160.0, 208.0, 256.0, 320.0]
-const COUNT := 14
+const COUNT := 6
 const MARGIN := 56.0  # clear space between a wall and the rock band, and between two walls
 const FACE := 6.0
 const WALL_SEED := 31

@@ -365,8 +365,9 @@ change.
 
 ### 15.1 Freestanding rock walls in the run (revision 4)
 
-- 14 solid rock walls inside the run's arena, 16px thick and horizontal or vertical, with lengths picked from 48, 64,
+- 6 solid rock walls inside the run's arena, 16px thick and horizontal or vertical, with lengths picked from 48, 64,
   96, 128, 160, 208, 256 and 320px, so the arena has both short stubs and long barriers.
+- With the 8 rock pillars (props) that makes 14 obstacles, the same number the arena had before the walls.
 - Placed from a fixed seed (the same layout every run), at least 56px from the rock band and from each other (so
   there is always a passage), and never within 110px of the Player's start.
 - Drawn as a flat rock slab with a darker south face, Y-sorted with the characters; the existing rock pillars

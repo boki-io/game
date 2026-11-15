@@ -35,7 +35,7 @@ func _init() -> void:
 		_check(minf(w.size.x, w.size.y) == 16.0, "wall %s is 16px thick" % w)
 		_check(Rect2(Vector2(16, 16), size - Vector2(32, 32)).encloses(w), "wall %s is inside the rock band" % w)
 		_check(not w.intersects(Rect2(size / 2.0 - Vector2(110, 110), Vector2(220, 220))), "wall %s keeps the start clear" % w)
-	_check(walls.size() >= 8, "at least 8 walls (%d)" % walls.size())
+	_check(walls.size() == 6, "six walls (%d)" % walls.size())
 	_check(lengths.size() >= 4, "at least 4 different lengths (%d)" % lengths.size())
 	for i in walls.size():
 		for j in range(i + 1, walls.size()):

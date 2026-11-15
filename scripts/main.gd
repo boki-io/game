@@ -2,7 +2,7 @@ extends Node2D
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const PROP_SCRIPT := preload("res://scripts/systems/prop.gd")
-const PROP_COUNT := 14
+const PROP_COUNT := 8  # with the 6 rock walls, the same 14 obstacles the arena always had
 const PROP_MARGIN := 48.0
 const WALL_BAND := 16.0  # matches the Arena's wall_band in main.tscn
 const START_CLEARING := 110.0  # radius around the start that stays free of walls, props and decor
