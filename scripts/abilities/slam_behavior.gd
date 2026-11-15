@@ -57,7 +57,10 @@ func _impact() -> void:
 			e.stun(STUN_BASE + STUN_PER_LEVEL * stun_level)
 	var fx := Effects.get_for(caster)
 	if fx:
-		fx.ring(_center, radius)
+		if data.effect:
+			fx.play_frames(data.effect, _center, 0.0, data.effect_scale)
+		else:
+			fx.ring(_center, radius)
 	caster.play_sfx(data)
 	CameraFollow.shake(caster, SHAKE_STRENGTH, SHAKE_TIME)
 

@@ -17,3 +17,10 @@ extends Resource
 @export var knockback: float = 0.0  # px/s shove on nearby enemies when the cast ends
 @export var behavior: Script  # e.g. DashSlashBehavior
 @export var sfx: AudioStream
+
+@export_group("Cast effect")
+## Optional animation played when the ability lands. Draw it facing right; it is rotated to the aim.
+## When empty, the built-in placeholder shapes are used instead.
+@export var effect: SpriteFrames
+@export var effect_scale: float = 1.0
+@export var effect_offset: float = 0.0  # px from the player along the aim (slash)

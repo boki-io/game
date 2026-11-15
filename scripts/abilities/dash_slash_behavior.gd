@@ -84,7 +84,11 @@ func _finish_slash(pos: Vector2, fx: Effects) -> void:
 	var arc := deg_to_rad(data.arc_degrees)
 	var reach := caster.value(data, &"radius", data.radius)
 	hit_arc(pos, _aim, reach, arc, caster.damage_of(data), _hit)
-	if fx:
+	if fx == null:
+		return
+	if data.effect:
+		fx.play_frames(data.effect, pos + Vector2(0, -8) + _aim * data.effect_offset, _aim.angle(), data.effect_scale)
+	else:
 		fx.slash_arc(pos + Vector2(0, -8), _aim, reach, arc)
 
 

@@ -21,6 +21,9 @@ func cast(c: AbilityCaster, _aim: Vector2, d: AbilityData) -> void:
 	_passes = 1 + int(caster.stats.value(&"spin.extra_passes", 0.0))
 	caster.player.speed_scale = MOVE_SCALE
 	caster.play_sfx(d)
+	var fx := Effects.get_for(caster)
+	if fx and d.effect:
+		fx.play_frames(d.effect, caster.player.global_position + Vector2(0, -8), 0.0, d.effect_scale)
 
 
 func update(delta: float) -> bool:
@@ -35,7 +38,7 @@ func update(delta: float) -> bool:
 	hit_circle(origin, radius, caster.damage_of(data), _hit)
 
 	var fx := Effects.get_for(caster)
-	if fx and delta > 0.0:
+	if fx and delta > 0.0 and data.effect == null:
 		var angle := _elapsed / data.duration * TAU * TURNS
 		fx.slash_arc(origin + Vector2(0, -8), Vector2.from_angle(angle), radius, deg_to_rad(70.0))
 	return _elapsed >= data.duration

@@ -11,6 +11,7 @@ const DAMAGE_COLOR := Color(1, 1, 0.8)
 const MANA_COLOR := Color(0.4, 0.65, 1.0)
 
 var _numbers: Array[Dictionary] = []
+var _sprite_pool: Array[AnimatedSprite2D] = []
 var _fx: Array[Dictionary] = []
 
 
@@ -40,6 +41,32 @@ func _add_number(pos: Vector2, amount: float, color: Color, prefix: String) -> v
 	if _numbers.size() >= MAX_NUMBERS:
 		_numbers.remove_at(0)
 	_numbers.append({pos = pos, value = amount, age = 0.0, color = color, prefix = prefix})
+
+
+## Plays a one-shot SpriteFrames animation at pos, rotated by `angle` (drawn facing right).
+func play_frames(frames: SpriteFrames, pos: Vector2, angle: float = 0.0, scale_factor: float = 1.0) -> void:
+	if frames == null or frames.get_animation_names().is_empty():
+		return
+	var anim: StringName = &"default" if frames.has_animation(&"default") else frames.get_animation_names()[0]
+	frames.set_animation_loop(anim, false)  # one-shot: it is recycled when it finishes
+	var sprite: AnimatedSprite2D
+	if _sprite_pool.is_empty():
+		sprite = AnimatedSprite2D.new()
+		sprite.animation_finished.connect(_recycle_sprite.bind(sprite))
+		add_child(sprite)
+	else:
+		sprite = _sprite_pool.pop_back()
+	sprite.sprite_frames = frames
+	sprite.position = pos
+	sprite.rotation = angle
+	sprite.scale = Vector2(scale_factor, scale_factor)
+	sprite.visible = true
+	sprite.play(anim)
+
+
+func _recycle_sprite(sprite: AnimatedSprite2D) -> void:
+	sprite.visible = false
+	_sprite_pool.append(sprite)
 
 
 func slash_arc(pos: Vector2, dir: Vector2, radius: float, arc_rad: float) -> void:
