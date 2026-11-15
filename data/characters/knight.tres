@@ -25,6 +25,7 @@
 [ext_resource type="Resource" path="res://data/upgrades/pickup_radius.tres" id="u16"]
 [ext_resource type="Resource" path="res://data/upgrades/damage.tres" id="u17"]
 [ext_resource type="Resource" path="res://data/upgrades/dash_chain.tres" id="u18"]
+[ext_resource type="SpriteFrames" path="res://data/characters/knight_frames.tres" id="sf"]
 
 [resource]
 script = ExtResource("1")
@@ -32,6 +33,8 @@ id = &"knight"
 display_name = "Knight"
 description = "Close-range fighter. Fast combos, heavy slams."
 body_color = Color(0.29, 0.48, 0.82, 1)
+sprite_frames = ExtResource("sf")
+sprite_offset = Vector2(0, -20)
 max_hp = 100.0
 move_speed = 90.0
 ability_auto = ExtResource("2")
