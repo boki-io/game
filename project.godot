@@ -11,6 +11,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 
 InputSetup="*res://scripts/systems/input_setup.gd"
 PlayerRegistry="*res://scripts/systems/player_registry.gd"
+EnemyGrid="*res://scripts/systems/enemy_grid.gd"
 
 [display]
 

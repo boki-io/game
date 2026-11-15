@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var target := PlayerRegistry.nearest(global_position)
+	var target: Player = PlayerRegistry.nearest(global_position)
 	if target:
 		# Snap to whole pixels so the sprite doesn't shimmer at low resolution.
 		global_position = (target.global_position - Vector2(0, 12)).round()

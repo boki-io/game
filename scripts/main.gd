@@ -7,12 +7,22 @@ const PROP_MARGIN := 48.0
 
 @onready var players_root: Node2D = $World/Players
 @onready var props_root: Node2D = $World/Props
+@onready var run_manager: RunManager = $RunManager
+@onready var spawn_director: SpawnDirector = $SpawnDirector
 
 
 func _ready() -> void:
+	spawn_director.run_manager = run_manager
+	spawn_director.enemies_root = $World/Enemies
+	var readout: Label = $UI/DevReadout
+	readout.run_manager = run_manager
+	readout.spawn_director = spawn_director
+	run_manager.run_ended.connect($UI/EndOverlay.show_result)
+
 	_spawn_props()
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.position = Vector2(Arena.SIZE) / 2.0
+	player.died.connect(run_manager.on_player_died)
 	players_root.add_child(player)
 
 
