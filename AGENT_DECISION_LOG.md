@@ -70,7 +70,7 @@ Branch `map-selector` (off `main`, one commit per build step, nothing pushed):
 8. Polish: themed thumbnails, highlighted lines, card states, sounds, transitions through `SceneFader`.
 9. Old tests fixed (`scene_flow.gd`, `hub_walk.gd`, README table).
 
-All 22 tests pass. Deviation from the spec: tests use 30 seeds, not 1000+ (D2). Not done: nothing from the
+All 20 tests pass (the full run had only `scene_flow.gd` and `hub_walk.gd` failing; both were then fixed and re-run on their own). Deviation from the spec: tests use 30 seeds, not 1000+ (D2). Not done: nothing from the
 Definition of Done is knowingly missing. Not verified by eye: the death and victory screens and the banner
 (covered by tests that read their text, not by a rendered frame); the select screen (columns 1 and 2) and the HUD
 were rendered and looked at.
