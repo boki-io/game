@@ -10,6 +10,7 @@ const ARENA_PADDING := 6.0
 signal died(enemy: Enemy)
 
 const FLASH_TIME := 0.06
+const KNOCKBACK_DECAY := 640.0  # px/s^2
 
 @export var data: EnemyData
 
@@ -17,6 +18,7 @@ var director: SpawnDirector
 var active := false
 var _contact_cd := 0.0
 var _flash_left := 0.0
+var _knockback := Vector2.ZERO
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -32,6 +34,7 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	health.setup(data.max_health * hp_multiplier)
 	_contact_cd = 0.0
 	_flash_left = 0.0
+	_knockback = Vector2.ZERO
 	sprite.flash = false
 	active = true
 	visible = true
@@ -64,6 +67,11 @@ func take_damage(amount: float) -> void:
 		sprite.flash = true
 
 
+func apply_knockback(impulse: Vector2) -> void:
+	if active:
+		_knockback = impulse
+
+
 func _physics_process(delta: float) -> void:
 	if _flash_left > 0.0:
 		_flash_left -= delta
@@ -76,7 +84,8 @@ func _physics_process(delta: float) -> void:
 	var to_target := target.global_position - global_position
 	var dir := to_target.normalized() if to_target.length_squared() > 0.01 else Vector2.ZERO
 	var velocity := (dir + _separation() * SEPARATION_WEIGHT) * data.speed
-	global_position += velocity * delta
+	global_position += (velocity + _knockback) * delta
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	global_position = global_position.clamp(
 		Vector2(ARENA_PADDING, ARENA_PADDING),
 		Vector2(Arena.SIZE) - Vector2(ARENA_PADDING, ARENA_PADDING))

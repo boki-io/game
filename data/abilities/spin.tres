@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/abilities/spin_behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"spin"
+display_name = "Spin"
+cooldown = 2.0
+mana_cost = 15.0
+damage = 20.0
+radius = 48.0
+duration = 0.4
+behavior = ExtResource("2")

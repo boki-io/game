@@ -34,3 +34,15 @@ func hit_arc(origin: Vector2, dir: Vector2, reach: float, arc_rad: float, damage
 			e.take_damage(damage)
 			hits += 1
 	return hits
+
+
+## Damage every enemy within radius of center not already in `already`. Returns the hit count.
+func hit_circle(center: Vector2, radius: float, damage: float, already: Dictionary) -> int:
+	var hits := 0
+	for e in EnemyGrid.query(center, radius + ENEMY_RADIUS):
+		if already.has(e):
+			continue
+		already[e] = true
+		e.take_damage(damage)
+		hits += 1
+	return hits

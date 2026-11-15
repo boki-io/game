@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/abilities/ability_caster.gd" id="6"]
 [ext_resource type="Resource" path="res://data/abilities/slash.tres" id="7"]
 [ext_resource type="Resource" path="res://data/abilities/dash_slash.tres" id="8"]
+[ext_resource type="Resource" path="res://data/abilities/spin.tres" id="11"]
+[ext_resource type="Resource" path="res://data/abilities/slam.tres" id="12"]
 [ext_resource type="Script" path="res://scripts/systems/stats.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/systems/mana.gd" id="10"]
 
@@ -57,3 +59,5 @@ script = ExtResource("10")
 script = ExtResource("6")
 ability_auto = ExtResource("7")
 ability_q = ExtResource("8")
+ability_e = ExtResource("11")
+ability_r = ExtResource("12")

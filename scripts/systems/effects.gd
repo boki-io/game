@@ -35,6 +35,16 @@ func slash_arc(pos: Vector2, dir: Vector2, radius: float, arc_rad: float) -> voi
 	_fx.append({kind = &"arc", pos = pos, angle = dir.angle(), radius = radius, arc = arc_rad, age = 0.0, life = 0.12})
 
 
+## Ground warning for a delayed hit; lasts `duration` seconds.
+func telegraph(pos: Vector2, radius: float, duration: float) -> void:
+	_fx.append({kind = &"telegraph", pos = pos, radius = radius, age = 0.0, life = maxf(duration, 0.01)})
+
+
+## Expanding shockwave ring.
+func ring(pos: Vector2, radius: float) -> void:
+	_fx.append({kind = &"ring", pos = pos, radius = radius, age = 0.0, life = 0.25})
+
+
 func puff(pos: Vector2, color: Color) -> void:
 	_fx.append({kind = &"puff", pos = pos, radius = 9.0, color = color, age = 0.0, life = 0.2})
 
@@ -54,10 +64,17 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	for f in _fx:
 		var t: float = f.age / f.life
-		if f.kind == &"arc":
-			_draw_arc_fx(f, t)
-		else:
-			draw_circle(f.pos, f.radius * (0.4 + t), Color(f.color, 0.6 * (1.0 - t)))
+		match f.kind:
+			&"arc":
+				_draw_arc_fx(f, t)
+			&"telegraph":
+				draw_circle(f.pos, f.radius, Color(1, 0.2, 0.2, 0.12 + 0.2 * t))
+				draw_arc(f.pos, f.radius, 0.0, TAU, 40, Color(1, 0.3, 0.3, 0.9), 1.0)
+			&"ring":
+				draw_circle(f.pos, f.radius, Color(1, 1, 1, 0.3 * (1.0 - t)))
+				draw_arc(f.pos, f.radius * (0.6 + 0.4 * t), 0.0, TAU, 40, Color(1, 1, 1, 1.0 - t), 2.0)
+			_:
+				draw_circle(f.pos, f.radius * (0.4 + t), Color(f.color, 0.6 * (1.0 - t)))
 	var font := ThemeDB.fallback_font
 	for n in _numbers:
 		var t: float = n.age / NUMBER_LIFE
