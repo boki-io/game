@@ -33,8 +33,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	_glow.queue_redraw()
-	queue_redraw()
+	_glow.queue_redraw()  # only the flames move; the rock is drawn once
 
 
 ## Flicker for torch `i`: about 0.85 .. 1.15.

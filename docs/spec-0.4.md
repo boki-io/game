@@ -309,8 +309,9 @@ file silently), and are added to its list.
   run's performance numbers from the v0.3 status section.
 - Keyboard-and-mouse is exercised in tests and play; gamepad is listed as untested unless a controller is available.
 
-- The hub looks like a cave (section 15): dirt floor, rock walls you cannot walk into, torch light and a darkened
-  edge, and the characters, dummies, readouts and HUD are still easy to read. The run's arena is unchanged.
+- The hub and the run's arena look like caves (section 15): dirt floor, rock walls you cannot walk into, torch light
+  and a darkened edge, and the characters, dummies, readouts and HUD are still easy to read. The arena has 6
+  freestanding rock walls of varied length (15.1).
 
 ## 13. Assumptions to Revisit Later
 
@@ -395,3 +396,40 @@ uses `body_entered` with solid walls; the dummy readout is defined; and the regr
 Added the cave look (section 15), the M27 Cave look milestone (polish becomes M28) and its Definition of Done item.
 
 Revision 4 (after the M27 review): the cave look and freestanding rock walls also apply to the run's arena (15, 15.1).
+
+## 17. M28: status and performance
+
+All milestones M23 to M28 are built. Verified with the scripted tests in `tests/` (14 scripts, all PASS) and by
+screenshots on an Apple M1 Pro. It has **not been played by hand** in full; the product owner reviewed the hub's
+browse mode, walk mode, dummies and cave look during the milestones and asked for the arena cave look and a lower
+obstacle count (now 6 walls and 8 pillars, 14 in all, as before the walls).
+
+| Definition of done item | Status |
+|---|---|
+| Boots into the hub; no Main Menu or Character Select scene | Verified |
+| Browse: left/right, click, panel numbers match the data, Choose confirms once | Verified (`hub_browse.gd`) |
+| Walk: one Player, infinite mana, cooldowns, door lit, no run HUD | Verified (`hub_walk.gd`) |
+| Interact returns to browse on the played character, clears pending effects, one Player after another choice, no choose-and-interact on one press | Verified (`hub_walk.gd`) |
+| Dummies take damage from every ability of both characters; never die, move, tint or stun; readout | Verified (`hub_dummies.gd`) |
+| Door starts a run as the character; Return to Hub lands in walk mode below the door without re-entering; arena size correct in both orders | Verified (`scene_flow.gd`; the end screen's Return to Hub calls the same `go_to_hub`, not clicked in a test) |
+| Hub pause menu (Continue, Exit) opens on the first Esc; run pause menu has Return to Hub; fades unpause the game | Verified (`scene_flow.gd`) |
+| Cave look in both scenes; walls solid; decor clear of gameplay areas; seeded | Verified (`cave.gd`, `arena_cave.gd`) and by screenshot |
+| All `tests/` print PASS | Verified |
+| At least 60 FPS in the hub with abilities in use; no regression in the run | See below |
+| Gamepad | **Not tested** (actions are registered, no controller was available) |
+
+**Performance** (a real window, vsync off). Hub, with every ability spammed at the dummies: 350+ FPS for both
+characters. The run, 300 unkillable enemies piled on the player (the v0.3 worst case, which recorded 45 to 59 FPS):
+about 50 FPS now against about 54 FPS on `main` in repeated back-to-back runs. The difference is the cave scenery.
+Redrawing the rock every frame cost about 8 FPS and was fixed (only the torch flames redraw). A normal-sized fight
+(100 enemies) runs at 400 to 500 FPS now against 600+ before. One earlier reading of 140 FPS on `main` could not be
+repeated and is treated as noise. The headless `crowd_performance.gd` test (physics time only) is a guard, not a
+substitute for the F3 numbers.
+
+**Known gaps and next steps**
+- Gamepad is untested. Balance is untested by hand (all numbers are still first guesses).
+- The Wizard still has a placeholder rectangle body; the cave art is placeholder art drawn in code.
+- Rock walls block only the Player; enemies and projectiles pass through (15.1).
+- The old regression scripts were not in the repository, so `tests/` was written fresh from the specs and the data.
+  They check behavior the specs describe, which may differ from what the earlier scripts checked.
+- Saving the last character between launches, locked characters and a multi-room hub remain out of scope (section 1).
