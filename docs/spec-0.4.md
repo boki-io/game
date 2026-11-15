@@ -8,6 +8,9 @@ acceptable.
 
 Revision 2: updated after an independent review of revision 1 against the code. Section 14 lists what changed.
 
+Revision 3: the hub looks like a cave (section 15), added after the M26 review. Build order and Definition of Done
+are updated to match.
+
 ## 1. Scope
 
 **In v0.4:**
@@ -277,7 +280,9 @@ file silently), and are added to its list.
    browse mode with `clear()` methods, the door trigger and fade, return-to-hub state.
 4. **M26 Training dummies:** `immovable`, the dummy data and brain, the readout, the top-up. *Review stop (the
    full hub).*
-5. **M27 Polish and check:** sounds, door visuals, run all `tests/`, performance check, docs and README.
+5. **M27 Cave look:** section 15: dirt ground, rock walls, torches and decor, the vignette, a test for the new
+   walls. *Review stop (does the hub read as a cave, and is everything still readable?).*
+6. **M28 Polish and check:** sounds, door visuals, run all `tests/`, performance check, docs and README.
    *Final review.*
 
 ## 12. Definition of Done for v0.4
@@ -303,6 +308,9 @@ file silently), and are added to its list.
   run's performance numbers from the v0.3 status section.
 - Keyboard-and-mouse is exercised in tests and play; gamepad is listed as untested unless a controller is available.
 
+- The hub looks like a cave (section 15): dirt floor, rock walls you cannot walk into, torch light and a darkened
+  edge, and the characters, dummies, readouts and HUD are still easy to read. The run's arena is unchanged.
+
 ## 13. Assumptions to Revisit Later
 
 - The room size, pedestal spacing and the 60px interact radius are guesses.
@@ -316,6 +324,44 @@ file silently), and are added to its list.
 - The info panel is dense at the 8px font; if it feels cramped, split it into tabs (Stats / Abilities).
 - Auto-attacks fire constantly at nearby dummies, so a character standing by them casts continuously.
 
+## 15. Cave look for the hub (revision 3)
+
+Goal: the hub reads as a torch-lit cave or dirt chamber instead of a green checkerboard. Placeholder art drawn in
+code, like everything else so far: no new image files are needed. The gameplay layout in section 3 does not
+change.
+
+- **Ground:** `Ground` gets a `theme` (`GRASS`, the default, keeps today's checkerboard for the run; `DIRT` is new).
+  `DIRT` builds the tile set at runtime from a handful of brown tile variants (light, dark, pebbled, cracked, with
+  seeded speckles), placed with a seeded random pattern so the floor looks irregular but is identical every launch.
+  A few darker patches and lighter paths (door to pedestals) are painted on top. The tile size stays 16px.
+- **Rock walls:** a visible band of rock, one tile (16px) thick, along all four sides, with a ragged inner edge and
+  darker rock behind it. The wall colliders move to the inner edge of the band so the band is solid and you can
+  never walk into it. `Arena` gets an exported `wall_band` (0 by default, so the run is unchanged; the hub sets 16).
+  `Arena.world_size` and the camera limits still describe the full room, so the numbers in section 3 hold; the
+  walkable interior is simply 16px smaller on each side.
+- **Door:** the doorway is carved into the north rock band (still 48px wide at x = 480). Its trigger and spawn
+  points (6.1, 6.3) move down by the band thickness so they stay just inside the walkable floor.
+- **Light:** torches on the walls (one each side of the door, one near each end of the south wall) and one
+  by the training area, drawn as small flames with a soft warm glow (additive circles, with a slow flicker). A dark
+  vignette toward the room's corners and edges, drawn as a screen overlay below the UI. No `Light2D` nodes, so
+  sprites keep their normal colors and the cost is a handful of draws.
+- **Decor** (non-blocking, Y-sorted with everything else, placed from a seeded random layout): stalagmites and rocks
+  along the walls, small pebbles, bones, a few glowing mushrooms. Decor never lands on the pedestal row, the
+  training area, the door lane or within 24px of any of them. Up to 60 decor items.
+- **Sign:** the title sign keeps its section 3 position and becomes a wooden post sign.
+- **Readability:** the floor stays mid-dark and low-contrast so characters, the tan dummies (they get a dark outline),
+  damage numbers, the readout text and the HUD stand out. If the tan dummies blend into the dirt, the dummy color
+  changes, not the floor.
+- **Scope:** the hub only. The run's arena stays green for now. The `Ground` theme makes it a one-line change later
+  (an option in section 13).
+- **Not in this version:** real tilesets or sprites, animated water or fog, dynamic shadows, sound ambience (a
+  looping cave drip is a possible later addition).
+- **Tests:** the existing `tests/` must still pass; a new test checks that the hub's walls block movement at the
+  band's inner edge (the Player cannot enter the band, the door still triggers), that decor stays out of the
+  reserved areas, and that the ground layout is the same on every load. Looks are checked by screenshot and play.
+- **Cost:** about 2,100 ground cells (same as now), up to 60 decor nodes and 5 torches: static, so no measurable
+  cost. The performance check in section 12 still applies.
+
 ## 14. Changes from revision 1 (after review)
 
 Fixed from the review: the world size is owned by the `Arena` node and set in `_enter_tree` (it was set too late to be
@@ -328,3 +374,7 @@ input actions, single handling of confirm and the Choose button's focus; interac
 Player removal; `GameSession.last_character` null at boot; fade and pause handling and input blocking; the door
 uses `body_entered` with solid walls; the dummy readout is defined; and the regression `tests/` folder is added
 (decided by the product owner).
+
+## 16. Changes from revision 2
+
+Added the cave look (section 15), the M27 Cave look milestone (polish becomes M28) and its Definition of Done item.
