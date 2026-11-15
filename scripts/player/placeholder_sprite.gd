@@ -9,10 +9,14 @@ extends Node2D
 @export var show_aim := true
 @export var facing := Vector2.RIGHT:
 	set(v):
+		if v == facing:
+			return  # enemies set this every frame; redrawing for no change is costly with hundreds on screen
 		facing = v
 		queue_redraw()
 @export var aim := Vector2.RIGHT:
 	set(v):
+		if v == aim:
+			return
 		aim = v
 		if show_aim:
 			queue_redraw()

@@ -46,6 +46,38 @@ func query(pos: Vector2, radius: float) -> Array[Enemy]:
 	return out
 
 
+## Push vector away from nearby enemies, for crowd separation. Looks at no more than `max_neighbors`
+## enemies and starts each cell at a different offset per caller, so in a dense crowd the cost stays
+## bounded (the plain query() is O(crowd size) per enemy, and a 300-strong clump makes that O(n^2)).
+func separation(pos: Vector2, radius: float, exclude: Enemy, max_neighbors: int, offset: int) -> Vector2:
+	var push := Vector2.ZERO
+	var lo := _cell_of(pos - Vector2(radius, radius))
+	var hi := _cell_of(pos + Vector2(radius, radius))
+	var r2 := radius * radius
+	var seen := 0
+	for cx in range(lo.x, hi.x + 1):
+		for cy in range(lo.y, hi.y + 1):
+			var bucket: Array = _cells.get(Vector2i(cx, cy), [])
+			var n := bucket.size()
+			for k in n:
+				var e: Enemy = bucket[(k + offset) % n]
+				if e == exclude or not e.active:
+					continue
+				var away := pos - e.global_position
+				var d2 := away.length_squared()
+				if d2 > r2:
+					continue
+				var dist := sqrt(d2)
+				if dist < 0.01:
+					away = Vector2.from_angle(randf() * TAU)
+					dist = 0.01
+				push += away / dist * (1.0 - dist / radius)
+				seen += 1
+				if seen >= max_neighbors:
+					return push.limit_length(1.0)
+	return push.limit_length(1.0)
+
+
 func nearest(pos: Vector2, max_radius: float) -> Enemy:
 	var best: Enemy = null
 	var best_d := INF

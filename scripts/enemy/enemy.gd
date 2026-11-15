@@ -8,6 +8,7 @@ signal died(enemy: Enemy)
 
 const SEPARATION_RADIUS := 12.0
 const SEPARATION_WEIGHT := 0.8
+const SEPARATION_MAX_NEIGHBORS := 6  # bounds the cost of a dense crowd
 const ARENA_PADDING := 6.0
 const FLASH_TIME := 0.06
 const KNOCKBACK_DECAY := 640.0  # px/s^2
@@ -23,6 +24,7 @@ var _contact_cd := 0.0
 var _flash_left := 0.0
 var _knockback := Vector2.ZERO
 var _stun_left := 0.0
+var _separation_cache := Vector2.ZERO
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -160,17 +162,12 @@ func _try_contact_hit() -> void:
 
 
 func _separation() -> Vector2:
-	var push := Vector2.ZERO
-	for other in EnemyGrid.query(global_position, SEPARATION_RADIUS):
-		if other == self:
-			continue
-		var away := global_position - other.global_position
-		var dist := away.length()
-		if dist < 0.01:
-			away = Vector2.from_angle(randf() * TAU)
-			dist = 0.01
-		push += away / dist * (1.0 - dist / SEPARATION_RADIUS)
-	return push.limit_length(1.0)
+	# Recomputed every other physics frame (alternating by instance), reusing the last result in between.
+	var id := get_instance_id()
+	if (Engine.get_physics_frames() + id) % 2 == 0:
+		_separation_cache = EnemyGrid.separation(global_position, SEPARATION_RADIUS, self,
+			SEPARATION_MAX_NEIGHBORS, id)
+	return _separation_cache
 
 
 func _on_died() -> void:
