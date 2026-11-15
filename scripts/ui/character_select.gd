@@ -126,6 +126,22 @@ func _show_character(index: int) -> void:
 
 
 func _ability_row(key: String, color: Color, data: AbilityData) -> Control:
+	var text := _ability_text(key, color, data)
+	if data.icon == null:
+		return text
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	var icon := TextureRect.new()
+	icon.texture = data.icon
+	icon.custom_minimum_size = data.icon.get_size()
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(icon)
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(text)
+	return row
+
+
+func _ability_text(key: String, color: Color, data: AbilityData) -> Control:
 	var row := VBoxContainer.new()
 	row.add_theme_constant_override("separation", 0)
 	var title := UiKit.label("[%s] %s" % [key, data.display_name], 8, color)

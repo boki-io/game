@@ -80,14 +80,18 @@ func _draw_xp(font: Font) -> void:
 
 func _draw_icons(font: Font) -> void:
 	var size := get_viewport_rect().size
-	var step := ICON_RADIUS * 2.0 + ICON_GAP
+	var textured := _any_icon_textures()
+	var step := (32.0 if textured else ICON_RADIUS * 2.0) + ICON_GAP
 	var x0 := size.x / 2.0 - step * (SLOTS.size() - 1) / 2.0
-	var y := size.y - 24.0
+	var y := size.y - (28.0 if textured else 24.0)
 	for i in SLOTS.size():
 		var info: Dictionary = SLOTS[i]
 		var slot: StringName = info.slot
 		var data := player.caster.slot_data(slot)
 		var c := Vector2(x0 + step * i, y)
+		if data != null and data.icon != null:
+			_draw_textured_icon(font, c, info, data)
+			continue
 		draw_circle(c, ICON_RADIUS + 1.0, Color(0, 0, 0, 0.7))
 		if data == null:
 			draw_arc(c, ICON_RADIUS, 0.0, TAU, 20, Color(1, 1, 1, 0.2), 1.0)
@@ -107,6 +111,47 @@ func _draw_icons(font: Font) -> void:
 		draw_arc(c, ICON_RADIUS, 0.0, TAU, 20, ring, 1.0)
 		if info.key != "":
 			_text(font, c + Vector2(0, ICON_RADIUS + 9), info.key, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+
+
+func _any_icon_textures() -> bool:
+	for info: Dictionary in SLOTS:
+		var data := player.caster.slot_data(info.slot)
+		if data != null and data.icon != null:
+			return true
+	return false
+
+
+## Native-size icon from AbilityData.icon with a square cooldown sweep.
+func _draw_textured_icon(font: Font, c: Vector2, info: Dictionary, data: AbilityData) -> void:
+	var slot: StringName = info.slot
+	var half := data.icon.get_size() / 2.0
+	var affordable := player.mana.can_afford(player.caster.mana_cost_of(data))
+	draw_rect(Rect2(c - half - Vector2(1, 1), half * 2.0 + Vector2(2, 2)), Color(0, 0, 0, 0.7))
+	draw_texture(data.icon, c - half, Color.WHITE if affordable else Color(0.35, 0.4, 0.65))
+	var cd: float = player.caster.cooldowns[slot]
+	if cd > 0.0:
+		_draw_square_sweep(c, half, cd / maxf(player.caster.cooldown_of(data), 0.01))
+		_text(font, c + Vector2(0, 3), "%.1f" % cd, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+	var ring := Color(1, 1, 1, 0.5)
+	if not affordable:
+		ring = Color(0.3, 0.5, 1.0, 0.9)
+	if _flash.has(slot):
+		ring = Color(1, 0.2, 0.2)
+	draw_rect(Rect2(c - half, half * 2.0), ring, false, 1.0)
+	if info.key != "":
+		_text(font, c + Vector2(half.x - 4.0, half.y - 1.0), info.key, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+
+
+## Square version of the cooldown sweep: shades `fraction` of the icon, shrinking clockwise from 12 o'clock.
+func _draw_square_sweep(c: Vector2, half: Vector2, fraction: float) -> void:
+	var start := -PI / 2.0 + TAU * (1.0 - clampf(fraction, 0.0, 1.0))
+	var pts := PackedVector2Array([c])
+	var steps := 48
+	for i in steps + 1:
+		var a := start + (-PI / 2.0 + TAU - start) * i / steps
+		var p := Vector2.from_angle(a) * half.length() * 1.5
+		pts.append(c + Vector2(clampf(p.x, -half.x, half.x), clampf(p.y, -half.y, half.y)))
+	draw_colored_polygon(pts, Color(0, 0, 0, 0.65))
 
 
 ## Shades `fraction` of the circle, shrinking clockwise from 12 o'clock.
