@@ -90,4 +90,5 @@ save("phase", mix(tone(220, 520, 0.35, "sine", 0.6), tone(330, 780, 0.35, "trian
 save("lightning", seq(noise(0.04, 0.9, 0.6, 1.0, 0.0), [0.0] * int(SR * 0.015), noise(0.05, 0.9, 0.4, 1.5, 0.0), [0.0] * int(SR * 0.01), mix(noise(0.12, 0.8, 0.2, 2.0, 0.0), tone(1800, 600, 0.12, "saw", 2.0))), 0.55)
 save("meteor_fall", mix(tone(1400, 140, 0.7, "sine", 0.8), noise(0.7, 0.05, 0.4, 0.8, 0.2)), 0.4)
 save("meteor_impact", mix(tone(110, 28, 0.6, "sine", 1.6), noise(0.45, 0.6, 0.04, 2.5, 0.0)), 0.9)
+save("focus_on", seq(tone(880, 880, 0.07, "triangle", 1.0), tone(1320, 1320, 0.12, "triangle", 1.6)), 0.4)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))

@@ -12,7 +12,7 @@ changed.
 **In v0.3:**
 - The Wizard character, selectable on the Character Select screen next to the Knight.
 - Four Wizard abilities: Arcane Bolt (auto), Phase Shift (Q), Chain Lightning (E), Meteor Strike (R).
-- A Wizard upgrade pool (12 ability upgrades and the 6 shared passives).
+- A Wizard upgrade pool (13 ability upgrades and the 6 shared passives).
 - The Wizard trait **Arcane Focus**.
 - The shared systems this needs: player projectiles, conditional stat modifiers, damage fields, burst
   effects (sound and shake), lightning visuals, and a "no target" cast check.
@@ -83,7 +83,8 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 | Duration | 0.8s (`duration`) |
 | Speed | +50% walking speed while phased (`speed_multiplier` 1.5) |
 | Immunity | unhittable for the whole duration, plus 0.2s afterward (`immunity_after`) |
-| Ghost Touch damage | 6 per tick per upgrade level (`damage`), only with that upgrade |
+| Orb belt | 5 orbs circle the Wizard for 2.0s **after the phase ends**: orbit radius 28px (`radius`), 2 turns per second, 8 damage per hit (`damage`), each enemy hit at most once per 0.5s |
+| Ghost Touch (upgrade) | 6 damage per tick per level while phased (75% of the orb damage) |
 
 - Behavior: instant to cast, then a **timed ghost state** on the Player (`Player.start_phase`). It does not
   block the caster, so the Wizard can move, shoot, and cast Chain Lightning or Meteor Strike while phased.
@@ -94,6 +95,10 @@ description for Character Select. `icon` is optional (without one the HUD draws 
   the immunity and speed.
 - When the duration ends (or the Wizard dies) the state is cleaned up; after a normal end the 0.2s grace
   flicker plays.
+- **Orb belt:** when the phase ends normally, a ring of 5 blue orbs appears around the Wizard, follows them, and
+  orbits for 2.0s (fading in over 0.15s and out over 0.35s). Any enemy an orb touches takes 8 damage; an enemy
+  can be hit by the belt at most once per 0.5s however many orbs pass it. The belt damage is read when the
+  phase is cast. It stops on death. Casting Phase Shift again restarts the belt when that phase ends.
 - The Q icon uses the normal cooldown sweep. There is no follow-up chain.
 
 ### 3.3 Chain Lightning (E)
@@ -180,6 +185,8 @@ Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `phase`, `lightning`, `
   (`phase.speed_bonus` add 0.2)
 - **Ghost Touch:** enemies you are touching while phased take 6 damage per level every 0.25s (within 16px).
   The damage uses `damage_of`, so Power and Arcane Focus apply. (`phase.touch` add 1)
+- **Orbital Ring:** +2 orbs and +0.5s of belt time per level (5 to 11 orbs, 2.0s to 3.5s). (`phase.orbs` add 2
+  and `phase.belt_time` add 0.5)
 
 **Chain Lightning**
 - **Extra Jumps:** +2 jumps per level. (`lightning.jumps` add 2)
@@ -299,13 +306,14 @@ New `AbilityData` fields: `target_range`, `cone_degrees`. Existing fields used: 
 | Ability | id | cooldown | mana | damage | range | radius | other |
 |---|---|---|---|---|---|---|---|
 | Arcane Bolt | `bolt` | 0.65 | 0 | **10** | 200 | 4 | target_range 150 |
-| Phase Shift | `phase` | 1.8 | 12 | 6 (Ghost Touch) | - | - | duration 0.8, speed_multiplier 1.5, immunity_after 0.2 |
+| Phase Shift | `phase` | 1.8 | 12 | 8 (orbs) | - | 28 (orbit) | duration 0.8, speed_multiplier 1.5, immunity_after 0.2 |
 | Chain Lightning | `lightning` | **1.2** | 15 | **22** | 150 | 60 | cone_degrees 40 |
 | Meteor Strike | `meteor` | 5.0 | 29 | 90 | 120 | 64 | windup **0.7**, knockback 140 |
 
 Constants kept in the behavior scripts (as the Knight's are): bolt speed 260, lightning jumps 4 and falloff
 0.85, meteor shake 3px for 0.2s, Twin Meteor delay 0.4s and scatter 50px, Arcane Focus delay 1.0s and bonus
-1.25, Scorched Earth tick 0.5s with ratio 0.04, Ghost Touch radius 16px and tick 0.25s.
+1.25, Scorched Earth tick 0.5s with ratio 0.04, Ghost Touch radius 16px, tick 0.25s and ratio 0.75, orb belt
+5 orbs for 2.0s at 2 turns per second with a 0.5s per-enemy hit cooldown.
 
 ## 9. Interaction notes
 
@@ -349,7 +357,8 @@ Each item has a check:
   Wizard still travels; with Piercing Bolt level 1 one bolt damages two different enemies once each.
 - **Phase Shift:** while phased the Wizard takes no damage from contact hits, Dasher lunges or projectiles, walks 50%
   faster, and can cast other abilities; the state ends after 0.8s and on death; with Ghost Touch an enemy standing
-  in the Wizard takes damage every 0.25s.
+  in the Wizard takes damage every 0.25s; after the phase a ring of 5 orbs orbits for 2.0s, hits an enemy
+  at most once per 0.5s for 8 damage, and stops on death.
 - **Chain Lightning:** hits up to 5 distinct enemies; with no enemy in the cone, no mana is spent and the icon
   flashes; it never targets an enemy killed earlier in the same frame.
 - **Meteor Strike:** the blast lands on the marker's center within 1 physics frame of the marker finishing
@@ -418,3 +427,18 @@ immunity and extra speed. Also: **Chain Lightning cooldown 1.8s to 1.2s**.
 - New: `AbilityData.speed_multiplier`, `Player.start_phase`/`end_phase`, `PhaseBehavior`, the `phase` sound.
 - The Wizard's upgrade pool keeps 12 ability upgrades (3 each for Arcane Bolt, Phase Shift, Chain Lightning and
   Meteor Strike, with Twin Meteor at 2 levels) plus the 6 shared passives.
+
+## 16. Revision 4: Orb belt and M21 as built
+
+Decided by the product owner: Phase Shift also creates an **orb belt** (5 orbs, 2 seconds, damaging) once the
+phase ends (section 3.2).
+
+- Phase Shift has 4 upgrades (Long Phase, Swift Phase, Ghost Touch, Orbital Ring), so the Wizard has **13 ability
+  upgrades** (Arcane Bolt 3, Phase Shift 4, Chain Lightning 3, Meteor Strike 3) and the 6 shared passives:
+  19 in the pool. Twin Meteor has 2 levels; the rest have 3.
+- Arcane Focus is built as designed (1.0s still, +25% damage through a conditional multiplier on `Stats`, a gold
+  ring at the feet, a "FOCUS" mark under the mana bar, and a chime).
+- The shared passive formerly called "Focus" (+2 mana regen) is renamed **Mana Flow** so it is not confused with
+  Arcane Focus.
+- Code: `OrbBelt` (a child node of the Player, created on first use), `Player.start_phase` takes the belt
+  parameters, `Stats.set_conditional` and `clear_conditional`, `ArcaneFocus` (trait script instanced by the Player).

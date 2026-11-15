@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"meteor_scorch"
+display_name = "Scorched Earth"
+description = "Impact leaves burning ground for 3s"
+tag = "Meteor Strike"
+max_level = 3
+adds = {
+"meteor.scorch": 1.0
+}
+mults = {}

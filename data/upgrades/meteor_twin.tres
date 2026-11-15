@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"meteor_twin"
+display_name = "Twin Meteor"
+description = "A second meteor follows the first"
+tag = "Meteor Strike"
+max_level = 2
+adds = {
+"meteor.extra": 1.0
+}
+mults = {}

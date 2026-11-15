@@ -29,6 +29,8 @@ var _phase_touch_damage := 0.0
 var _phase_touch_cd := 0.0
 var _phase_grace := 0.0
 var _phase_trail_cd := 0.0
+var _phase_belt: Dictionary = {}  # params for the orb belt that follows the phase (empty = none)
+var _belt: Node2D  # an OrbBelt, created on first use
 var _anim: AnimatedSprite2D  # only when the character has sprite_frames
 var _anim_busy := false  # an attack, hurt or death animation is playing
 var _attack_toggle := false
@@ -74,9 +76,8 @@ func _apply_character() -> void:
 	caster.ability_r = character.ability_r
 	upgrades.pool = character.upgrade_pool
 	if character.trait_script:
-		var trait_node := Node.new()
+		var trait_node: Node = character.trait_script.new()
 		trait_node.name = "Trait"
-		trait_node.set_script(character.trait_script)
 		add_child(trait_node)
 
 
@@ -111,8 +112,10 @@ func face_towards(dir: Vector2, duration: float) -> void:
 
 
 ## Starts Phase Shift: unhittable and `speed_mult` times faster for `duration` seconds.
-func start_phase(duration: float, speed_mult: float, touch_damage: float, grace_after: float) -> void:
+func start_phase(duration: float, speed_mult: float, touch_damage: float, grace_after: float,
+		belt: Dictionary = {}) -> void:
 	phase_left = duration
+	_phase_belt = belt
 	speed_scale = speed_mult
 	hurtbox.invulnerable = true
 	_phase_touch_damage = touch_damage
@@ -130,6 +133,23 @@ func end_phase(grace: bool = true) -> void:
 	if grace:
 		hurtbox.grant_grace(_phase_grace)
 	sprite.modulate = Color.WHITE
+	if grace and not _phase_belt.is_empty():
+		_start_belt()
+	elif _belt:
+		_belt.stop()
+
+
+func _start_belt() -> void:
+	if _belt == null:
+		_belt = load("res://scripts/player/orb_belt.gd").new()
+		_belt.name = "OrbBelt"
+		add_child(_belt)
+	_belt.start(_phase_belt.count, _phase_belt.radius, _phase_belt.turns, _phase_belt.damage, _phase_belt.duration)
+
+
+func trait_active() -> bool:
+	var t := get_node_or_null("Trait")
+	return t != null and t.get("active") == true
 
 
 func _tick_phase(delta: float) -> void:
@@ -230,6 +250,8 @@ func _on_hit_taken(_amount: float) -> void:
 func _on_died() -> void:
 	dead = true
 	end_phase(false)
+	if _belt:
+		_belt.stop()
 	Audio.play(&"player_death")
 	caster.cancel()
 	_anim_busy = true

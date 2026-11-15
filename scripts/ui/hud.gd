@@ -53,6 +53,8 @@ func _draw() -> void:
 	_draw_bar(Vector2(6, 17), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
 		_mana_flash > 0.0)
 
+	if player.trait_active():
+		_text(font, Vector2(28, 36), "FOCUS", 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
 	_text(font, Vector2(240, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	_text(font, Vector2(474, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)

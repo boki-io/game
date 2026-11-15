@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = &"mana_regen"
-display_name = "Focus"
+display_name = "Mana Flow"
 description = "+2 mana regen per second"
 tag = "Passive"
 max_level = 3

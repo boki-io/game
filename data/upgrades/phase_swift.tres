@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"phase_swift"
+display_name = "Swift Phase"
+description = "Phase Shift gives +20% more speed"
+tag = "Phase Shift"
+max_level = 3
+adds = {
+"phase.speed_bonus": 0.2
+}
+mults = {}

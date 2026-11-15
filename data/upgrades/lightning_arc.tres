@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"lightning_arc"
+display_name = "Wide Arc"
+description = "Wider aim cone and longer jumps"
+tag = "Chain Lightning"
+max_level = 3
+adds = {
+"lightning.cone_degrees": 10.0
+}
+mults = {
+"lightning.radius": 1.25
+}
