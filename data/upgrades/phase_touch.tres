@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"phase_touch"
 display_name = "Ghost Touch"
-description = "Enemies you touch while phased take damage"
+description = "Enemies you touch while phased take 6 damage per tick per level"
 tag = "Phase Shift"
 max_level = 3
 adds = {

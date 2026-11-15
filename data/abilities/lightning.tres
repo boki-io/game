@@ -8,7 +8,7 @@
 script = ExtResource("1")
 id = &"lightning"
 display_name = "Chain Lightning"
-description = "Lightning jumps between enemies in front of you."
+description = "Lightning strikes the nearest enemy and jumps between nearby enemies."
 cone_degrees = 180.0
 cooldown = 1.2
 mana_cost = 15.0

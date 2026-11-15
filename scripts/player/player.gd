@@ -25,6 +25,7 @@ const PHASE_TINT := Color(0.55, 0.8, 1.0, 0.5)
 const PHASE_TOUCH_RADIUS := 16.0
 const PHASE_TOUCH_INTERVAL := 0.25
 var phase_left := 0.0
+var _hit_tint_tween: Tween
 var _phase_touch_damage := 0.0
 var _phase_touch_cd := 0.0
 var _phase_grace := 0.0
@@ -121,6 +122,8 @@ func start_phase(duration: float, speed_mult: float, touch_damage: float, grace_
 	_phase_touch_damage = touch_damage
 	_phase_touch_cd = 0.0
 	_phase_grace = grace_after
+	if _hit_tint_tween:
+		_hit_tint_tween.kill()  # a pending hit-tint fade would overwrite the ghost tint
 	sprite.modulate = PHASE_TINT
 
 
@@ -244,7 +247,10 @@ func _on_hit_taken(_amount: float) -> void:
 	Audio.play(&"player_hurt")
 	CameraFollow.shake(self, 1.5, 0.12)
 	sprite.modulate = Color(1, 0.35, 0.35)
-	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.15)
+	if _hit_tint_tween:
+		_hit_tint_tween.kill()
+	_hit_tint_tween = create_tween()
+	_hit_tint_tween.tween_property(sprite, "modulate", Color.WHITE, 0.15)
 
 
 func _on_died() -> void:

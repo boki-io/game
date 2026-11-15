@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"meteor_scorch"
 display_name = "Scorched Earth"
-description = "Impact leaves burning ground for 3s"
+description = "Impact burns the ground for 3s (+4% meteor damage per tick per level)"
 tag = "Meteor Strike"
 max_level = 3
 adds = {

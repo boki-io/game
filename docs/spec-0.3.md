@@ -285,9 +285,8 @@ is computed through `damage_of`.
 
 ### 6.8 Character Select text
 
-- Ability rows print `AbilityData.damage` as "Damage". For Phase Shift this is the Ghost Touch tick damage and
-  is not shown unless the ability deals damage by itself; the row for an ability with no direct damage omits
-  the Damage field. Cooldown and mana still come from data.
+- Ability rows print `AbilityData.damage` as "Damage". For Phase Shift this is the orb damage (8). Cooldown and
+  mana also come from data.
 
 ## 7. Sounds
 
@@ -357,7 +356,7 @@ Each item has a check:
   faster, and can cast other abilities; the state ends after 0.8s and on death; with Ghost Touch an enemy standing
   in the Wizard takes damage every 0.25s; after the phase a ring of 5 orbs orbits for 2.0s, hits an enemy
   at most once per 0.5s for 8 damage, and stops on death.
-- **Chain Lightning:** hits up to 5 distinct enemies; with no enemy in the cone, no mana is spent and the icon
+- **Chain Lightning:** hits up to 5 distinct enemies; with no enemy within 220px, no mana is spent and the icon
   flashes; it never targets an enemy killed earlier in the same frame.
 - **Meteor Strike:** the blast lands on the marker's center within 1 physics frame of the marker finishing
   filling; the Wizard can Phase and shoot during the 0.7s; marker and blast use the radius and damage from the
@@ -461,3 +460,38 @@ sees about 78% more of the world. Consequences:
 - The HUD timer and kill count now position from the viewport size; everything else already did.
 - Text is still anti-aliased and can look soft; turning font anti-aliasing off or using a pixel font is a separate change.
 - The v0.1 spec's 480x270 figure is superseded by this section.
+
+## 19. M22: status, review and performance
+
+All milestones M16 to M22 are built. Verified with scripted runs and screenshots on an Apple M1 Pro. An independent
+read-through of the code against this spec found **no bugs**; its text mismatches and small issues were fixed.
+
+| Definition of done item | Status |
+|---|---|
+| Wizard on Character Select with data-driven numbers; full run playable | Verified |
+| Arcane Bolt: 150px targeting, enemy-on-player case, pierce hits two enemies once each | Verified |
+| Phase Shift: invulnerable 0.8s, +50% speed, castable while phased, cleans up on death; Ghost Touch; orb belt of 5 orbs for 2s (9 orbs and 2.8s with upgrades), stops on death | Verified |
+| Chain Lightning: up to 5 targets, falloff 22/19/16/14/12, hits behind and beside, nothing spent when no enemy within 220px | Verified |
+| Meteor Strike: not busy while falling, impact where and when the marker shows, Twin Meteor and Scorched Earth, clamped to the arena | Verified |
+| All 13 upgrades apply and read the right stat keys; level caps hold; level-up cards show correct text | Verified |
+| Arcane Focus: on after 1.0s still (damage 10 to 12.5), off on moving, ring, mark and chime | Verified |
+| Knight unchanged (Double Dash, post-dash immunity checks still pass) | Verified |
+| Tuning values in data or constants | Done |
+| About 60 FPS at 300 enemies with projectiles | See below |
+| Gamepad | **Not tested** |
+| Windows and macOS builds | **Not built** (export templates not installed) |
+
+**Performance.** A fully upgraded Wizard in a normal fight (kills keep the field near 60 enemies) ran at 117 to 121
+FPS. A new adversarial test (300 unkillable enemies piled on a stationary player) exposed a real problem: crowd
+separation was O(n squared) in dense crowds and the game fell to about 4 FPS. Fixed by capping the neighbours each
+enemy checks (6), updating every other physics frame, and skipping redundant sprite redraws. Result: 45 to 59 FPS in
+that worst case (was 4), and about half the physics time at a normal 190-enemy load, with the same crowd spacing.
+The remaining cost in the worst case is rendering and Y-sorting 300 sprites.
+
+**Known gaps and next steps**
+- Balance of both characters is untested by hand; all numbers are first guesses (sections 12 and 14).
+- Arcane Focus, Phase Shift uptime (44%) and the orb belt are the most likely things to need tuning.
+- No hit-stop, no music, no Wizard art or animation (the Knight has idle and walk on the `test` branch only).
+- The worst-case 300-enemy pile still runs below 60 FPS on this machine.
+- A hit-tint fade could overwrite the phase tint (fixed), and the post-phase flicker can briefly override its alpha
+  (cosmetic, left).
