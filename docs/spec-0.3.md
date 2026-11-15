@@ -448,3 +448,16 @@ or behind the aim ("no target"). It now targets the nearest enemy in **any direc
 circle) and its first-target **range is 220px** (was 150px). The jump radius stays 60px. Wide Arc no longer widens a
 cone (there is none); it only extends the jump radius. The `no_target` rejection still happens when no enemy is within
 220px.
+
+## 18. Display resolution raised
+
+Decided by the product owner: the 480x270 base resolution felt "too zoomed". The base is now **640x360** (window
+1280x720, an exact 2x). Sprites stay at their native pixel size, so characters look smaller on screen and the player
+sees about 78% more of the world. Consequences:
+
+- The spawn ring and teleport distance follow the screen size, so enemies now spawn about 90px farther out
+  (ring radius 391px, was 300px) and take a little longer to reach the player.
+- The arena is unchanged (1600x896), so it is about 2.5 screens wide.
+- The HUD timer and kill count now position from the viewport size; everything else already did.
+- Text is still anti-aliased and can look soft; turning font anti-aliasing off or using a pixel font is a separate change.
+- The v0.1 spec's 480x270 figure is superseded by this section.

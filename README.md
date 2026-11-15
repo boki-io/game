@@ -7,6 +7,10 @@ Q / E / R abilities of the Knight. Proof of concept.
 1. Install Godot 4.7 (`brew install --cask godot` on macOS).
 2. `godot --path .` from this folder, or open `project.godot` in the editor and press F5.
 
+## Display
+The game renders at a 640x360 base resolution (window 1280x720, 2x integer scale) with nearest-neighbor filtering.
+The base size is set in `project.godot` (`display/window/size`); the HUD, menus, camera and spawn ring adapt to it.
+
 ## Controls
 | Action | Keyboard and mouse | Gamepad |
 |---|---|---|

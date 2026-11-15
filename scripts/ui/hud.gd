@@ -56,8 +56,9 @@ func _draw() -> void:
 	if player.trait_active():
 		_text(font, Vector2(28, 36), "FOCUS", 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
-	_text(font, Vector2(240, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
-	_text(font, Vector2(474, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	var view := get_viewport_rect().size
+	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
+	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
 
 	_draw_xp(font)
 	_draw_icons(font)
