@@ -31,6 +31,7 @@ func _ready() -> void:
 	add_child(UiKit.centered(box))
 	if not hub_mode:
 		_prompt = AbandonPrompt.new()
+		_prompt.name = "AbandonPrompt"
 		_prompt.dismissed.connect(func() -> void: _return.grab_focus.call_deferred())
 		add_child(_prompt)
 

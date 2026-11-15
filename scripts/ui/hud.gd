@@ -76,7 +76,7 @@ func _draw() -> void:
 	var view := get_viewport_rect().size
 	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	if _stage_text != "":
-		_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+		_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 200.0)
 	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
 	_draw_gold(font, view)
 
@@ -218,8 +218,8 @@ func _text(font: Font, pos: Vector2, text: String, size: int, align: HorizontalA
 	var w := width if width > 0.0 else -1.0
 	var origin := pos
 	if align == HORIZONTAL_ALIGNMENT_CENTER:
-		origin.x -= 40.0
-		w = 80.0
+		w = width if width > 0.0 else 80.0
+		origin.x -= w / 2.0
 	elif align == HORIZONTAL_ALIGNMENT_RIGHT:
 		origin.x -= 80.0
 		w = 80.0
