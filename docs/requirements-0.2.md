@@ -26,8 +26,7 @@ This becomes `spec-0.2.md` once the open questions are answered.
 - About 1 shot per 2 seconds (a guess; adjust for pace).
 
 ### Spawn mix
-- 60% standard enemy, 15% ranged, 15% dashers.
-- NOTE: these sum to 90%. See open question 1.
+- 60% standard enemy, 15% ranged, 15% dashers as stated; resolved to 70/15/15 (see section 4).
 
 ## 2. Pace reference (v0.1 values the new enemies must feel right against)
 - Player: 90 px/s, 100 HP, Dash & Slash covers 64px in 0.15s with invulnerability.
@@ -51,8 +50,14 @@ This becomes `spec-0.2.md` once the open questions are answered.
 - Character select shows the sprite, name, one-line description, and each ability's key, name,
   cooldown, mana cost, and damage. Navigable by mouse, keyboard, and gamepad.
 
-## 4. Open questions
-1. Spawn mix adds to 90%. Is the Grunt 70%, or is there a fourth type?
-2. Do Dashers and Ranged enemies appear from 0:00 or phase in over time?
-3. Should the pause menu and end screen get a "Main Menu" button?
-4. Can the player destroy projectiles with Slash, Spin, or Slam?
+## 4. Decisions
+1. Spawn mix is **70% Grunt, 15% Ranged, 15% Dasher** (the stated 60% was a typo).
+2. New enemies **phase in**: Grunts only at first, Ranged from about 0:45, Dashers from about 1:30,
+   reaching the target mix by about 2:30.
+3. **Main Menu button** on both the pause menu (Continue, Main Menu, Exit) and the end screen
+   (Restart, Main Menu). Restart keeps the same character.
+4. Projectiles are **dodge only**. No ability destroys them.
+
+## 5. Still open
+- The section 3 defaults stand unless changed.
+- Name and one-line description for the Sword character on the select screen.
