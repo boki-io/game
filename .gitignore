@@ -2,3 +2,6 @@
 *.translation
 export/
 .DS_Store
+
+# Free Characters Animations Asset Pack: license forbids redistribution, so keep it out of the public repo
+assets/sprites/free_characters/

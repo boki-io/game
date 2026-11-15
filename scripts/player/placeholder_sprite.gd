@@ -3,6 +3,8 @@ extends Node2D
 
 @export var body_color := Color("4a7bd0")
 @export var body_size := Vector2(14, 22)
+## Turn off to draw only the shadow (an AnimatedSprite2D child supplies the body).
+@export var body_visible := true
 ## Debug marker showing the aim vector.
 @export var show_aim := true
 @export var facing := Vector2.RIGHT:
@@ -53,6 +55,8 @@ func _update_processing() -> void:
 
 func _draw() -> void:
 	_draw_shadow()
+	if not body_visible:
+		return
 	var color := body_color
 	if dim:
 		color = color.darkened(0.5)

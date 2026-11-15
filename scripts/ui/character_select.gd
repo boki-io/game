@@ -114,7 +114,20 @@ func _show_character(index: int) -> void:
 	_index = index
 	var c := _characters[index]
 	_preview.body_color = c.body_color
+	_preview.body_visible = c.sprite_frames == null
 	_preview.queue_redraw()
+	for child in _preview.get_children():
+		child.queue_free()
+	if c.sprite_frames and c.sprite_frames.has_animation(&"idle"):
+		var anim := AnimatedSprite2D.new()
+		anim.sprite_frames = c.sprite_frames
+		anim.scale = Vector2(c.sprite_scale, c.sprite_scale)
+		anim.position = c.sprite_offset
+		anim.flip_h = c.sprite_faces_left  # the preview faces right
+		if anim.flip_h:
+			anim.position.x = -c.sprite_offset.x
+		_preview.add_child(anim)
+		anim.play(&"idle")
 	_name.text = c.display_name
 	_description.text = c.description
 	for child in _rows.get_children():
