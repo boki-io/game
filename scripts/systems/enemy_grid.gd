@@ -40,7 +40,8 @@ func query(pos: Vector2, radius: float) -> Array[Enemy]:
 		for cy in range(lo.y, hi.y + 1):
 			var bucket: Array = _cells.get(Vector2i(cx, cy), [])
 			for e: Enemy in bucket:
-				if pos.distance_squared_to(e.global_position) <= r2:
+				# Skip enemies released since the grid was rebuilt this frame (killed earlier in the frame).
+				if e.active and pos.distance_squared_to(e.global_position) <= r2:
 					out.append(e)
 	return out
 

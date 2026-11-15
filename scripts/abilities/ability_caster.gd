@@ -156,7 +156,8 @@ func _try_cast(slot: StringName) -> void:
 func _auto_cast() -> void:
 	if ability_auto == null or cooldowns[&"auto"] > 0.0:
 		return
-	var target := EnemyGrid.nearest(player.global_position, AUTO_TARGET_RANGE)
+	var reach := ability_auto.target_range if ability_auto.target_range > 0.0 else AUTO_TARGET_RANGE
+	var target := EnemyGrid.nearest(player.global_position, reach)
 	if target == null:
 		return
 	var dir := (target.global_position - player.global_position).normalized()

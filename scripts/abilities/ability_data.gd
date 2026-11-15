@@ -11,6 +11,8 @@ extends Resource
 @export var range: float = 48.0  # px
 @export var radius: float = 32.0  # px (AoE / spin / slam)
 @export var arc_degrees: float = 90.0  # arc width for slashes
+@export var target_range: float = 0.0  # px, auto-cast targeting range; 0 = caster default (90)
+@export var cone_degrees: float = 0.0  # half-angle for aimed target selection
 @export var windup: float = 0.0  # seconds before the hit lands
 @export var duration: float = 0.0  # seconds the cast lasts (dash time, spin time)
 @export var immunity_after: float = 0.0  # seconds the player stays unhittable after the cast

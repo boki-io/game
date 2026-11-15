@@ -18,6 +18,15 @@ func _ready() -> void:
 	changed.emit(current, current)
 
 
+## Sets the character's base values and fills the pool. Called by the Player when it applies a character.
+func configure(max_value: float, regen_value: float) -> void:
+	base_max = max_value
+	base_regen = regen_value
+	_known_max = max_mana()
+	current = _known_max
+	changed.emit(current, _known_max)
+
+
 func max_mana() -> float:
 	return stats.value(&"max_mana", base_max)
 

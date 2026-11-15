@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/abilities/bolt.tres" id="2"]
+[ext_resource type="Resource" path="res://data/abilities/blink.tres" id="3"]
+[ext_resource type="Resource" path="res://data/abilities/lightning.tres" id="4"]
+[ext_resource type="Resource" path="res://data/abilities/meteor.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
+[ext_resource type="Resource" path="res://data/upgrades/max_hp.tres" id="u0"]
+[ext_resource type="Resource" path="res://data/upgrades/mana_regen.tres" id="u1"]
+[ext_resource type="Resource" path="res://data/upgrades/max_mana.tres" id="u2"]
+[ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="u3"]
+[ext_resource type="Resource" path="res://data/upgrades/pickup_radius.tres" id="u4"]
+[ext_resource type="Resource" path="res://data/upgrades/damage.tres" id="u5"]
+
+[resource]
+script = ExtResource("1")
+id = &"wizard"
+display_name = "Wizard"
+description = "Ranged spellcaster. Strikes from afar and teleports out of trouble."
+body_color = Color(0.95, 0.8, 0.25, 1)
+max_hp = 90.0
+move_speed = 85.0
+max_mana = 140.0
+mana_regen = 10.0
+ability_auto = ExtResource("2")
+ability_q = ExtResource("3")
+ability_e = ExtResource("4")
+ability_r = ExtResource("5")
+upgrade_pool = Array[ExtResource("6")]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5")])

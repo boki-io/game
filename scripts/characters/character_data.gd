@@ -19,6 +19,11 @@ extends Resource
 @export_group("Stats")
 @export var max_hp: float = 100.0
 @export var move_speed: float = 90.0
+@export var max_mana: float = 100.0
+@export var mana_regen: float = 8.0  # per second
+## Optional trait: a Node script the player adds as a child (e.g. Arcane Focus).
+@export var trait_script: Script
+@export_group("Abilities")
 @export var ability_auto: AbilityData
 @export var ability_q: AbilityData
 @export var ability_e: AbilityData

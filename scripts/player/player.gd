@@ -55,6 +55,7 @@ func _ready() -> void:
 
 func _apply_character() -> void:
 	max_hp = character.max_hp
+	mana.configure(character.max_mana, character.mana_regen)
 	move_speed = character.move_speed
 	sprite.body_color = character.body_color
 	caster.ability_auto = character.ability_auto
@@ -62,6 +63,11 @@ func _apply_character() -> void:
 	caster.ability_e = character.ability_e
 	caster.ability_r = character.ability_r
 	upgrades.pool = character.upgrade_pool
+	if character.trait_script:
+		var trait_node := Node.new()
+		trait_node.name = "Trait"
+		trait_node.set_script(character.trait_script)
+		add_child(trait_node)
 
 
 func _exit_tree() -> void:

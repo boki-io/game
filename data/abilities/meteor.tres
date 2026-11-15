@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/abilities/slash_behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"meteor"
+display_name = "Meteor Strike"
+description = "Mark the ground. A meteor crashes down moments later."
+target_range = 0.0
+cooldown = 5.0
+mana_cost = 29.0
+damage = 90.0
+range = 40.0
+arc_degrees = 90.0
+behavior = ExtResource("2")

@@ -160,7 +160,7 @@ func _ability_text(key: String, color: Color, data: AbilityData) -> Control:
 	var title := UiKit.label("[%s] %s" % [key, data.display_name], 8, color)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.add_child(title)
-	var stats := "Cooldown %.1fs" % data.cooldown
+	var stats := "Cooldown %ss" % String.num(data.cooldown, 2)  # 0.65 and 1.8 both print exactly
 	if data.mana_cost > 0.0:
 		stats += "   Mana %d" % roundi(data.mana_cost)
 	stats += "   Damage %d" % roundi(data.damage)
