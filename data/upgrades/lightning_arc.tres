@@ -6,12 +6,10 @@
 script = ExtResource("1")
 id = &"lightning_arc"
 display_name = "Wide Arc"
-description = "Wider aim cone and longer jumps"
+description = "Jumps reach 25% further"
 tag = "Chain Lightning"
 max_level = 3
-adds = {
-"lightning.cone_degrees": 10.0
-}
+adds = {}
 mults = {
 "lightning.radius": 1.25
 }
