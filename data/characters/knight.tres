@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="CharacterData" format=3 uid="uid://djih0sxdoc785"]
+[gd_resource type="Resource" script_class="CharacterData" format=3]
 
-[ext_resource type="Script" uid="uid://8bprws4ovlx8" path="res://scripts/characters/character_data.gd" id="1"]
-[ext_resource type="Resource" uid="uid://dmha2e8tewkd0" path="res://data/abilities/slash.tres" id="2"]
-[ext_resource type="Resource" uid="uid://bkmg07krli16a" path="res://data/abilities/dash_slash.tres" id="3"]
-[ext_resource type="Resource" uid="uid://cnkssijhv7grh" path="res://data/abilities/spin.tres" id="4"]
-[ext_resource type="Resource" uid="uid://cyf1pw0bbgbhd" path="res://data/abilities/slam.tres" id="5"]
-[ext_resource type="Script" uid="uid://begtommhxs2ap" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
-[ext_resource type="Texture2D" uid="uid://cjnfhtjjnwfjm" path="res://assets/sprites/Pixel Knight Idle Animation Sheet.png" id="6_6bk5q"]
-[ext_resource type="Texture2D" uid="uid://d1ycj51kp6xsk" path="res://assets/sprites/walk.png" id="7_jw5i6"]
+[ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/abilities/slash.tres" id="2"]
+[ext_resource type="Resource" path="res://data/abilities/dash_slash.tres" id="3"]
+[ext_resource type="Resource" path="res://data/abilities/spin.tres" id="4"]
+[ext_resource type="Resource" path="res://data/abilities/slam.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
 [ext_resource type="Resource" path="res://data/upgrades/slash_arc.tres" id="u0"]
 [ext_resource type="Resource" path="res://data/upgrades/slash_speed.tres" id="u1"]
 [ext_resource type="Resource" path="res://data/upgrades/slash_damage.tres" id="u2"]
@@ -21,123 +19,13 @@
 [ext_resource type="Resource" path="res://data/upgrades/slam_stun.tres" id="u10"]
 [ext_resource type="Resource" path="res://data/upgrades/slam_damage.tres" id="u11"]
 [ext_resource type="Resource" path="res://data/upgrades/max_hp.tres" id="u12"]
-[ext_resource type="Resource" uid="uid://cmvlbubwkvwmm" path="res://data/upgrades/mana_regen.tres" id="u13"]
+[ext_resource type="Resource" path="res://data/upgrades/mana_regen.tres" id="u13"]
 [ext_resource type="Resource" path="res://data/upgrades/max_mana.tres" id="u14"]
 [ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="u15"]
 [ext_resource type="Resource" path="res://data/upgrades/pickup_radius.tres" id="u16"]
 [ext_resource type="Resource" path="res://data/upgrades/damage.tres" id="u17"]
 [ext_resource type="Resource" path="res://data/upgrades/dash_chain.tres" id="u18"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_8mstd"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(0, 0, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_hd38t"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(509, 0, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_yfyjg"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(1018, 0, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_a0dw7"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(0, 490, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_2wux0"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(509, 490, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_lp2ok"]
-atlas = ExtResource("6_6bk5q")
-region = Rect2(1018, 490, 509, 490)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_2plv3"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(0, 0, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_exljj"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(443, 0, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_y03fl"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(886, 0, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_lak3q"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(1329, 0, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_uln54"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(0, 443, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_kecc6"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(443, 443, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_2lnbg"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(886, 443, 443, 443)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_05mke"]
-atlas = ExtResource("7_jw5i6")
-region = Rect2(1329, 443, 443, 443)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_odoyr"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_8mstd")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_hd38t")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_yfyjg")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_a0dw7")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_2wux0")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lp2ok")
-}],
-"loop": 1,
-"name": &"idle",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_2plv3")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_exljj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_y03fl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lak3q")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_uln54")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_kecc6")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_2lnbg")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_05mke")
-}],
-"loop": 1,
-"name": &"walk",
-"speed": 5.0
-}]
+[ext_resource type="SpriteFrames" path="res://data/characters/knight_frames.tres" id="sf"]
 
 [resource]
 script = ExtResource("1")
@@ -145,7 +33,10 @@ id = &"knight"
 display_name = "Knight"
 description = "Close-range fighter. Fast combos, heavy slams."
 body_color = Color(0.29, 0.48, 0.82, 1)
-sprite_frames = SubResource("SpriteFrames_odoyr")
+sprite_frames = ExtResource("sf")
+sprite_offset = Vector2(0, -20)
+max_hp = 100.0
+move_speed = 90.0
 ability_auto = ExtResource("2")
 ability_q = ExtResource("3")
 ability_e = ExtResource("4")
