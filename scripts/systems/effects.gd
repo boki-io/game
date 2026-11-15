@@ -1,12 +1,14 @@
 class_name Effects
 extends Node2D
-## Transient visuals drawn from one canvas item: slash arcs, death puffs, damage numbers.
-## Numbers are capped and merged when close together.
+## Transient visuals drawn from one canvas item: slash arcs, rings, telegraphs, puffs and
+## floating numbers (damage in yellow, mana spend in blue). Numbers are capped and merged.
 
 const MAX_NUMBERS := 40
 const NUMBER_LIFE := 0.6
 const MERGE_DIST := 10.0
 const MERGE_WINDOW := 0.15
+const DAMAGE_COLOR := Color(1, 1, 0.8)
+const MANA_COLOR := Color(0.4, 0.65, 1.0)
 
 var _numbers: Array[Dictionary] = []
 var _fx: Array[Dictionary] = []
@@ -22,13 +24,22 @@ func _ready() -> void:
 
 
 func damage_number(pos: Vector2, amount: float) -> void:
+	_add_number(pos, amount, DAMAGE_COLOR, "")
+
+
+## Blue "-N" shown beside the player when mana is spent.
+func mana_number(pos: Vector2, cost: float) -> void:
+	_add_number(pos, cost, MANA_COLOR, "-")
+
+
+func _add_number(pos: Vector2, amount: float, color: Color, prefix: String) -> void:
 	for n in _numbers:
-		if n.age < MERGE_WINDOW and n.pos.distance_to(pos) < MERGE_DIST:
+		if n.color == color and n.age < MERGE_WINDOW and n.pos.distance_to(pos) < MERGE_DIST:
 			n.value += amount
 			return
 	if _numbers.size() >= MAX_NUMBERS:
 		_numbers.remove_at(0)
-	_numbers.append({pos = pos, value = amount, age = 0.0})
+	_numbers.append({pos = pos, value = amount, age = 0.0, color = color, prefix = prefix})
 
 
 func slash_arc(pos: Vector2, dir: Vector2, radius: float, arc_rad: float) -> void:
@@ -78,10 +89,10 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	for n in _numbers:
 		var t: float = n.age / NUMBER_LIFE
-		var p: Vector2 = n.pos + Vector2(-8, -t * 14.0)
-		var text := str(roundi(n.value))
-		draw_string(font, p + Vector2(1, 1), text, HORIZONTAL_ALIGNMENT_CENTER, 16, 8, Color(0, 0, 0, 1.0 - t))
-		draw_string(font, p, text, HORIZONTAL_ALIGNMENT_CENTER, 16, 8, Color(1, 1, 0.8, 1.0 - t))
+		var p: Vector2 = n.pos + Vector2(-12, -t * 14.0)
+		var text: String = n.prefix + str(roundi(n.value))
+		draw_string(font, p + Vector2(1, 1), text, HORIZONTAL_ALIGNMENT_CENTER, 24, 8, Color(0, 0, 0, 1.0 - t))
+		draw_string(font, p, text, HORIZONTAL_ALIGNMENT_CENTER, 24, 8, Color(n.color, 1.0 - t))
 
 
 func _draw_arc_fx(f: Dictionary, t: float) -> void:

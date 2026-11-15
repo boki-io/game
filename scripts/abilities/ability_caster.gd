@@ -133,6 +133,9 @@ func _begin(slot: StringName, data: AbilityData, aim: Vector2) -> void:
 	var cost := mana_cost_of(data)
 	if cost > 0.0:
 		mana.spend(cost)
+		var fx := Effects.get_for(self)
+		if fx:
+			fx.mana_number(player.global_position + Vector2(16, -22), cost)
 	cooldowns[slot] = cooldown_of(data)
 	player.face_towards(aim, 0.25)
 	cast_started.emit(slot, data)
