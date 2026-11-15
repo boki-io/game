@@ -16,6 +16,12 @@
 [ext_resource type="Script" path="res://scripts/ui/level_up_menu.gd" id="15"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="16"]
 [ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="17"]
+[ext_resource type="Script" path="res://scripts/enemy/enemy_data.gd" id="18"]
+[ext_resource type="Resource" path="res://data/enemies/grunt.tres" id="19"]
+[ext_resource type="Resource" path="res://data/enemies/ranged.tres" id="20"]
+[ext_resource type="Resource" path="res://data/enemies/dasher.tres" id="21"]
+[ext_resource type="Script" path="res://scripts/systems/projectiles.gd" id="22"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_projectile.tscn" id="23"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -46,6 +52,10 @@ y_sort_enabled = true
 [node name="Zones" type="Node2D" parent="World"]
 script = ExtResource("13")
 
+[node name="Projectiles" type="Node2D" parent="World"]
+script = ExtResource("22")
+projectile_scene = ExtResource("23")
+
 [node name="Effects" type="Node2D" parent="World"]
 script = ExtResource("10")
 
@@ -55,6 +65,7 @@ script = ExtResource("4")
 [node name="SpawnDirector" type="Node" parent="."]
 script = ExtResource("6")
 enemy_scene = ExtResource("7")
+enemy_types = Array[ExtResource("18")]([ExtResource("19"), ExtResource("20"), ExtResource("21")])
 
 [node name="RunManager" type="Node" parent="."]
 script = ExtResource("5")

@@ -22,6 +22,9 @@ func _process(_delta: float) -> void:
 	var cds := ""
 	for slot: StringName in [&"q", &"e", &"r"]:
 		cds += " %s %.1f" % [String(slot).to_upper(), p.caster.cooldowns[slot]]
-	text = "MP %d/%d   CD%s\nkills/min %.0f   enemies %d   %d fps" % [
+	var types := ""
+	for id: StringName in spawn_director.alive_by_type:
+		types += " %s %d" % [id, spawn_director.alive_by_type[id]]
+	text = "MP %d/%d   CD%s\nkills/min %.0f   enemies %d (%s )   %d fps" % [
 		p.mana.current, p.mana.max_mana(), cds, run_manager.kills / minutes,
-		spawn_director.alive, Engine.get_frames_per_second()]
+		spawn_director.alive, types.strip_edges(), Engine.get_frames_per_second()]

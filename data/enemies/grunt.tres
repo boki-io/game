@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy/enemy_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/enemy/grunt_brain.gd" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -10,3 +11,10 @@ speed = 45.0
 contact_damage = 5.0
 contact_interval = 0.5
 xp_drop = 1
+body_color = Color(0.8, 0.25, 0.25, 1)
+body_size = Vector2(12, 16)
+hitbox_radius = 7.0
+brain = ExtResource("2")
+spawn_weight = 70.0
+unlock_time = 0.0
+full_weight_time = 0.0

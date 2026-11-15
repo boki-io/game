@@ -9,8 +9,10 @@ var invulnerable := false
 @onready var health: Health = get_parent().get_node("Health")
 
 
-func receive_hit(amount: float) -> void:
+## Returns true if the hit landed (false while invulnerable).
+func receive_hit(amount: float) -> bool:
 	if invulnerable:
-		return
+		return false
 	health.take_damage(amount)
 	hit_taken.emit(amount)
+	return true

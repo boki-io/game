@@ -7,6 +7,7 @@ const MIN_INTERVAL_MS := 40  # per-sound throttle so mass hits don't stack into 
 const SOUNDS := [
 	&"slash", &"dash", &"spin", &"slam", &"enemy_hit", &"enemy_death", &"xp_pickup",
 	&"level_up", &"player_hurt", &"player_death", &"no_mana", &"menu_click",
+	&"dasher_charge", &"dasher_dash", &"ranged_windup", &"ranged_shot", &"projectile_hit",
 ]
 
 var _streams: Dictionary = {}

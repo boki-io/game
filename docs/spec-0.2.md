@@ -130,14 +130,15 @@ A big, slow bruiser whose danger is a single readable lunge.
 |---|---|
 | HP | 60 (before scaling) |
 | Move speed | 30 px/s |
-| Size | 20x36 placeholder, hitbox radius 9 |
+| Size | 20x36 placeholder, hitbox radius 7 |
 | Contact damage | 5 every 0.5s (like a Grunt) |
 | XP drop | 3 |
 
 **Behavior (state machine):**
 1. **Approach:** walks toward the nearest player, with separation, like a Grunt.
 2. **Telegraph (1.0s):** when within 110px of its target, it stops. A ground lane projects from the
-   Dasher toward the player: 14px wide, 140px long (the dash distance).
+   Dasher toward the player: 26px wide, 140px long (the dash distance). The width matches the real hit
+   width (2 x (Dasher hitbox 7 + player hurtbox 6)), so what the player sees is what can hit them.
    - For the first 0.6s the lane follows the player's position (aiming).
    - For the last 0.4s the lane is **locked** and its color changes from yellow to bright red so the
      player knows to move.

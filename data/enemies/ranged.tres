@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="RangedData" format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy/ranged_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/enemy/ranged_brain.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"ranged"
+max_health = 25.0
+speed = 40.0
+contact_damage = 0.0
+contact_interval = 0.5
+xp_drop = 2
+body_color = Color(0.3, 0.72, 0.5, 1)
+body_size = Vector2(12, 18)
+hitbox_radius = 6.0
+brain = ExtResource("2")
+spawn_weight = 15.0
+unlock_time = 45.0
+full_weight_time = 150.0
+hold_distance = 130.0
+resume_distance = 160.0
+fire_interval = 2.0
+windup_time = 0.4
+projectile_damage = 8.0
+projectile_speed = 110.0
+projectile_lifetime = 3.0
