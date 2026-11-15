@@ -104,9 +104,9 @@ func _init() -> void:
 
 	# The door starts a run.
 	await _wait(20)
-	p.global_position = Vector2(480, 60)
+	p.global_position = Vector2(480, 80)
 	await _wait(3)
-	p.global_position = Vector2(480, 12)
+	p.global_position = Vector2(480, 30)
 	await _wait(5)
 	_check(_fader.busy, "walking into the door starts the fade")
 	await _wait(120)

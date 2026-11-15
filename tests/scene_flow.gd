@@ -75,7 +75,7 @@ func _init() -> void:
 	var players = root.get_node("PlayerRegistry").players
 	_check(players.size() == 1 and players[0].character == knight, "back in the hub as the Knight")
 	_check(current_scene.mode == current_scene.Mode.WALK, "return lands in walk mode")
-	_check(players[0].global_position.y > 40.0 and players[0].global_position.y < 80.0, "below the door")
+	_check(players[0].global_position.y > 60.0 and players[0].global_position.y < 100.0, "below the door")
 	for i in 90:
 		await physics_frame
 	_check(_scene_name() == "Hub", "the return does not re-enter the run")

@@ -330,7 +330,7 @@ Goal: the hub reads as a torch-lit cave or dirt chamber instead of a green check
 code, like everything else so far: no new image files are needed. The gameplay layout in section 3 does not
 change.
 
-- **Ground:** `Ground` gets a `theme` (`GRASS`, the default, keeps today's checkerboard for the run; `DIRT` is new).
+- **Ground:** `Ground` gets a `look` (`GRASS`, the default, keeps today's checkerboard for the run; `DIRT` is new).
   `DIRT` builds the tile set at runtime from a handful of brown tile variants (light, dark, pebbled, cracked, with
   seeded speckles), placed with a seeded random pattern so the floor looks irregular but is identical every launch.
   A few darker patches and lighter paths (door to pedestals) are painted on top. The tile size stays 16px.
@@ -352,7 +352,7 @@ change.
 - **Readability:** the floor stays mid-dark and low-contrast so characters, the tan dummies (they get a dark outline),
   damage numbers, the readout text and the HUD stand out. If the tan dummies blend into the dirt, the dummy color
   changes, not the floor.
-- **Scope:** the hub only. The run's arena stays green for now. The `Ground` theme makes it a one-line change later
+- **Scope:** the hub only. The run's arena stays green for now. The `Ground` look option makes it a one-line change later
   (an option in section 13).
 - **Not in this version:** real tilesets or sprites, animated water or fog, dynamic shadows, sound ambience (a
   looping cave drip is a possible later addition).

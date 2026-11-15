@@ -6,6 +6,8 @@ extends Node2D
 signal player_entered
 
 const SIZE := Vector2(48, 24)
+## The rock band the doorway is carved into: the trigger sits just inside it, on the walkable floor.
+@export var wall_band := 0.0
 ## Ignores the Player for this long after the scene loads, so a return from a run cannot re-trigger it.
 const GRACE_TIME := 1.0
 
@@ -25,7 +27,7 @@ func _ready() -> void:
 	shape.size = SIZE
 	var cs := CollisionShape2D.new()
 	cs.shape = shape
-	cs.position = Vector2(0, SIZE.y / 2.0)
+	cs.position = Vector2(0, wall_band + SIZE.y / 2.0)
 	_trigger.add_child(cs)
 	_trigger.body_entered.connect(_on_body_entered)
 	add_child(_trigger)
@@ -50,7 +52,7 @@ func _on_body_entered(body: Node) -> void:
 
 func _draw() -> void:
 	var w := SIZE.x
-	var frame := Rect2(-w / 2.0 - 3.0, 0, w + 6.0, SIZE.y + 3.0)
+	var frame := Rect2(-w / 2.0 - 3.0, 0, w + 6.0, SIZE.y + 3.0)  # carved into the band, so no taller with it
 	draw_rect(frame, Color("2a2833"))
 	var inner := Rect2(-w / 2.0, 0, w, SIZE.y)
 	draw_rect(inner, Color("ffd866", 0.9) if is_open else Color("0c0b10"))

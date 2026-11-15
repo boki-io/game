@@ -21,6 +21,7 @@ tests/run_all.sh            # every test, one line each
 | `hub_browse.gd` | Hub pedestals, browse input, the info panel's numbers against the data, a click, Choose |
 | `hub_walk.gd` | Walk mode: one Player, infinite mana, interact and `clear()`, confirm/interact lockout, the door |
 | `hub_dummies.gd` | Every ability of both characters hurts the dummies; they never die, move, tint or stun; the readout |
+| `hub_cave.gd` | Cave walls are solid, the door still triggers, decor stays clear of reserved areas, floor and decor are seeded |
 | `scene_flow.gd` | Hub to run to hub to run: Arena size, unpausing, the hub pause menu |
 
 ## Writing one

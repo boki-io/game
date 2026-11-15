@@ -20,6 +20,9 @@ const INTERACT_RADIUS := 60.0  # less than half the pedestal spacing, so at most
 const SPAWN_BELOW_PEDESTAL := 30.0
 const SPAWN_BELOW_DOOR := 40.0  # below the door trigger, when returning from a run
 const CAMERA_BLEND := 0.3
+const WALL_BAND := 16.0  # the rock band; matches the Arena's wall_band in hub.tscn
+const SIGN_POS := Vector2(480, 290)
+const TRAINING_AREA := Rect2(110, 100, 140, 120)
 const BROWSE_HINT := "< >  Browse      Enter  Choose      Esc  Menu"
 const WALK_HINT := "WASD  Move      Mouse  Aim      Q E R  Abilities      I  Info      Esc  Menu"
 
@@ -47,6 +50,7 @@ func _ready() -> void:
 	characters = CharacterRegistry.all()
 	_build_pedestals()
 	_build_dummies()
+	_build_cave()
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
@@ -55,7 +59,7 @@ func _ready() -> void:
 	if last:
 		for i in characters.size():
 			if characters[i].id == last.id:
-				_enter_walk(i, Vector2(door.position.x, SPAWN_BELOW_DOOR + HubDoor.SIZE.y), true)
+				_enter_walk(i, Vector2(door.position.x, WALL_BAND + SPAWN_BELOW_DOOR + HubDoor.SIZE.y), true)
 				return
 	_enter_browse(0, true)
 
@@ -97,6 +101,31 @@ func _build_pedestals() -> void:
 		p.setup(characters[i])
 		p.clicked.connect(_on_pedestal_clicked)
 		pedestals.append(p)
+
+
+## Torches on the walls and the decor, which keeps clear of everything gameplay uses.
+func _build_cave() -> void:
+	var size := Vector2(Arena.world_size)
+	var cave: HubCave = $Cave
+	var b := WALL_BAND
+	cave.wall_band = b
+	cave.torches = [Vector2(door.position.x - 44.0, 9.0), Vector2(door.position.x + 44.0, 9.0),
+		Vector2(150.0, size.y - b + 1.0), Vector2(size.x - 150.0, size.y - b + 1.0), Vector2(b - 3.0, 170.0)]
+	for item in HubDecor.layout(size, b, reserved_areas()):
+		var decor := HubDecor.new()
+		decor.kind = item.kind
+		decor.variant = item.variant
+		decor.position = item.pos
+		$World/Decor.add_child(decor)
+
+
+## Floor the decor must stay off: the pedestals, the training area, the lane from the door and the sign.
+func reserved_areas() -> Array[Rect2]:
+	var out: Array[Rect2] = [TRAINING_AREA, Rect2(SIGN_POS.x - 70.0, SIGN_POS.y - 30.0, 140.0, 50.0),
+		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0)]
+	for p in pedestals:
+		out.append(Rect2(p.position + Vector2(-34, -60), Vector2(68, 90)))
+	return out
 
 
 ## Three indestructible training dummies north-west of the room. Their data is set before they enter the tree
@@ -217,9 +246,12 @@ func _enter_run() -> void:
 	GameSession.start_run(characters[focus_index])
 
 
+## The title on a wooden post sign.
 func _draw() -> void:
 	var font := ThemeDB.fallback_font
-	var pos := Vector2(CENTER_X - 100.0, 290.0)
-	draw_string(font, pos + Vector2(1, 1), "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color(0, 0, 0, 0.8))
+	draw_rect(Rect2(SIGN_POS + Vector2(-3, -8), Vector2(6, 28)), Color("4a3320"))
+	draw_rect(Rect2(SIGN_POS + Vector2(-62, -32), Vector2(124, 26)), Color("6b4a2b"))
+	draw_rect(Rect2(SIGN_POS + Vector2(-62, -32), Vector2(124, 26)), Color("3a2716"), false, 2.0)
+	draw_string(font, SIGN_POS + Vector2(-100, -13) + Vector2(1, 1), "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color(0, 0, 0, 0.6))
+	draw_string(font, SIGN_POS + Vector2(-100, -13), "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color("ffd866"))
 	draw_string(font, Vector2(90, 100), "TRAINING", HORIZONTAL_ALIGNMENT_CENTER, 120.0, 8, Color(1, 1, 1, 0.4))
-	draw_string(font, pos, "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color("ffd866"))

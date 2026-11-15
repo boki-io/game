@@ -10,6 +10,9 @@ const WALL_THICKNESS := 32.0
 static var world_size := Vector2i(1600, 896)
 
 @export var size := Vector2i(1600, 896)
+## A solid, visible band of rock along every edge (the hub's cave walls). The colliders sit at the band's inner
+## edge. 0 keeps the plain walls outside the arena and the yellow border (the run).
+@export var wall_band := 0
 
 
 func _enter_tree() -> void:
@@ -25,10 +28,11 @@ func _ready() -> void:
 	var w := float(size.x)
 	var h := float(size.y)
 	var t := WALL_THICKNESS
-	_add_wall(walls, Rect2(-t, -t, w + 2 * t, t))
-	_add_wall(walls, Rect2(-t, h, w + 2 * t, t))
-	_add_wall(walls, Rect2(-t, 0, t, h))
-	_add_wall(walls, Rect2(w, 0, t, h))
+	var b := float(wall_band)
+	_add_wall(walls, Rect2(-t, -t, w + 2 * t, t + b))
+	_add_wall(walls, Rect2(-t, h - b, w + 2 * t, t + b))
+	_add_wall(walls, Rect2(-t, 0, t + b, h))
+	_add_wall(walls, Rect2(w - b, 0, t + b, h))
 
 
 func _add_wall(body: StaticBody2D, rect: Rect2) -> void:
@@ -41,4 +45,6 @@ func _add_wall(body: StaticBody2D, rect: Rect2) -> void:
 
 
 func _draw() -> void:
+	if wall_band > 0:
+		return  # the cave draws its own rock
 	draw_rect(Rect2(Vector2.ZERO, Vector2(size)), Color("e0c060"), false, 2.0)
