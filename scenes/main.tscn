@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="25"]
 
 [ext_resource type="Script" path="res://scripts/cave/cave_walls.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/ui/stage_banner.gd" id="32"]
 [ext_resource type="PackedScene" path="res://scenes/coin.tscn" id="31"]
 
 [sub_resource type="Gradient" id="vignette_gradient"]
@@ -155,3 +156,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("17")
+
+[node name="StageBanner" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("32")

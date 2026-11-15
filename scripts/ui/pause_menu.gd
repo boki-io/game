@@ -1,5 +1,5 @@
 extends Control
-## Esc / Start pauses. In a run: Continue, Return to Hub, Exit. In the hub: Continue, Exit.
+## Esc / Start pauses. In a run: Continue, Return to Hub (asks "Abandon this run?"), Exit. In the hub: Continue, Exit.
 ## Ignored while the level-up or end screen is up (absent in the hub) and during a scene fade.
 
 @export var level_up_menu: LevelUpMenu
@@ -8,6 +8,8 @@ extends Control
 @export var hub_mode := false
 
 var _continue: Button
+var _return: Button
+var _prompt: AbandonPrompt
 
 
 func _ready() -> void:
@@ -20,13 +22,17 @@ func _ready() -> void:
 	_continue.pressed.connect(_resume)
 	box.add_child(_continue)
 	if not hub_mode:
-		var hub := UiKit.button("Return to Hub")
-		hub.pressed.connect(GameSession.go_to_hub)
-		box.add_child(hub)
+		_return = UiKit.button("Return to Hub")
+		_return.pressed.connect(func() -> void: _prompt.open())
+		box.add_child(_return)
 	var exit := UiKit.button("Exit")
 	exit.pressed.connect(func() -> void: get_tree().quit())
 	box.add_child(exit)
 	add_child(UiKit.centered(box))
+	if not hub_mode:
+		_prompt = AbandonPrompt.new()
+		_prompt.dismissed.connect(func() -> void: _return.grab_focus.call_deferred())
+		add_child(_prompt)
 
 
 func _unhandled_input(event: InputEvent) -> void:

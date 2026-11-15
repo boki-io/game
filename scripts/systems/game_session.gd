@@ -94,8 +94,9 @@ func select_stage(stage: StageData) -> void:
 			return
 
 
+## True on the final column. Without a path (main.tscn run from the editor) a won stage is also the last.
 func is_last_stage() -> bool:
-	return path != null and current_column >= path.column_count() - 1
+	return path == null or current_column >= path.column_count() - 1
 
 
 ## A stage of column 1 or 2 was won: records it, adds its kills, saves the Player's progress, moves on to the

@@ -7,6 +7,7 @@ const PROP_MARGIN := 48.0
 const WALL_BAND := 16.0  # matches the Arena's wall_band in main.tscn
 const START_CLEARING := 110.0  # radius around the start that stays free of walls, props and decor
 const DECOR_COUNT := 110
+const STAGE_CLEARED_TIME := 2.0  # seconds the "Stage cleared" banner stays
 
 ## Footprints of the freestanding rock walls (see CaveWall.layout).
 var rock_walls: Array[Rect2] = []
@@ -26,9 +27,9 @@ func _ready() -> void:
 	var debug: Label = $UI/DebugOverlay
 	debug.run_manager = run_manager
 	debug.spawn_director = spawn_director
-	var end_screen: Control = $UI/EndScreen
+	var end_screen: EndScreen = $UI/EndScreen
 	end_screen.run_manager = run_manager
-	run_manager.run_ended.connect(end_screen.show_result)
+	run_manager.run_ended.connect(_on_run_ended)
 	var pause_menu := $UI/PauseMenu
 	pause_menu.level_up_menu = $UI/LevelUpMenu
 	pause_menu.end_screen = end_screen
@@ -45,6 +46,25 @@ func _ready() -> void:
 	player.died.connect(run_manager.on_player_died)
 	player.xp.leveled_up.connect(func(_level: int) -> void: $UI/LevelUpMenu.queue_level_up(player))
 	$UI/Hud.bind(player, run_manager)
+
+
+## Death shows the end screen. A win waits for the level-up menu to close (so no level is lost and the banner never
+## covers it); then the last stage shows victory and any other stage shows "Stage cleared" and loads the next select.
+func _on_run_ended(won: bool) -> void:
+	if not won:
+		$UI/EndScreen.show_result(EndScreen.Mode.DEATH)
+		return
+	while $UI/LevelUpMenu.active:
+		await get_tree().process_frame
+	if GameSession.is_last_stage():
+		GameSession.finish_run()
+		$UI/EndScreen.show_result(EndScreen.Mode.VICTORY)
+		return
+	get_tree().paused = true
+	$UI/StageBanner.show_banner()
+	# The tree is paused, so the timer must ignore pause or it would never fire.
+	await get_tree().create_timer(STAGE_CLEARED_TIME, true).timeout
+	GameSession.complete_stage()
 
 
 ## Rock walls of varied length, torches along the outer walls, and decor, all seeded.

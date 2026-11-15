@@ -18,6 +18,7 @@ const SLOTS := [
 var player: Player
 var run_manager: RunManager
 
+var _stage_text := ""
 var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
 var _mana_flash := 0.0
 
@@ -25,6 +26,10 @@ var _mana_flash := 0.0
 func bind(p: Player, rm: RunManager = null) -> void:
 	player = p
 	run_manager = rm
+	_stage_text = ""
+	var stage := GameSession.current_stage
+	if rm != null and stage != null and GameSession.path != null:
+		_stage_text = "Stage %d/%d - %s" % [GameSession.current_column + 1, GameSession.path.column_count(), stage.name]
 	player.caster.cast_failed.connect(_on_cast_failed)
 	player.tree_exiting.connect(_on_player_exiting.bind(p))
 
@@ -70,6 +75,8 @@ func _draw() -> void:
 	var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
 	var view := get_viewport_rect().size
 	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
+	if _stage_text != "":
+		_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
 	_draw_gold(font, view)
 
