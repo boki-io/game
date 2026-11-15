@@ -4,7 +4,7 @@ extends Node
 ## the auto Slash holds off while a Q/E/R cast is running.
 
 signal cast_started(slot: StringName, data: AbilityData)
-## reason is &"mana" or &"cooldown".
+## reason is &"mana", &"cooldown", &"no_target" (nothing to aim at) or &"blocked" (no room to move).
 signal cast_failed(slot: StringName, reason: StringName)
 
 const AUTO_TARGET_RANGE := 90.0
@@ -28,6 +28,8 @@ var _buffer_left := 0.0
 # while the window is open. The ability's cooldown is frozen until the chain ends.
 var _chain_slot: StringName = &""
 var _chain_remaining := 0
+## True while a chained follow-up cast is being started (behaviors use it, e.g. Rift only on the first Blink).
+var casting_follow_up := false
 var _chain_window := 0.0
 
 @onready var player: Player = get_parent()
@@ -147,10 +149,15 @@ func _try_cast(slot: StringName) -> void:
 	if cooldowns[slot] > 0.0:
 		cast_failed.emit(slot, &"cooldown")
 		return
+	var aim := player.player_input.aim_vector
+	var behavior := _behavior_for(slot, data)
+	if not behavior.can_cast(self, aim, data):
+		cast_failed.emit(slot, behavior.fail_reason)
+		return
 	if not mana.can_afford(mana_cost_of(data)):
 		cast_failed.emit(slot, &"mana")
 		return
-	_begin(slot, data, player.player_input.aim_vector)
+	_begin(slot, data, aim)
 
 
 func _auto_cast() -> void:
@@ -164,6 +171,12 @@ func _auto_cast() -> void:
 	# An enemy standing on the player gives no direction: fall back to the aim.
 	var dir := to_target.normalized() if to_target.length() >= 1.0 else player.player_input.aim_vector
 	_begin(&"auto", ability_auto, dir)
+
+
+func _behavior_for(slot: StringName, data: AbilityData) -> AbilityBehavior:
+	if not _behaviors.has(slot):
+		_behaviors[slot] = data.behavior.new()
+	return _behaviors[slot]
 
 
 func _begin(slot: StringName, data: AbilityData, aim: Vector2) -> void:
@@ -181,9 +194,7 @@ func _begin(slot: StringName, data: AbilityData, aim: Vector2) -> void:
 		_chain_window = 0.0
 	player.face_towards(aim, 0.25)
 	cast_started.emit(slot, data)
-	if not _behaviors.has(slot):
-		_behaviors[slot] = data.behavior.new()
-	var behavior: AbilityBehavior = _behaviors[slot]
+	var behavior := _behavior_for(slot, data)
 	behavior.cast(self, aim, data)
 	# Instant abilities finish in their first update; the rest keep the caster busy.
 	_active = behavior
@@ -194,13 +205,18 @@ func _begin(slot: StringName, data: AbilityData, aim: Vector2) -> void:
 
 ## A follow-up in a chain: no mana, no cooldown check, re-aimed from the current aim.
 func _cast_follow_up(slot: StringName, data: AbilityData) -> void:
+	var aim := player.player_input.aim_vector
+	var behavior := _behavior_for(slot, data)
+	if not behavior.can_cast(self, aim, data):
+		cast_failed.emit(slot, behavior.fail_reason)  # the chain stays open
+		return
 	_chain_remaining -= 1
 	_chain_window = 0.0
-	var aim := player.player_input.aim_vector
 	player.face_towards(aim, 0.25)
 	cast_started.emit(slot, data)
-	var behavior: AbilityBehavior = _behaviors[slot]
+	casting_follow_up = true
 	behavior.cast(self, aim, data)
+	casting_follow_up = false
 	_active = behavior
 	_active_slot = slot
 	if behavior.update(0.0):

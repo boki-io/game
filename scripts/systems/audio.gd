@@ -8,7 +8,7 @@ const SOUNDS := [
 	&"slash", &"dash", &"spin", &"slam", &"enemy_hit", &"enemy_death", &"xp_pickup",
 	&"level_up", &"player_hurt", &"player_death", &"no_mana", &"menu_click",
 	&"dasher_charge", &"dasher_dash", &"ranged_windup", &"ranged_shot", &"projectile_hit",
-	&"bolt_fire", &"bolt_hit",
+	&"bolt_fire", &"bolt_hit", &"blink", &"lightning", &"meteor_fall", &"meteor_impact",
 ]
 
 var _streams: Dictionary = {}

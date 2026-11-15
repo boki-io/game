@@ -86,4 +86,8 @@ save("ranged_shot", mix(tone(900, 200, 0.12, "square", 2.5), noise(0.08, 0.7, 0.
 save("projectile_hit", mix(tone(180, 60, 0.12, "sine", 2.0), noise(0.08, 0.4, 0.1, 3.0)), 0.55)
 save("bolt_fire", mix(tone(700, 1500, 0.09, "sine", 2.0), noise(0.05, 0.8, 0.3, 2.0)), 0.4)
 save("bolt_hit", mix(tone(520, 220, 0.07, "square", 2.5), noise(0.04, 0.6, 0.2, 2.0)), 0.4)
+save("blink", mix(tone(300, 1200, 0.1, "sine", 1.2), tone(1200, 400, 0.12, "triangle", 2.0), noise(0.1, 0.5, 0.2, 2.0)), 0.5)
+save("lightning", seq(noise(0.04, 0.9, 0.6, 1.0, 0.0), [0.0] * int(SR * 0.015), noise(0.05, 0.9, 0.4, 1.5, 0.0), [0.0] * int(SR * 0.01), mix(noise(0.12, 0.8, 0.2, 2.0, 0.0), tone(1800, 600, 0.12, "saw", 2.0))), 0.55)
+save("meteor_fall", mix(tone(1400, 140, 0.7, "sine", 0.8), noise(0.7, 0.05, 0.4, 0.8, 0.2)), 0.4)
+save("meteor_impact", mix(tone(110, 28, 0.6, "sine", 1.6), noise(0.45, 0.6, 0.04, 2.5, 0.0)), 0.9)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))

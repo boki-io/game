@@ -74,8 +74,27 @@ func slash_arc(pos: Vector2, dir: Vector2, radius: float, arc_rad: float) -> voi
 
 
 ## Ground warning for a delayed hit; lasts `duration` seconds.
-func telegraph(pos: Vector2, radius: float, duration: float) -> void:
-	_fx.append({kind = &"telegraph", pos = pos, radius = radius, age = 0.0, life = maxf(duration, 0.01)})
+func telegraph(pos: Vector2, radius: float, duration: float, fill: bool = false) -> void:
+	_fx.append({kind = &"telegraph", pos = pos, radius = radius, fill = fill, age = 0.0, life = maxf(duration, 0.01)})
+
+
+## Jagged lightning through `points` (world positions), about 0.15s.
+func lightning(points: PackedVector2Array) -> void:
+	var jagged := PackedVector2Array()
+	for i in points.size() - 1:
+		var a := points[i]
+		var b := points[i + 1]
+		var side := (b - a).orthogonal().normalized()
+		jagged.append(a)
+		for k in range(1, 4):
+			jagged.append(a.lerp(b, k / 4.0) + side * randf_range(-4.0, 4.0))
+	jagged.append(points[points.size() - 1])
+	_fx.append({kind = &"lightning", points = jagged, age = 0.0, life = 0.15})
+
+
+## Impact flash and streak for a meteor landing at pos.
+func meteor_fall(pos: Vector2) -> void:
+	_fx.append({kind = &"meteor", pos = pos, age = 0.0, life = 0.3})
 
 
 ## Expanding shockwave ring.
@@ -107,7 +126,16 @@ func _draw() -> void:
 				_draw_arc_fx(f, t)
 			&"telegraph":
 				draw_circle(f.pos, f.radius, Color(1, 0.2, 0.2, 0.12 + 0.2 * t))
+				if f.fill:
+					draw_circle(f.pos, f.radius * t, Color(1, 0.55, 0.15, 0.2 + 0.3 * t))
 				draw_arc(f.pos, f.radius, 0.0, TAU, 40, Color(1, 0.3, 0.3, 0.9), 1.0)
+			&"lightning":
+				draw_polyline(f.points, Color(0.5, 0.7, 1.0, 0.35 * (1.0 - t)), 5.0)
+				draw_polyline(f.points, Color(0.85, 0.95, 1.0, 1.0 - t), 1.5)
+			&"meteor":
+				var streak: Vector2 = f.pos + Vector2(-26, -70) * (1.0 - t)
+				draw_line(streak, f.pos, Color(1.0, 0.6, 0.2, 0.9 * (1.0 - t)), 6.0 * (1.0 - t) + 1.0)
+				draw_circle(f.pos, 34.0 * t + 6.0, Color(1.0, 0.8, 0.35, 0.65 * (1.0 - t)))
 			&"ring":
 				draw_circle(f.pos, f.radius, Color(1, 1, 1, 0.3 * (1.0 - t)))
 				draw_arc(f.pos, f.radius * (0.6 + 0.4 * t), 0.0, TAU, 40, Color(1, 1, 1, 1.0 - t), 2.0)

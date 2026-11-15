@@ -7,6 +7,13 @@ const ENEMY_RADIUS := 6.0  # added to reach so edge-touching enemies are hit
 
 var caster: AbilityCaster
 var data: AbilityData
+## Why can_cast() last returned false: &"no_target" or &"blocked".
+var fail_reason: StringName = &""
+
+
+## Checked before mana is spent or the cooldown starts. Return false to reject the cast.
+func can_cast(_caster: AbilityCaster, _aim: Vector2, _data: AbilityData) -> bool:
+	return true
 
 
 func cast(_caster: AbilityCaster, _aim: Vector2, _data: AbilityData) -> void:

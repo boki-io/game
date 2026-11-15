@@ -1,17 +1,20 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3]
 
 [ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/abilities/slash_behavior.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/abilities/meteor_behavior.gd" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/meteor_fall.wav" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = &"meteor"
 display_name = "Meteor Strike"
 description = "Mark the ground. A meteor crashes down moments later."
-target_range = 0.0
 cooldown = 5.0
 mana_cost = 29.0
 damage = 90.0
-range = 40.0
-arc_degrees = 90.0
+range = 120.0
+radius = 64.0
+windup = 0.7
+knockback = 140.0
 behavior = ExtResource("2")
+sfx = ExtResource("3")

@@ -395,3 +395,14 @@ recently killed enemies; `can_cast` placement and the `blocked` and `no_target` 
 the half-angle meaning; field damage scaling and Rift not repeating on follow-up blinks; blocked Blink rule;
 Meteor clamping, marker timing and capture of values at cast time; Mana and trait plumbing; Arcane Focus
 timing; the Ranged enemy range claim; and checkable Definition of Done items.
+
+## 14. Implementation notes (M18 to M20)
+
+- A failed `can_cast` also applies to **follow-up** casts (Double Blink): the press is rejected with the same
+  reason and the chain stays open. Section 6.2 said follow-ups skip the check; blocked follow-ups needed it.
+- `DamageZones.add_field` takes a `color` and a `delay` (`add_field(pos, radius, damage, interval, ticks,
+  color, delay)`), used by Rift (violet, no delay) and Scorched Earth (orange, delayed to the impact).
+- `AbilityCaster.casting_follow_up` is true while a chained follow-up starts; Blink reads it so Rift only
+  comes from the first Blink of a chain.
+- Meteor Strike's falling whistle (`meteor_fall`) plays at cast and the impact boom (`meteor_impact`) plays
+  from the burst.

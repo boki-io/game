@@ -28,10 +28,12 @@ func bind(p: Player, rm: RunManager) -> void:
 
 
 func _on_cast_failed(slot: StringName, reason: StringName) -> void:
+	if reason == &"cooldown":
+		return
+	_flash[slot] = FLASH_TIME
+	Audio.play(&"no_mana")
 	if reason == &"mana":
-		_flash[slot] = FLASH_TIME
 		_mana_flash = FLASH_TIME
-		Audio.play(&"no_mana")
 
 
 func _process(delta: float) -> void:
