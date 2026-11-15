@@ -1,5 +1,5 @@
 extends Control
-## Win ("Survived!") or lose ("You died") with time survived, level and kills, and Restart.
+## Win ("Survived!") or lose ("You died") with time survived, level and kills, then Restart and Return to Hub.
 
 var run_manager: RunManager
 
@@ -18,11 +18,11 @@ func _ready() -> void:
 	_stats = UiKit.label("")
 	box.add_child(_stats)
 	_restart = UiKit.button("Restart")
-	_restart.pressed.connect(GameSession.restart)
+	_restart.pressed.connect(GameSession.restart_run)
 	box.add_child(_restart)
-	var menu := UiKit.button("Main Menu")
-	menu.pressed.connect(GameSession.go_to_main_menu)
-	box.add_child(menu)
+	var hub := UiKit.button("Return to Hub")
+	hub.pressed.connect(GameSession.go_to_hub)
+	box.add_child(hub)
 	add_child(UiKit.centered(box))
 
 

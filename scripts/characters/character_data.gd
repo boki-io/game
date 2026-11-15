@@ -23,6 +23,10 @@ extends Resource
 @export var mana_regen: float = 8.0  # per second
 ## Optional trait: a Node script the player adds as a child (e.g. Arcane Focus).
 @export var trait_script: Script
+## Shown in the hub's info panel. Plain data, so a number typed here must match the trait script's constant
+## (tests/hub_data.gd checks that). Leave empty for no trait.
+@export var trait_name: String
+@export var trait_description: String
 @export_group("Abilities")
 @export var ability_auto: AbilityData
 @export var ability_q: AbilityData

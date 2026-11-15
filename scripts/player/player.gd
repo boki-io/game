@@ -8,6 +8,8 @@ signal died
 
 ## Set before adding to the tree. Supplies abilities, base stats, color and upgrade pool.
 var character: CharacterData
+## Set before adding to the tree. The hub: infinite mana, no damage to take, no progression.
+var hub_mode := false
 
 var facing := Vector2.RIGHT
 var dead := false
@@ -69,6 +71,7 @@ func _ready() -> void:
 func _apply_character() -> void:
 	max_hp = character.max_hp
 	mana.configure(character.max_mana, character.mana_regen)
+	mana.infinite = hub_mode
 	move_speed = character.move_speed
 	sprite.body_color = character.body_color
 	caster.ability_auto = character.ability_auto

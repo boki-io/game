@@ -46,4 +46,5 @@ func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:
-	return pos.clamp(Vector2(ARENA_INSET, ARENA_INSET), Vector2(Arena.SIZE) - Vector2(ARENA_INSET, ARENA_INSET))
+	var inset := ARENA_INSET + Arena.wall_margin
+	return pos.clamp(Vector2(inset, inset), Vector2(Arena.world_size) - Vector2(inset, inset))

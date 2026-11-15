@@ -1,37 +1,30 @@
 extends Node
-## Autoload. Remembers the selected character and owns scene changes between
-## Main Menu, Character Select and the Game.
+## Autoload. Remembers the selected character and owns scene changes between the Hub and a run.
 
-const MAIN_MENU := "res://scenes/main_menu.tscn"
-const CHARACTER_SELECT := "res://scenes/character_select.tscn"
-const GAME := "res://scenes/main.tscn"
+const HUB := "res://scenes/hub.tscn"
+const RUN := "res://scenes/main.tscn"
 
+## The character of the current or next run.
 var character: CharacterData
+## The character last taken into a run this session. Null at boot: the hub then starts in browse mode.
+var last_character: CharacterData
 
 
 func _ready() -> void:
-	# Default so the Game scene also runs directly from the editor.
+	# Default so the run scene also runs directly from the editor.
 	character = CharacterRegistry.all()[0]
 
 
-func go_to_character_select() -> void:
-	_go(CHARACTER_SELECT)
-
-
-func start_game(selected: CharacterData) -> void:
+func start_run(selected: CharacterData) -> void:
 	character = selected
-	_go(GAME)
+	last_character = selected
+	SceneFader.fade_to_scene(RUN)
 
 
 ## Same character, fresh run.
-func restart() -> void:
-	_go(GAME)
+func restart_run() -> void:
+	SceneFader.fade_to_scene(RUN)
 
 
-func go_to_main_menu() -> void:
-	_go(MAIN_MENU)
-
-
-func _go(path: String) -> void:
-	get_tree().paused = false
-	get_tree().change_scene_to_file(path)
+func go_to_hub() -> void:
+	SceneFader.fade_to_scene(HUB)

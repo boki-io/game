@@ -23,6 +23,9 @@ var _pad_prev: Dictionary = {}  # slot -> bool, for gamepad edge detection
 
 
 func _physics_process(_delta: float) -> void:
+	if SceneFader.busy:
+		move_vector = Vector2.ZERO
+		return
 	var pad := _active_pad()
 	move_vector = _read_move(pad)
 	_update_aim(pad)

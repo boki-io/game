@@ -6,6 +6,9 @@ signal changed(current: float, maximum: float)
 @export var base_max: float = 100.0
 @export var base_regen: float = 8.0  # per second
 
+## Practice mode (the hub): spending never reduces mana, so every cast is affordable.
+var infinite := false
+
 var current := 0.0
 var _known_max := 0.0
 
@@ -50,6 +53,9 @@ func can_afford(cost: float) -> bool:
 
 
 func spend(cost: float) -> void:
+	if infinite:
+		changed.emit(current, max_mana())
+		return
 	current = maxf(current - cost, 0.0)
 	changed.emit(current, max_mana())
 

@@ -16,6 +16,12 @@ func unregister(enemy: Enemy) -> void:
 	_enemies.erase(enemy)
 
 
+## Forgets every enemy. Each scene's controller calls this at startup so nothing stale survives a scene change.
+func clear() -> void:
+	_enemies.clear()
+	_cells.clear()
+
+
 func _physics_process(_delta: float) -> void:
 	_cells.clear()
 	for e: Enemy in _enemies:

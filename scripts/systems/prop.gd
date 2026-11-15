@@ -1,5 +1,5 @@
 extends StaticBody2D
-## Placeholder pillar. Exists mainly to prove Y-sorting works. Origin is the base.
+## A rock pillar. Origin is the base.
 
 
 func _ready() -> void:
@@ -19,5 +19,5 @@ func _draw() -> void:
 		var a := TAU * i / 16.0
 		pts.append(Vector2(cos(a) * 11.0, sin(a) * 5.0))
 	draw_colored_polygon(pts, Color(0, 0, 0, 0.35))
-	draw_rect(Rect2(-8, -36, 16, 34), Color("8a8f98"))
-	draw_rect(Rect2(-8, -36, 16, 34), Color("4b4f56"), false)
+	draw_rect(Rect2(-8, -36, 16, 34), Color("5c5248"))
+	draw_rect(Rect2(-8, -36, 16, 34), Color("231e19"), false)

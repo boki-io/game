@@ -89,7 +89,7 @@ func take_damage(amount: float) -> void:
 
 
 func stun(seconds: float) -> void:
-	if not active:
+	if not active or data.immovable:
 		return
 	_stun_left = maxf(_stun_left, seconds)
 	sprite.modulate = Color(1.0, 1.0, 0.45)
@@ -97,7 +97,7 @@ func stun(seconds: float) -> void:
 
 
 func apply_knockback(impulse: Vector2) -> void:
-	if active:
+	if active and not data.immovable:
 		_knockback = impulse
 
 
@@ -137,8 +137,8 @@ func _physics_process(delta: float) -> void:
 	global_position += (velocity + _knockback) * delta
 	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	global_position = global_position.clamp(
-		Vector2(ARENA_PADDING, ARENA_PADDING),
-		Vector2(Arena.SIZE) - Vector2(ARENA_PADDING, ARENA_PADDING))
+		Vector2(ARENA_PADDING, ARENA_PADDING) + Vector2(Arena.wall_margin, Arena.wall_margin),
+		Vector2(Arena.world_size) - Vector2(ARENA_PADDING, ARENA_PADDING) - Vector2(Arena.wall_margin, Arena.wall_margin))
 	sprite.facing = facing
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
