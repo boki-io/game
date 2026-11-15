@@ -1,9 +1,8 @@
 class_name LightningBehavior
 extends AbilityBehavior
-## Chain Lightning: instant. Strikes the nearest enemy inside a cone around the aim, then jumps
-## to the nearest unhit enemy near the last one. Damage falls off with each jump.
-## Upgrades: Extra Jumps (lightning.jumps), Static Shock (lightning.stun), Wide Arc
-## (lightning.radius and lightning.cone_degrees).
+## Chain Lightning: instant. Strikes the nearest enemy within range (any direction: `cone_degrees` 180 is a
+## full circle), then jumps to the nearest unhit enemy near the last one. Damage falls off with each jump.
+## Upgrades: Extra Jumps (lightning.jumps), Static Shock (lightning.stun), Wide Arc (lightning.radius).
 
 const BASE_JUMPS := 4
 const FALLOFF := 0.85  # damage multiplier per jump

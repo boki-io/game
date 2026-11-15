@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = &"meteor_twin"
 display_name = "Twin Meteor"
-description = "A second meteor follows the first"
+description = "+1 meteor follows the first (max 2 levels)"
 tag = "Meteor Strike"
 max_level = 2
 adds = {

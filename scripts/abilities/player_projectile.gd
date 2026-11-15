@@ -54,8 +54,9 @@ func _physics_process(delta: float) -> void:
 		retire()
 		return
 	var hits := EnemyGrid.query(global_position, RADIUS + HIT_PADDING)
-	hits.sort_custom(func(a: Enemy, b: Enemy) -> bool:
-		return a.global_position.distance_squared_to(global_position) < b.global_position.distance_squared_to(global_position))
+	if hits.size() > 1:
+		hits.sort_custom(func(a: Enemy, b: Enemy) -> bool:
+			return a.global_position.distance_squared_to(global_position) < b.global_position.distance_squared_to(global_position))
 	for e in hits:
 		if _hit.has(e):
 			continue

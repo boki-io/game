@@ -24,6 +24,8 @@ func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 	var damage := caster.damage_of(d)
 	var reach := caster.value(d, &"range", d.range)
 	var origin := caster.player.global_position
+	var fired := false
 	for angle: float in SPREADS[count]:
-		pool.fire(origin, aim.rotated(deg_to_rad(angle)), SPEED, damage, reach, pierce)
-	caster.play_sfx(d)
+		fired = pool.fire(origin, aim.rotated(deg_to_rad(angle)), SPEED, damage, reach, pierce) or fired
+	if fired:  # at the projectile cap nothing is fired, so stay silent
+		caster.play_sfx(d)
