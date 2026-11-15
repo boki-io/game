@@ -8,6 +8,8 @@ const WALL_THICKNESS := 32.0
 ## always from the `size` export, so it is never stale after a scene change. Must be the first child
 ## of its scene root so siblings after it read the right value.
 static var world_size := Vector2i(1600, 896)
+## The rock band of the arena loaded (0 for none). Things that keep to the floor stay this far inside the edge.
+static var wall_margin := 0.0
 
 @export var size := Vector2i(1600, 896)
 ## A solid, visible band of rock along every edge (the hub's cave walls). The colliders sit at the band's inner
@@ -17,6 +19,7 @@ static var world_size := Vector2i(1600, 896)
 
 func _enter_tree() -> void:
 	world_size = size
+	wall_margin = float(wall_band)
 
 
 func _ready() -> void:

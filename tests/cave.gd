@@ -1,7 +1,7 @@
 extends SceneTree
 ## The hub's cave: the rock band is solid on all four sides (the Player stops at its inner edge), the door still
 ## triggers, decor stays off the reserved areas and is limited, and the floor and decor are identical on every load.
-## Run: godot --headless --path . --script tests/hub_cave.gd
+## Run: godot --headless --path . --script tests/cave.gd
 
 const BAND := 16.0
 const PLAYER_BODY := 10.0  # the collision circle: centre 5px above the feet, radius 5
@@ -54,8 +54,8 @@ func _init() -> void:
 		for r in hub.reserved_areas():
 			_check(not r.grow(24.0).has_point(d.position), "decor at %s is within 24px of a reserved area" % d.position)
 		_check(Rect2(Vector2(BAND, BAND), size - Vector2(BAND, BAND) * 2.0).has_point(d.position), "decor at %s is inside the walls" % d.position)
-	var layout_a := HubDecor.layout(size, BAND, hub.reserved_areas())
-	var layout_b := HubDecor.layout(size, BAND, hub.reserved_areas())
+	var layout_a := CaveDecor.layout(size, BAND, hub.reserved_areas())
+	var layout_b := CaveDecor.layout(size, BAND, hub.reserved_areas())
 	_check(layout_a == layout_b, "the decor layout is seeded")
 
 	var hash_a := _floor_hash(hub)

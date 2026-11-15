@@ -1,6 +1,6 @@
-class_name HubCave
+class_name CaveWalls
 extends Node2D
-## The cave walls of the hub: a band of rock along every edge with a ragged inner edge, and the wall torches
+## The cave walls (hub and run): a band of rock along every edge with a ragged inner edge, and the wall torches
 ## (flickering flames with a warm additive glow). Drawing only; the solid collision is the Arena's.
 
 const ROCK := Color("3a322b")
@@ -84,7 +84,7 @@ func _draw() -> void:
 
 ## The soft glow and flame of every torch, drawn additively on its own node.
 class TorchGlow extends Node2D:
-	var cave: HubCave
+	var cave: CaveWalls
 
 	func _draw() -> void:
 		for i in cave.torches.size():

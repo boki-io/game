@@ -13,7 +13,7 @@
 [ext_resource type="Script" path="res://scripts/systems/player_projectiles.gd" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="12"]
 [ext_resource type="Script" path="res://scripts/systems/effects.gd" id="13"]
-[ext_resource type="Script" path="res://scripts/hub/hub_cave.gd" id="14"]
+[ext_resource type="Script" path="res://scripts/cave/cave_walls.gd" id="14"]
 
 [sub_resource type="Gradient" id="vignette_gradient"]
 offsets = PackedFloat32Array(0.5, 1.0)

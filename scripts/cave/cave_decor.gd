@@ -1,7 +1,7 @@
-class_name HubDecor
+class_name CaveDecor
 extends Node2D
 ## One piece of non-blocking cave decor: a stalagmite, rock, pebbles, bones or a glowing mushroom.
-## `layout()` decides where they go: seeded (the same every launch), mostly along the walls, and never on
+## The hub and the run both use it. `layout()` decides where they go: seeded (the same every launch), mostly along the walls, and never on
 ## the reserved areas (pedestals, training area, door lane, sign).
 
 enum Kind { STALAGMITE, ROCK, PEBBLES, BONES, MUSHROOM }
@@ -16,7 +16,7 @@ var variant := 0
 
 
 ## A list of {kind, pos, variant}. `size` is the room, `band` the rock band, `reserved` rectangles to keep clear.
-static func layout(size: Vector2, band: float, reserved: Array[Rect2]) -> Array[Dictionary]:
+static func layout(size: Vector2, band: float, reserved: Array[Rect2], count: int = COUNT) -> Array[Dictionary]:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = DECOR_SEED
 	var out: Array[Dictionary] = []
@@ -24,7 +24,7 @@ static func layout(size: Vector2, band: float, reserved: Array[Rect2]) -> Array[
 	for r in reserved:
 		keep_out.append(r.grow(CLEARANCE))
 	var tries := 0
-	while out.size() < COUNT and tries < 2000:
+	while out.size() < count and tries < 4000:
 		tries += 1
 		var kind_roll := rng.randf()
 		var k: Kind

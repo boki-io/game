@@ -8,7 +8,8 @@ acceptable.
 
 Revision 2: updated after an independent review of revision 1 against the code. Section 14 lists what changed.
 
-Revision 3: the hub looks like a cave (section 15), added after the M26 review. Build order and Definition of Done
+Revision 3: the hub looks like a cave (section 15), added after the M26 review. Revision 4: the run's arena looks the
+same and gets freestanding rock walls of varied length (section 15.1). Build order and Definition of Done
 are updated to match.
 
 ## 1. Scope
@@ -352,8 +353,8 @@ change.
 - **Readability:** the floor stays mid-dark and low-contrast so characters, the tan dummies (they get a dark outline),
   damage numbers, the readout text and the HUD stand out. If the tan dummies blend into the dirt, the dummy color
   changes, not the floor.
-- **Scope:** the hub only. The run's arena stays green for now. The `Ground` look option makes it a one-line change later
-  (an option in section 13).
+- **Scope (revision 4):** the run's arena gets the same cave look: dirt floor, the rock band, 12 torches along the
+  outer walls, the vignette and 110 decor items kept off the start. Section 15.1 adds freestanding rock walls.
 - **Not in this version:** real tilesets or sprites, animated water or fog, dynamic shadows, sound ambience (a
   looping cave drip is a possible later addition).
 - **Tests:** the existing `tests/` must still pass; a new test checks that the hub's walls block movement at the
@@ -361,6 +362,19 @@ change.
   reserved areas, and that the ground layout is the same on every load. Looks are checked by screenshot and play.
 - **Cost:** about 2,100 ground cells (same as now), up to 60 decor nodes and 5 torches: static, so no measurable
   cost. The performance check in section 12 still applies.
+
+### 15.1 Freestanding rock walls in the run (revision 4)
+
+- 14 solid rock walls inside the run's arena, 16px thick and horizontal or vertical, with lengths picked from 48, 64,
+  96, 128, 160, 208, 256 and 320px, so the arena has both short stubs and long barriers.
+- Placed from a fixed seed (the same layout every run), at least 56px from the rock band and from each other (so
+  there is always a passage), and never within 110px of the Player's start.
+- Drawn as a flat rock slab with a darker south face, Y-sorted with the characters; the existing rock pillars
+  (props) skip the walls and take the same cave colors.
+- **Solid for the Player only**, like the pillars: enemies and projectiles pass through, so a wall is a hindrance for
+  the Player and never a safe spot. (Making enemies path around walls is a bigger change and not in this version.)
+- `Arena.wall_margin` (the rock band's thickness) keeps enemy positions, meteors and the spawn ring off the rock.
+- Test: `tests/arena_cave.gd` (varied lengths, clear of the start and of each other, seeded, solid, enemies kept inside).
 
 ## 14. Changes from revision 1 (after review)
 
@@ -378,3 +392,5 @@ uses `body_entered` with solid walls; the dummy readout is defined; and the regr
 ## 16. Changes from revision 2
 
 Added the cave look (section 15), the M27 Cave look milestone (polish becomes M28) and its Definition of Done item.
+
+Revision 4 (after the M27 review): the cave look and freestanding rock walls also apply to the run's arena (15, 15.1).

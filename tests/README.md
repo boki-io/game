@@ -18,10 +18,11 @@ tests/run_all.sh            # every test, one line each
 | `chain_lightning.gd` | Jump count, damage falloff, Extra Jumps, an enemy standing on the Wizard |
 | `crowd_performance.gd` | 300 unkillable enemies on a stationary Player stay inside the physics budget |
 | `hub_data.gd` | Trait text in the data files matches the trait scripts' constants |
+| `arena_cave.gd` | The run's rock walls: varied lengths, clear of the start and each other, seeded, solid; enemies stay out of the band |
 | `hub_browse.gd` | Hub pedestals, browse input, the info panel's numbers against the data, a click, Choose |
 | `hub_walk.gd` | Walk mode: one Player, infinite mana, interact and `clear()`, confirm/interact lockout, the door |
 | `hub_dummies.gd` | Every ability of both characters hurts the dummies; they never die, move, tint or stun; the readout |
-| `hub_cave.gd` | Cave walls are solid, the door still triggers, decor stays clear of reserved areas, floor and decor are seeded |
+| `cave.gd` | Cave walls are solid, the door still triggers, decor stays clear of reserved areas, floor and decor are seeded |
 | `scene_flow.gd` | Hub to run to hub to run: Arena size, unpausing, the hub pause menu |
 
 ## Writing one

@@ -11,7 +11,7 @@ character's Q / E / R abilities. Proof of concept.
 Each character has 18 to 19 upgrades. The game opens in the **hub**: look at each character on their pedestal
 (left / right or click), read their stats and abilities, and choose one. Then walk around the hub as them (infinite
 mana, no damage; F next to a pedestal changes character) and walk through the door in the north wall to start a run.
-The hub is a torch-lit dirt cave. Three indestructible training dummies in the north-west corner show Last / Total / DPS for your hits.
+The hub and the run arena are torch-lit dirt caves (the arena has rock walls of varied length). Three indestructible training dummies in the north-west corner show Last / Total / DPS for your hits.
 
 ## Run it
 1. Install Godot 4.7 (`brew install --cask godot` on macOS).

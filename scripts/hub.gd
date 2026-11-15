@@ -106,13 +106,13 @@ func _build_pedestals() -> void:
 ## Torches on the walls and the decor, which keeps clear of everything gameplay uses.
 func _build_cave() -> void:
 	var size := Vector2(Arena.world_size)
-	var cave: HubCave = $Cave
+	var cave: CaveWalls = $Cave
 	var b := WALL_BAND
 	cave.wall_band = b
 	cave.torches = [Vector2(door.position.x - 44.0, 9.0), Vector2(door.position.x + 44.0, 9.0),
 		Vector2(150.0, size.y - b + 1.0), Vector2(size.x - 150.0, size.y - b + 1.0), Vector2(b - 3.0, 170.0)]
-	for item in HubDecor.layout(size, b, reserved_areas()):
-		var decor := HubDecor.new()
+	for item in CaveDecor.layout(size, b, reserved_areas()):
+		var decor := CaveDecor.new()
 		decor.kind = item.kind
 		decor.variant = item.variant
 		decor.position = item.pos
