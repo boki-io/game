@@ -204,6 +204,9 @@ Added to the Sword upgrade pool as an Ability upgrade on Dash & Slash.
   the first dash's cost (follow-ups are free).
 - The HUD Q icon shows a highlighted ring with the remaining follow-ups while the window is open.
 - Stats keys: `dash.chain` (add 1 per level), read by the caster.
+- Implementation: the caster tracks a chain (`_chain_slot`, `_chain_remaining`, `_chain_window`). The Q cooldown is
+  frozen from the first dash until the chain ends. A Q press that arrives during a dash is buffered and
+  becomes the follow-up. Other abilities can be cast while the window is open.
 - Each dash in a chain also gets the post-dash immunity and pushback below.
 
 ### Post-dash immunity and pushback (Dash & Slash, all builds)

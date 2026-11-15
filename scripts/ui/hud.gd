@@ -99,18 +99,29 @@ func _draw_icons(font: Font) -> void:
 		var affordable := player.mana.can_afford(player.caster.mana_cost_of(data))
 		var color: Color = info.color
 		draw_circle(c, ICON_RADIUS - 3.0, color if affordable else color.darkened(0.7))
+		var chaining := player.caster.chain_open(slot)
 		var cd: float = player.caster.cooldowns[slot]
-		if cd > 0.0:
+		if cd > 0.0 and not chaining:
 			_draw_sweep(c, ICON_RADIUS, cd / maxf(player.caster.cooldown_of(data), 0.01))
 			_text(font, c + Vector2(0, 3), "%.1f" % cd, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 		var ring := Color(1, 1, 1, 0.5)
-		if not affordable:
+		if not affordable and not chaining:
 			ring = Color(0.3, 0.5, 1.0, 0.9)
 		if _flash.has(slot):
 			ring = Color(1, 0.2, 0.2)
 		draw_arc(c, ICON_RADIUS, 0.0, TAU, 20, ring, 1.0)
+		if chaining:
+			_draw_chain_hint(font, c, slot, ICON_RADIUS)
 		if info.key != "":
 			_text(font, c + Vector2(0, ICON_RADIUS + 9), info.key, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+
+
+## Double Dash: a gold ring that drains with the follow-up window, and "xN" follow-ups left.
+func _draw_chain_hint(font: Font, c: Vector2, slot: StringName, radius: float) -> void:
+	var fraction := player.caster.chain_window_fraction()
+	draw_arc(c, radius + 3.0, -PI / 2.0, -PI / 2.0 + TAU * fraction, 32, Color("ffd23f"), 2.0)
+	_text(font, c + Vector2(0, -radius - 6.0), "x%d" % player.caster.chain_remaining(slot), 8,
+		HORIZONTAL_ALIGNMENT_CENTER, 0)
 
 
 func _any_icon_textures() -> bool:
@@ -128,16 +139,19 @@ func _draw_textured_icon(font: Font, c: Vector2, info: Dictionary, data: Ability
 	var affordable := player.mana.can_afford(player.caster.mana_cost_of(data))
 	draw_rect(Rect2(c - half - Vector2(1, 1), half * 2.0 + Vector2(2, 2)), Color(0, 0, 0, 0.7))
 	draw_texture(data.icon, c - half, Color.WHITE if affordable else Color(0.35, 0.4, 0.65))
+	var chaining := player.caster.chain_open(slot)
 	var cd: float = player.caster.cooldowns[slot]
-	if cd > 0.0:
+	if cd > 0.0 and not chaining:
 		_draw_square_sweep(c, half, cd / maxf(player.caster.cooldown_of(data), 0.01))
 		_text(font, c + Vector2(0, 3), "%.1f" % cd, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	var ring := Color(1, 1, 1, 0.5)
-	if not affordable:
+	if not affordable and not chaining:
 		ring = Color(0.3, 0.5, 1.0, 0.9)
 	if _flash.has(slot):
 		ring = Color(1, 0.2, 0.2)
 	draw_rect(Rect2(c - half, half * 2.0), ring, false, 1.0)
+	if chaining:
+		_draw_chain_hint(font, c, slot, half.y)
 	if info.key != "":
 		_text(font, c + Vector2(half.x - 4.0, half.y - 1.0), info.key, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
 
