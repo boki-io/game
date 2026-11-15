@@ -1,6 +1,6 @@
 class_name UiKit
 extends RefCounted
-## Small helpers so menus built in code look consistent at 480x270.
+## Small helpers so menus built in code look consistent at the 640x360 base resolution.
 
 const FONT_SIZE := 8
 
