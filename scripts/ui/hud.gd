@@ -71,9 +71,21 @@ func _draw() -> void:
 	var view := get_viewport_rect().size
 	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
 	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	_draw_gold(font, view)
 
 	_draw_xp(font)
 	_draw_icons(font)
+
+
+## A drawn coin and the gold number, right-aligned under the kills counter.
+func _draw_gold(font: Font, view: Vector2) -> void:
+	var text := str(GameSession.gold)
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	var right := view.x - 6.0
+	_text(font, Vector2(right, 24), text, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	var centre := Vector2(right - width - 7.0, 21.5)
+	draw_circle(centre, 3.5, Color("c89a1c"))
+	draw_circle(centre, 2.5, Color("ffd23f"))
 
 
 func _draw_bar(pos: Vector2, value: float, maximum: float, color: Color, label: String, font: Font,

@@ -1,6 +1,6 @@
 class_name XPCollector
 extends Area2D
-## Pulls XP gems toward the player once they enter the pickup radius.
+## Pulls pickups (XP gems, coins: anything with attract()) toward the player once they enter the pickup radius.
 
 const BASE_RADIUS := 48.0
 
@@ -22,5 +22,5 @@ func refresh() -> void:
 
 
 func _on_area_entered(area: Area2D) -> void:
-	if area is XPGem:
+	if area.has_method("attract"):
 		area.attract(player)

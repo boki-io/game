@@ -8,6 +8,8 @@ const RUN := "res://scenes/main.tscn"
 var character: CharacterData
 ## The character last taken into a run this session. Null at boot: the hub then starts in browse mode.
 var last_character: CharacterData
+## Coins collected. Not reset when a run ends: it waits for the future trade system. Memory only.
+var gold := 0
 ## The stage being played. Null outside a run.
 var current_stage: StageData
 

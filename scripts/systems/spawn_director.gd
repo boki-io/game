@@ -125,4 +125,7 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	run_manager.kills += 1
 	if pickups:
 		pickups.spawn_gem(enemy.global_position, stage.scaled_xp(enemy.data.xp_drop))
+		# Mobs that drop no XP (the hub dummies) drop no coins either.
+		if enemy.data.xp_drop > 0 and randf() < stage.coin_chance():
+			pickups.spawn_coin(enemy.global_position)
 	release(enemy)
