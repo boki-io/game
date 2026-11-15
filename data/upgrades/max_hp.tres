@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"max_hp"
+display_name = "Vitality"
+description = "+20 max HP and heal 20"
+tag = "Passive"
+max_level = 3
+adds = {
+"max_hp": 20.0
+}
+mults = {}

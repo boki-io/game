@@ -12,6 +12,7 @@ extends Node
 @export var teleport_margin: float = 120.0  # px beyond the ring before an enemy is recycled
 
 var run_manager: RunManager
+var pickups: Pickups
 var enemies_root: Node2D
 var alive := 0
 
@@ -84,4 +85,6 @@ func _acquire() -> Enemy:
 
 func _on_enemy_died(enemy: Enemy) -> void:
 	run_manager.kills += 1
+	if pickups:
+		pickups.spawn_gem(enemy.global_position, enemy.data.xp_drop)
 	release(enemy)

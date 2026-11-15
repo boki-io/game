@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"spin_double"
+display_name = "Double Spin"
+description = "Spin hits one extra time"
+tag = "Spin"
+max_level = 3
+adds = {
+"spin.extra_passes": 1.0
+}
+mults = {}

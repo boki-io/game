@@ -24,11 +24,14 @@ var _face_time := 0.0
 @onready var stats: Stats = $Stats
 @onready var mana: Mana = $Mana
 @onready var caster: AbilityCaster = $AbilityCaster
+@onready var xp: PlayerXP = $XP
+@onready var upgrades: PlayerUpgrades = $Upgrades
+@onready var collector: XPCollector = $XPCollector
 
 
 func _ready() -> void:
 	PlayerRegistry.register(self)
-	health.setup(max_hp)
+	health.setup(stats.value(&"max_hp", max_hp))
 	health.died.connect(_on_died)
 	hurtbox.hit_taken.connect(_on_hit_taken)
 
@@ -59,13 +62,23 @@ func face_towards(dir: Vector2, duration: float) -> void:
 	_face_time = duration
 
 
+## Re-read stats that other components cache (call after an upgrade).
+func refresh_stats() -> void:
+	health.set_max(stats.value(&"max_hp", max_hp))
+	mana.refresh()
+	collector.refresh()
+
+
 func _on_hit_taken(_amount: float) -> void:
+	Audio.play(&"player_hurt")
+	CameraFollow.shake(self, 1.5, 0.12)
 	sprite.modulate = Color(1, 0.35, 0.35)
 	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.15)
 
 
 func _on_died() -> void:
 	dead = true
+	Audio.play(&"player_death")
 	caster.cancel()
 	velocity = Vector2.ZERO
 	sprite.modulate = Color(0.4, 0.4, 0.4)

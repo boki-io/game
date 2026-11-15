@@ -61,6 +61,10 @@ func value(data: AbilityData, stat: StringName, base: float) -> float:
 	return stats.value(StringName("%s.%s" % [data.id, stat]), base)
 
 
+func play_sfx(data: AbilityData) -> void:
+	Audio.play_stream(data.sfx)
+
+
 func damage_of(data: AbilityData) -> float:
 	return value(data, &"damage", data.damage) * stats.value(&"damage", 1.0)
 

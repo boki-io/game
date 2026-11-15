@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"dash_efficient"
+display_name = "Efficient"
+description = "Dash mana cost -25%"
+tag = "Dash"
+max_level = 3
+adds = {}
+mults = {
+"dash.mana_cost": 0.75
+}

@@ -7,15 +7,26 @@
 [ext_resource type="Script" path="res://scripts/systems/run_manager.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/systems/spawn_director.gd" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="7"]
-[ext_resource type="Script" path="res://scripts/ui/dev_readout.gd" id="8"]
-[ext_resource type="Script" path="res://scripts/ui/end_overlay.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/systems/effects.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/systems/pickups.gd" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/xp_gem.tscn" id="12"]
+[ext_resource type="Script" path="res://scripts/systems/damage_zones.gd" id="13"]
+[ext_resource type="Script" path="res://scripts/ui/debug_overlay.gd" id="14"]
+[ext_resource type="Script" path="res://scripts/ui/level_up_menu.gd" id="15"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="16"]
+[ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="17"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
 
 [node name="Arena" type="Node2D" parent="."]
 script = ExtResource("2")
+
+[node name="Pickups" type="Node2D" parent="."]
+z_index = -5
+script = ExtResource("11")
+gem_scene = ExtResource("12")
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -32,6 +43,9 @@ y_sort_enabled = true
 [node name="Enemies" type="Node2D" parent="World"]
 y_sort_enabled = true
 
+[node name="Zones" type="Node2D" parent="World"]
+script = ExtResource("13")
+
 [node name="Effects" type="Node2D" parent="World"]
 script = ExtResource("10")
 
@@ -47,17 +61,48 @@ script = ExtResource("5")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="DevReadout" type="Label" parent="UI"]
-offset_left = 4.0
-offset_top = 2.0
-theme_override_font_sizes/font_size = 8
-script = ExtResource("8")
-
-[node name="EndOverlay" type="Control" parent="UI"]
+[node name="Hud" type="Control" parent="UI"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("9")
+mouse_filter = 2
+script = ExtResource("8")
+
+[node name="DebugOverlay" type="Label" parent="UI"]
+offset_left = 6.0
+offset_top = 30.0
+theme_override_font_sizes/font_size = 8
+script = ExtResource("14")
+
+[node name="LevelUpMenu" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("15")
+
+[node name="PauseMenu" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("16")
+
+[node name="EndScreen" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("17")

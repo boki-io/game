@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"slash_damage"
+display_name = "Sharpened"
+description = "Slash damage +30%"
+tag = "Slash"
+max_level = 3
+adds = {}
+mults = {
+"slash.damage": 1.3
+}

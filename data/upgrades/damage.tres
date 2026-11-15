@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"damage"
+display_name = "Power"
+description = "+10% damage"
+tag = "Passive"
+max_level = 3
+adds = {}
+mults = {
+"damage": 1.1
+}

@@ -4,6 +4,9 @@ extends AbilityBehavior
 ## finishing with a small slash arc.
 
 const PATH_WIDTH := 10.0
+const TRAIL_DURATION := 2.0
+const TRAIL_INTERVAL := 0.25
+const TRAIL_DAMAGE_RATIO := 0.2  # of dash damage, per tick, per upgrade level
 
 var _aim := Vector2.RIGHT
 var _elapsed := 0.0
@@ -11,6 +14,7 @@ var _distance := 0.0
 var _speed := 0.0
 var _traveled := 0.0
 var _final := false
+var _start := Vector2.ZERO
 var _last := Vector2.ZERO
 var _hit: Dictionary = {}
 
@@ -31,6 +35,8 @@ func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 	player.override_active = true
 	player.hurtbox.invulnerable = true
 	player.face_towards(aim, d.duration + 0.15)
+	_start = _last
+	caster.play_sfx(d)
 
 
 func update(delta: float) -> bool:
@@ -72,8 +78,20 @@ func _hit_path(from: Vector2, to: Vector2) -> void:
 
 
 func _finish_slash(pos: Vector2, fx: Effects) -> void:
+	_leave_trail(pos)
 	var arc := deg_to_rad(data.arc_degrees)
 	var reach := caster.value(data, &"radius", data.radius)
 	hit_arc(pos, _aim, reach, arc, caster.damage_of(data), _hit)
 	if fx:
 		fx.slash_arc(pos + Vector2(0, -8), _aim, reach, arc)
+
+
+## Blade Trail: the dashed path keeps damaging enemies for 2s.
+func _leave_trail(end: Vector2) -> void:
+	var level := int(caster.stats.value(&"dash.trail", 0.0))
+	if level <= 0 or _start.distance_to(end) < 1.0:
+		return
+	var zones := DamageZones.get_for(caster)
+	if zones:
+		var damage := caster.damage_of(data) * TRAIL_DAMAGE_RATIO * level
+		zones.add_line(_start, end, PATH_WIDTH, damage, TRAIL_INTERVAL, int(TRAIL_DURATION / TRAIL_INTERVAL))

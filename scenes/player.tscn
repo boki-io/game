@@ -12,10 +12,16 @@
 [ext_resource type="Resource" path="res://data/abilities/spin.tres" id="11"]
 [ext_resource type="Resource" path="res://data/abilities/slam.tres" id="12"]
 [ext_resource type="Script" path="res://scripts/systems/stats.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/player/player_xp.gd" id="13"]
+[ext_resource type="Script" path="res://scripts/player/xp_collector.gd" id="14"]
+[ext_resource type="Script" path="res://scripts/upgrades/player_upgrades.gd" id="15"]
 [ext_resource type="Script" path="res://scripts/systems/mana.gd" id="10"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 5.0
+
+[sub_resource type="CircleShape2D" id="3"]
+radius = 48.0
 
 [sub_resource type="CircleShape2D" id="2"]
 radius = 6.0
@@ -61,3 +67,19 @@ ability_auto = ExtResource("7")
 ability_q = ExtResource("8")
 ability_e = ExtResource("11")
 ability_r = ExtResource("12")
+
+[node name="XP" type="Node" parent="."]
+script = ExtResource("13")
+
+[node name="Upgrades" type="Node" parent="."]
+script = ExtResource("15")
+
+[node name="XPCollector" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+script = ExtResource("14")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="XPCollector"]
+position = Vector2(0, -8)
+shape = SubResource("3")

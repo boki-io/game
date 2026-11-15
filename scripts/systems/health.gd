@@ -15,6 +15,16 @@ func setup(max_hp: float) -> void:
 	changed.emit(current, max_health)
 
 
+## Change the maximum. Any increase also heals by the same amount.
+func set_max(new_max: float) -> void:
+	var gained := new_max - max_health
+	max_health = new_max
+	if gained > 0.0 and current > 0.0:
+		current = minf(current + gained, max_health)
+	current = minf(current, max_health)
+	changed.emit(current, max_health)
+
+
 func take_damage(amount: float) -> void:
 	if current <= 0.0:
 		return

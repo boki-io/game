@@ -1,14 +1,15 @@
 class_name SpinBehavior
 extends AbilityBehavior
 ## Spin: hits everything within the radius once while the player moves slowly.
-## With the spin_hits_twice flag, a second pass lands at the halfway point.
+## Double Spin adds extra passes; each pass can hit every enemy again.
 
 const MOVE_SCALE := 0.4  # walking speed while spinning
 const TURNS := 2.0  # visual blade rotations
 
 var _elapsed := 0.0
 var _hit: Dictionary = {}
-var _second_pass_done := false
+var _passes := 1
+var _pass_index := 0
 
 
 func cast(c: AbilityCaster, _aim: Vector2, d: AbilityData) -> void:
@@ -16,20 +17,22 @@ func cast(c: AbilityCaster, _aim: Vector2, d: AbilityData) -> void:
 	data = d
 	_elapsed = 0.0
 	_hit.clear()
-	_second_pass_done = false
+	_pass_index = 0
+	_passes = 1 + int(caster.stats.value(&"spin.extra_passes", 0.0))
 	caster.player.speed_scale = MOVE_SCALE
+	caster.play_sfx(d)
 
 
 func update(delta: float) -> bool:
 	var origin := caster.player.global_position
 	var radius := caster.value(data, &"radius", data.radius)
-	var damage := caster.damage_of(data)
 	_elapsed += delta
 
-	if caster.stats.has_flag(&"spin_hits_twice") and not _second_pass_done and _elapsed >= data.duration / 2.0:
-		_second_pass_done = true
+	var index := mini(int(_elapsed / (data.duration / _passes)), _passes - 1)
+	if index != _pass_index:
+		_pass_index = index
 		_hit.clear()
-	hit_circle(origin, radius, damage, _hit)
+	hit_circle(origin, radius, caster.damage_of(data), _hit)
 
 	var fx := Effects.get_for(caster)
 	if fx and delta > 0.0:

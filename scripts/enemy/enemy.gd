@@ -19,6 +19,7 @@ var active := false
 var _contact_cd := 0.0
 var _flash_left := 0.0
 var _knockback := Vector2.ZERO
+var _stun_left := 0.0
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -35,6 +36,8 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	_contact_cd = 0.0
 	_flash_left = 0.0
 	_knockback = Vector2.ZERO
+	_stun_left = 0.0
+	sprite.modulate = Color.WHITE
 	sprite.flash = false
 	active = true
 	visible = true
@@ -59,12 +62,19 @@ func take_damage(amount: float) -> void:
 	if not active or health.current <= 0.0:
 		return
 	health.take_damage(amount)
+	Audio.play(&"enemy_hit", -6.0)
 	var fx := Effects.get_for(self)
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -22), amount)
 	if health.current > 0.0:
 		_flash_left = FLASH_TIME
 		sprite.flash = true
+
+
+func stun(seconds: float) -> void:
+	if active:
+		_stun_left = maxf(_stun_left, seconds)
+		sprite.modulate = Color(1.0, 1.0, 0.45)
 
 
 func apply_knockback(impulse: Vector2) -> void:
@@ -84,6 +94,11 @@ func _physics_process(delta: float) -> void:
 	var to_target := target.global_position - global_position
 	var dir := to_target.normalized() if to_target.length_squared() > 0.01 else Vector2.ZERO
 	var velocity := (dir + _separation() * SEPARATION_WEIGHT) * data.speed
+	if _stun_left > 0.0:
+		_stun_left -= delta
+		velocity = Vector2.ZERO
+		if _stun_left <= 0.0:
+			sprite.modulate = Color.WHITE
 	global_position += (velocity + _knockback) * delta
 	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	global_position = global_position.clamp(
@@ -92,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	sprite.facing = dir
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
-	if _contact_cd <= 0.0:
+	if _contact_cd <= 0.0 and _stun_left <= 0.0:
 		_try_contact_hit()
 
 	if director and to_target.length() > director.teleport_distance:
@@ -123,6 +138,7 @@ func _separation() -> Vector2:
 
 
 func _on_died() -> void:
+	Audio.play(&"enemy_death", -4.0)
 	var fx := Effects.get_for(self)
 	if fx:
 		fx.puff(global_position + Vector2(0, -8), Color(0.8, 0.25, 0.25))

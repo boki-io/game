@@ -14,16 +14,24 @@ const PROP_MARGIN := 48.0
 func _ready() -> void:
 	spawn_director.run_manager = run_manager
 	spawn_director.enemies_root = $World/Enemies
-	var readout: Label = $UI/DevReadout
-	readout.run_manager = run_manager
-	readout.spawn_director = spawn_director
-	run_manager.run_ended.connect($UI/EndOverlay.show_result)
+	spawn_director.pickups = $Pickups
+	var debug: Label = $UI/DebugOverlay
+	debug.run_manager = run_manager
+	debug.spawn_director = spawn_director
+	var end_screen: Control = $UI/EndScreen
+	end_screen.run_manager = run_manager
+	run_manager.run_ended.connect(end_screen.show_result)
+	var pause_menu := $UI/PauseMenu
+	pause_menu.level_up_menu = $UI/LevelUpMenu
+	pause_menu.end_screen = end_screen
 
 	_spawn_props()
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.position = Vector2(Arena.SIZE) / 2.0
-	player.died.connect(run_manager.on_player_died)
 	players_root.add_child(player)
+	player.died.connect(run_manager.on_player_died)
+	player.xp.leveled_up.connect(func(_level: int) -> void: $UI/LevelUpMenu.queue_level_up(player))
+	$UI/Hud.bind(player, run_manager)
 
 
 func _spawn_props() -> void:

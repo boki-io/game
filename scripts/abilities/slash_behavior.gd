@@ -6,6 +6,7 @@ extends AbilityBehavior
 func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 	caster = c
 	data = d
+	caster.play_sfx(d)
 	var origin := caster.player.global_position
 	var reach := caster.value(d, &"range", d.range)
 	var arc := deg_to_rad(caster.value(d, &"arc_degrees", d.arc_degrees))

@@ -11,6 +11,7 @@ const KEY_ACTIONS := {
 	&"ability_e": KEY_E,
 	&"ability_r": KEY_R,
 	&"pause": KEY_ESCAPE,
+	&"debug_toggle": KEY_F3,
 }
 
 
@@ -21,3 +22,6 @@ func _ready() -> void:
 		var event := InputEventKey.new()
 		event.physical_keycode = KEY_ACTIONS[action]
 		InputMap.action_add_event(action, event)
+	var start := InputEventJoypadButton.new()
+	start.button_index = JOY_BUTTON_START
+	InputMap.action_add_event(&"pause", start)
