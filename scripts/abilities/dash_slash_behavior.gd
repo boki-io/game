@@ -79,6 +79,8 @@ func _hit_path(from: Vector2, to: Vector2) -> void:
 
 func _finish_slash(pos: Vector2, fx: Effects) -> void:
 	_leave_trail(pos)
+	caster.player.hurtbox.grant_grace(data.immunity_after)
+	_push_back(pos)
 	var arc := deg_to_rad(data.arc_degrees)
 	var reach := caster.value(data, &"radius", data.radius)
 	hit_arc(pos, _aim, reach, arc, caster.damage_of(data), _hit)
@@ -95,3 +97,14 @@ func _leave_trail(end: Vector2) -> void:
 	if zones:
 		var damage := caster.damage_of(data) * TRAIL_DAMAGE_RATIO * level
 		zones.add_line(_start, end, PATH_WIDTH, damage, TRAIL_INTERVAL, int(TRAIL_DURATION / TRAIL_INTERVAL))
+
+
+## Shoves enemies around the landing spot away so the player isn't left standing in a crowd.
+func _push_back(pos: Vector2) -> void:
+	if data.knockback <= 0.0:
+		return
+	var reach := caster.value(data, &"radius", data.radius)
+	for e in EnemyGrid.query(pos, reach):
+		var away: Vector2 = e.global_position - pos
+		var dir := away.normalized() if away.length_squared() > 0.01 else Vector2.from_angle(randf() * TAU)
+		e.apply_knockback(dir * data.knockback)

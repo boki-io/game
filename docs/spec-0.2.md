@@ -204,6 +204,13 @@ Added to the Sword upgrade pool as an Ability upgrade on Dash & Slash.
   the first dash's cost (follow-ups are free).
 - The HUD Q icon shows a highlighted ring with the remaining follow-ups while the window is open.
 - Stats keys: `dash.chain` (add 1 per level), read by the caster.
+- Each dash in a chain also gets the post-dash immunity and pushback below.
+
+### Post-dash immunity and pushback (Dash & Slash, all builds)
+- After every dash the player stays unhittable for 0.3s (`immunity_after` in `AbilityData`), and the sprite
+  flickers while it lasts. Enemy hits and projectiles pass through during it.
+- When the dash ends, enemies within the end-arc radius (28px) are shoved away at 110 px/s (`knockback`,
+  about 9px) so the player isn't left standing inside a crowd.
 
 ## 11. Technical Notes
 

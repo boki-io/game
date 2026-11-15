@@ -18,6 +18,7 @@ var velocity_override := Vector2.ZERO
 var speed_scale := 1.0
 
 var _face_dir := Vector2.RIGHT
+var _was_blinking := false
 var _face_time := 0.0
 
 @onready var player_input: PlayerInput = $PlayerInput
@@ -67,6 +68,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if move != Vector2.ZERO:
 		facing = move.normalized()
+	_update_grace_blink()
 	_face_time -= delta
 	sprite.facing = _face_dir if _face_time > 0.0 else facing
 	sprite.aim = player_input.aim_vector
@@ -76,6 +78,16 @@ func _physics_process(delta: float) -> void:
 func face_towards(dir: Vector2, duration: float) -> void:
 	_face_dir = dir
 	_face_time = duration
+
+
+## Flickers the sprite while post-dash immunity is active so the player can see it.
+func _update_grace_blink() -> void:
+	var blinking := hurtbox.grace_left > 0.0
+	if blinking:
+		sprite.modulate.a = 0.45 if int(Time.get_ticks_msec() / 60) % 2 == 0 else 0.85
+	elif _was_blinking:
+		sprite.modulate.a = 1.0
+	_was_blinking = blinking
 
 
 ## Re-read stats that other components cache (call after an upgrade).

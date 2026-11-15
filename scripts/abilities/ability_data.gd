@@ -13,5 +13,7 @@ extends Resource
 @export var arc_degrees: float = 90.0  # arc width for slashes
 @export var windup: float = 0.0  # seconds before the hit lands
 @export var duration: float = 0.0  # seconds the cast lasts (dash time, spin time)
+@export var immunity_after: float = 0.0  # seconds the player stays unhittable after the cast
+@export var knockback: float = 0.0  # px/s shove on nearby enemies when the cast ends
 @export var behavior: Script  # e.g. DashSlashBehavior
 @export var sfx: AudioStream
