@@ -6,6 +6,9 @@ extends Node2D
 enum Mode { BROWSE, WALK }
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
+const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
+const DUMMY_DATA := preload("res://data/enemies/training_dummy.tres")
+const DUMMY_POSITIONS: Array[Vector2] = [Vector2(150, 140), Vector2(150, 200), Vector2(210, 170)]
 const PEDESTAL_Y := 380.0
 const PEDESTAL_SPACING := 140.0
 const CENTER_X := 480.0
@@ -43,6 +46,7 @@ func _ready() -> void:
 	EnemyGrid.clear()
 	characters = CharacterRegistry.all()
 	_build_pedestals()
+	_build_dummies()
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
@@ -93,6 +97,20 @@ func _build_pedestals() -> void:
 		p.setup(characters[i])
 		p.clicked.connect(_on_pedestal_clicked)
 		pedestals.append(p)
+
+
+## Three indestructible training dummies north-west of the room. Their data is set before they enter the tree
+## and they are activated right away (an inactive enemy ignores damage).
+func _build_dummies() -> void:
+	for pos in DUMMY_POSITIONS:
+		var dummy: Enemy = ENEMY_SCENE.instantiate()
+		dummy.data = DUMMY_DATA
+		$World/Dummies.add_child(dummy)
+		dummy.activate(pos, 1.0)
+		var readout := DummyReadout.new()
+		readout.position = Vector2(0, -DUMMY_DATA.body_size.y - 18.0)
+		readout.track(dummy.health)
+		dummy.add_child(readout)
 
 
 func _on_pedestal_clicked(pedestal: HubPedestal) -> void:
@@ -203,4 +221,5 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	var pos := Vector2(CENTER_X - 100.0, 290.0)
 	draw_string(font, pos + Vector2(1, 1), "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color(0, 0, 0, 0.8))
+	draw_string(font, Vector2(90, 100), "TRAINING", HORIZONTAL_ALIGNMENT_CENTER, 120.0, 8, Color(1, 1, 1, 0.4))
 	draw_string(font, pos, "HERO HORDE", HORIZONTAL_ALIGNMENT_CENTER, 200.0, 16, Color("ffd866"))

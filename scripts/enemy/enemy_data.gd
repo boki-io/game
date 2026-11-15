@@ -12,6 +12,8 @@ extends Resource
 @export var body_size: Vector2 = Vector2(12, 16)
 @export var hitbox_radius: float = 7.0
 @export var brain: Script  # an EnemyBrain subclass
+## Training dummies: knockback and stun do nothing (so slams, meteors and Static Shock neither move nor tint them).
+@export var immovable := false
 
 @export_group("Spawning")
 @export var spawn_weight: float = 70.0  # relative weight once fully phased in

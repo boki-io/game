@@ -89,7 +89,7 @@ func take_damage(amount: float) -> void:
 
 
 func stun(seconds: float) -> void:
-	if not active:
+	if not active or data.immovable:
 		return
 	_stun_left = maxf(_stun_left, seconds)
 	sprite.modulate = Color(1.0, 1.0, 0.45)
@@ -97,7 +97,7 @@ func stun(seconds: float) -> void:
 
 
 func apply_knockback(impulse: Vector2) -> void:
-	if active:
+	if active and not data.immovable:
 		_knockback = impulse
 
 
