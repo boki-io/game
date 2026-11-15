@@ -265,3 +265,38 @@ Added to the Sword upgrade pool as an Ability upgrade on Dash & Slash.
 - Double Dash capped at 2 levels and free follow-ups may be too strong or too weak.
 - "Knight" and its description are placeholders.
 - Exit on the Main Menu was added beyond the request.
+
+
+## 15. As Built and Status (M15)
+
+All six milestones (M10 to M15) are built. Verified with scripted runs and screenshots on an Apple M1 Pro:
+
+| Definition of done item | Status |
+|---|---|
+| Launches to Main Menu, Character Select, full run | Verified (scripted flow) |
+| Pause and End screens return to Main Menu; Restart keeps the character | Verified |
+| Character Select shows the Knight and four abilities with data-driven numbers | Verified |
+| Dashers and Ranged phase in and reach about 15% each by 2:30 | Verified (6000-draw sample: 70/15/15 at 2:30) |
+| Dasher telegraph visible; moving out of the locked lane takes no damage | Verified (0 damage when sidestepping, 15 when standing still) |
+| Ranged projectile can be dodged; no ability destroys it | Verified (passes through during Q i-frames) |
+| Double Dash works for two and three dashes | Verified |
+| Tuning values in data or constants | Done (`data/` and constants at the top of each script) |
+| About 60 FPS at 300 enemies including projectiles | Verified: 96-121 FPS in the spec-mix worst case at 8 spawns/s with Spin kills. An extreme stress test (230 shooters, 50 spawns/s) dipped to 35 FPS |
+| Keyboard and gamepad for everything | Keyboard and mouse tested; gamepad **not tested** |
+| Windows and macOS builds | Not built: export templates are not installed. Windows **not tested** |
+
+**Changes made after the spec was written**
+- Dasher lane is 26px wide, not 14px, so it matches the real hit width (Dasher hitbox radius 7).
+- Dasher body color is purple (it was orange, the same as the projectiles and the Ranged wind-up warning).
+- Dash & Slash gained 0.3s post-dash immunity and a landing pushback (section 10).
+- Abilities can have an icon and a cast animation (`AbilityData.icon`, `effect`).
+- Characters can have animation frames (`CharacterData.sprite_frames`); none are used by default.
+- The end screen waits 1.2s after the player dies so a death animation can play.
+- Hurtbox gained a grace timer, and `receive_hit` returns whether the hit landed.
+
+**Known gaps and next steps**
+- Balance of the three-enemy mix is untested by hand; the first-guess numbers are in section 14.
+- Ranged enemies are never forced to move once in range, so many can build up if the player avoids them.
+- No hit-stop and no music (both optional in spec v0.1).
+- A Godot "leaked instances at exit" warning appears on quit in headless runs. It comes from script classes
+  referencing each other and does not affect play.
