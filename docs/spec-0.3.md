@@ -1,7 +1,7 @@
 # Spec v0.3: The Wizard
 
 Builds on `spec-0.1.md` and `spec-0.2.md` (all built). Adds a second playable character, the **Wizard**,
-a ranged glass cannon that plays very differently from the melee Knight. Placeholder art and generated
+a ranged spellcaster that plays very differently from the melee Knight. Placeholder art and generated
 sounds remain acceptable.
 
 Revision 2: updated after an independent review of revision 1 against the code. Section 13 lists what
@@ -27,8 +27,8 @@ from the Knight to justify more characters, and does the ability framework hold 
 
 | | Knight (v0.1) | Wizard |
 |---|---|---|
-| Role | Close-range brawler | Ranged glass cannon |
-| HP | 100 | **70** |
+| Role | Close-range brawler | Ranged spellcaster |
+| HP | 100 | **110** |
 | Move speed | 90 px/s | **85 px/s** |
 | Max mana / regen | 100 / 8 per s | **140 / 10 per s** |
 | Auto | Slash (90px targeting, melee arc) | **Arcane Bolt** (150px targeting, projectile) |
@@ -37,11 +37,11 @@ from the Knight to justify more characters, and does the ability framework hold 
 | R | Slam | **Meteor Strike** |
 | Body color (placeholder) | blue | **gold** (not blue, red, green or purple: those belong to the Knight and enemies) |
 
-- Character id `wizard`, display name "Wizard", description "Fragile spellcaster. Strikes from range and
+- Character id `wizard`, display name "Wizard", description "Ranged spellcaster. Strikes from afar and
   teleports out of trouble." (placeholder text).
 - On the Character Select screen the Knight stays first and the Wizard is second. The existing Prev and Next
   buttons appear automatically when there are two characters.
-- A full Q+E+R rotation costs 12 + 15 + 45 = 72 mana against a 140 pool.
+- A full Q+E+R rotation costs 12 + 15 + 29 = 56 mana against a 140 pool.
 
 ## 3. Wizard abilities
 
@@ -119,7 +119,7 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 | Stat | Value |
 |---|---|
 | Cooldown | 5.0s |
-| Mana | 45 |
+| Mana | 29 |
 | Impact point | 120px along the aim vector (`range`), fixed when cast, clamped to 8px inside the arena |
 | Warning | **0.7s** ground marker (`windup`) |
 | Blast | radius 64px, 90 damage, knockback 140 px/s |
@@ -303,7 +303,7 @@ New `AbilityData` fields: `target_range`, `cone_degrees`. Existing fields used: 
 | Arcane Bolt | `bolt` | 0.65 | 0 | **10** | 200 | 4 | target_range 150 |
 | Blink | `blink` | 1.8 | 12 | 15 | 80 | 36 | immunity_after 0.25, knockback **220** |
 | Chain Lightning | `lightning` | 1.8 | 15 | **22** | 150 | 60 | cone_degrees 40 |
-| Meteor Strike | `meteor` | 5.0 | 45 | 90 | 120 | 64 | windup **0.7**, knockback 140 |
+| Meteor Strike | `meteor` | 5.0 | 29 | 90 | 120 | 64 | windup **0.7**, knockback 140 |
 
 Constants kept in the behavior scripts (as the Knight's are): bolt speed 260, lightning jumps 4 and falloff
 0.85, meteor shake 3px for 0.2s, Twin Meteor delay 0.4s and scatter 50px, Arcane Focus delay 1.0s and bonus
@@ -370,12 +370,13 @@ Each item has a check:
 
 ## 12. Assumptions to Revisit Later
 
-- All Wizard numbers are first guesses; 70 HP with 85 px/s may be too fragile against Dashers and Ranged
-  enemies, whose shots out-range the Wizard.
+- All Wizard numbers are first guesses. At 110 HP the Wizard has more HP than the Knight (100), which
+  weakens the glass-cannon idea; his 85 px/s and ranged role are what keep him distinct. Ranged enemies'
+  shots out-range him.
 - Arcane Focus may be too weak (or encourage standing still too much); it is the easiest piece to cut.
 - Gold is a placeholder color and clashes with the pale-yellow damage numbers.
 - Meteor Strike being fire-and-forget is a deliberate difference from Slam and may need a longer cooldown if
-  it is too easy to spam. Its mana (45 per 5s) uses most of the 10/s regen.
+  it is too easy to spam. At 29 mana per 5s it uses about 6 of the 10 mana/s regen.
 - Chain Lightning's cone targeting may feel wrong with the mouse close to the Wizard; a fallback to the
   nearest enemy in any direction is a possible change.
 - Twin Bolt at full damage per bolt combined with Piercing Bolt multiplies damage quickly (up to 4 bolts, each
