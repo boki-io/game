@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://fxwnsumlmir7"
-path="res://.godot/imported/blink.wav-c81257872d10a0dfa510ce18708bb24c.sample"
+uid="uid://bqpu576ei5bjn"
+path="res://.godot/imported/phase.wav-f912ff442ae9299b2140cc973e084c15.sample"
 
 [deps]
 
-source_file="res://assets/audio/blink.wav"
-dest_files=["res://.godot/imported/blink.wav-c81257872d10a0dfa510ce18708bb24c.sample"]
+source_file="res://assets/audio/phase.wav"
+dest_files=["res://.godot/imported/phase.wav-f912ff442ae9299b2140cc973e084c15.sample"]
 
 [params]
 

@@ -19,6 +19,16 @@ var speed_scale := 1.0
 
 var _face_dir := Vector2.RIGHT
 var _was_blinking := false
+
+# Phase Shift: a timed ghost state (invulnerable, faster, optional touch damage).
+const PHASE_TINT := Color(0.55, 0.8, 1.0, 0.5)
+const PHASE_TOUCH_RADIUS := 16.0
+const PHASE_TOUCH_INTERVAL := 0.25
+var phase_left := 0.0
+var _phase_touch_damage := 0.0
+var _phase_touch_cd := 0.0
+var _phase_grace := 0.0
+var _phase_trail_cd := 0.0
 var _anim: AnimatedSprite2D  # only when the character has sprite_frames
 var _anim_busy := false  # an attack, hurt or death animation is playing
 var _attack_toggle := false
@@ -85,6 +95,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if move != Vector2.ZERO:
 		facing = move.normalized()
+	_tick_phase(delta)
 	_update_grace_blink()
 	_face_time -= delta
 	var look := _face_dir if _face_time > 0.0 else facing
@@ -97,6 +108,48 @@ func _physics_process(delta: float) -> void:
 func face_towards(dir: Vector2, duration: float) -> void:
 	_face_dir = dir
 	_face_time = duration
+
+
+## Starts Phase Shift: unhittable and `speed_mult` times faster for `duration` seconds.
+func start_phase(duration: float, speed_mult: float, touch_damage: float, grace_after: float) -> void:
+	phase_left = duration
+	speed_scale = speed_mult
+	hurtbox.invulnerable = true
+	_phase_touch_damage = touch_damage
+	_phase_touch_cd = 0.0
+	_phase_grace = grace_after
+	sprite.modulate = PHASE_TINT
+
+
+func end_phase(grace: bool = true) -> void:
+	if phase_left <= 0.0 and not hurtbox.invulnerable:
+		return
+	phase_left = 0.0
+	speed_scale = 1.0
+	hurtbox.invulnerable = false
+	if grace:
+		hurtbox.grant_grace(_phase_grace)
+	sprite.modulate = Color.WHITE
+
+
+func _tick_phase(delta: float) -> void:
+	if phase_left <= 0.0:
+		return
+	phase_left -= delta
+	_phase_trail_cd -= delta
+	if _phase_trail_cd <= 0.0:
+		_phase_trail_cd = 0.07
+		var fx := Effects.get_for(self)
+		if fx:
+			fx.puff(global_position + Vector2(0, -8), Color(0.6, 0.8, 1.0))
+	if _phase_touch_damage > 0.0:
+		_phase_touch_cd -= delta
+		if _phase_touch_cd <= 0.0:
+			_phase_touch_cd = PHASE_TOUCH_INTERVAL
+			for e in EnemyGrid.query(global_position, PHASE_TOUCH_RADIUS):
+				e.take_damage(_phase_touch_damage)
+	if phase_left <= 0.0:
+		end_phase()
 
 
 ## Flickers the sprite while post-dash immunity is active so the player can see it.
@@ -176,6 +229,7 @@ func _on_hit_taken(_amount: float) -> void:
 
 func _on_died() -> void:
 	dead = true
+	end_phase(false)
 	Audio.play(&"player_death")
 	caster.cancel()
 	_anim_busy = true

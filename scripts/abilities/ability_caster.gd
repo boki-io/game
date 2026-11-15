@@ -28,7 +28,7 @@ var _buffer_left := 0.0
 # while the window is open. The ability's cooldown is frozen until the chain ends.
 var _chain_slot: StringName = &""
 var _chain_remaining := 0
-## True while a chained follow-up cast is being started (behaviors use it, e.g. Rift only on the first Blink).
+## True while a chained follow-up cast is being started (behaviors may use it).
 var casting_follow_up := false
 var _chain_window := 0.0
 

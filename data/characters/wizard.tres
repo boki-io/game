@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/abilities/bolt.tres" id="2"]
-[ext_resource type="Resource" path="res://data/abilities/blink.tres" id="3"]
+[ext_resource type="Resource" path="res://data/abilities/phase.tres" id="3"]
 [ext_resource type="Resource" path="res://data/abilities/lightning.tres" id="4"]
 [ext_resource type="Resource" path="res://data/abilities/meteor.tres" id="5"]
 [ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]

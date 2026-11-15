@@ -11,7 +11,7 @@ changed.
 
 **In v0.3:**
 - The Wizard character, selectable on the Character Select screen next to the Knight.
-- Four Wizard abilities: Arcane Bolt (auto), Blink (Q), Chain Lightning (E), Meteor Strike (R).
+- Four Wizard abilities: Arcane Bolt (auto), Phase Shift (Q), Chain Lightning (E), Meteor Strike (R).
 - A Wizard upgrade pool (12 ability upgrades and the 6 shared passives).
 - The Wizard trait **Arcane Focus**.
 - The shared systems this needs: player projectiles, conditional stat modifiers, damage fields, burst
@@ -32,7 +32,7 @@ from the Knight to justify more characters, and does the ability framework hold 
 | Move speed | 90 px/s | **85 px/s** |
 | Max mana / regen | 100 / 8 per s | **140 / 10 per s** |
 | Auto | Slash (90px targeting, melee arc) | **Arcane Bolt** (150px targeting, projectile) |
-| Q | Dash & Slash | **Blink** |
+| Q | Dash & Slash | **Phase Shift** |
 | E | Spin | **Chain Lightning** |
 | R | Slam | **Meteor Strike** |
 | Body color (placeholder) | blue | **gold** (not blue, red, green or purple: those belong to the Knight and enemies) |
@@ -47,7 +47,7 @@ from the Knight to justify more characters, and does the ability framework hold 
 
 All numbers are first guesses and live in `data/abilities/*.tres` (see 8 for the new `AbilityData` fields).
 Damage is before the Wizard's modifiers (upgrades and Arcane Focus). Each ability needs a `.tres`, a behavior
-script (`bolt_behavior.gd`, `blink_behavior.gd`, `lightning_behavior.gd`, `meteor_behavior.gd`) and a
+script (`bolt_behavior.gd`, `phase_behavior.gd`, `lightning_behavior.gd`, `meteor_behavior.gd`) and a
 description for Character Select. `icon` is optional (without one the HUD draws a colored circle).
 
 ### 3.1 Arcane Bolt (auto, no mana)
@@ -72,27 +72,29 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 - It holds off while a Q, E or R cast is running, like the Knight's Slash. Meteor Strike does not count (it
   does not keep the caster busy, see 3.4).
 
-### 3.2 Blink (Q)
+### 3.2 Phase Shift (Q)
+
+(Replaces Blink from revisions 1 and 2, which was found confusing as a teleport. See section 15.)
 
 | Stat | Value |
 |---|---|
 | Cooldown | 1.8s |
 | Mana | 12 |
-| Distance | 80px (`range`) along the aim vector |
-| Immunity | 0.25s (`immunity_after`) starting at the teleport |
-| Burst at the origin | radius 36px (`radius`), 15 damage, knockback **220 px/s** (about 38px) |
+| Duration | 0.8s (`duration`) |
+| Speed | +50% walking speed while phased (`speed_multiplier` 1.5) |
+| Immunity | unhittable for the whole duration, plus 0.2s afterward (`immunity_after`) |
+| Ghost Touch damage | 6 per tick per upgrade level (`damage`), only with that upgrade |
 
-- Behavior: instant. The Wizard teleports up to 80px along the aim vector using the physics motion test so
-  the move stops at walls and props. Enemies do not block it (they have no collision bodies).
-- **Blocked Blink:** `can_cast` measures the possible travel with `move_and_collide(motion, true)`. If the
-  Wizard could move less than 8px (against a wall or prop), the cast is rejected like a failed cast
-  (`cast_failed`, reason `blocked`; no mana, no cooldown, HUD flash and blip).
-- The burst goes off at the **starting** position in the same frame, as a direct circle hit (`hit_circle`),
-  not a delayed zone. It damages and shoves away enemies within 36px. This is the "get out of the crowd" tool.
-- The Wizard is unhittable for 0.25s from the moment of the teleport (the same `Hurtbox.grant_grace` as the
-  Knight's post-dash immunity, including the sprite flicker).
-- A short puff effect plays at both ends.
-- Blink is not a dash: the player is not moved over time, and `override_active` is not used.
+- Behavior: instant to cast, then a **timed ghost state** on the Player (`Player.start_phase`). It does not
+  block the caster, so the Wizard can move, shoot, and cast Chain Lightning or Meteor Strike while phased.
+- While phased the Wizard is invulnerable (the hurtbox is invulnerable, so contact hits, Dasher lunges and
+  projectiles pass through; projectiles are not consumed), moves 50% faster, and is drawn translucent
+  blue with a fading trail of puffs.
+- Enemies have no collision bodies, so "walking through enemies" needs no extra code. Phase Shift's value is
+  the immunity and speed.
+- When the duration ends (or the Wizard dies) the state is cleaned up; after a normal end the 0.2s grace
+  flicker plays.
+- The Q icon uses the normal cooldown sweep. There is no follow-up chain.
 
 ### 3.3 Chain Lightning (E)
 
@@ -126,7 +128,7 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 
 - Behavior: **fire and forget.** Casting is instant. It places a ground marker at the impact point and
   schedules the blast 0.7s later through the damage-zone system (6.4). The caster is **not busy** while the
-  meteor falls, so the Wizard can keep shooting, Blink, or Chain Lightning during the warning. (This differs
+  meteor falls, so the Wizard can keep shooting, Phase Shift, or Chain Lightning during the warning. (This differs
   from the Knight's Slam, which locks the caster.)
 - **Captured at cast time:** impact point, radius and damage are fixed when cast (later upgrades or Arcane
   Focus changes do not alter a meteor already in the air).
@@ -143,13 +145,12 @@ description for Character Select. `icon` is optional (without one the HUD draws 
 ## 4. Trait: Arcane Focus
 
 - After standing still for **1.0s**, the Wizard deals **+25% damage** (all abilities) until they move again.
-- "Standing still" means no movement input and no Blink in the last 1.0s. Casting does not break it.
+- "Standing still" means no movement input. Casting (including Phase Shift) does not break it.
 - Effect: a conditional damage multiplier on the Wizard's `Stats` (6.3) that turns on at 1.0s of stillness
-  and off the moment the move vector is non-zero or a Blink is cast.
+  and off the moment the move vector is non-zero.
 - **Detecting Blink:** the trait listens to `AbilityCaster.cast_started` and resets its timer when the cast's
   `AbilityData.id` is `blink` (including free follow-up blinks).
-- **Bolt timing:** Arcane Bolt reads damage when fired (3.1); Chain Lightning and Blink's burst read it at the
-  cast; Meteor reads it at cast time (3.4). So moving after casting does not reduce a bolt already in flight.
+- **Bolt timing:** Arcane Bolt reads damage when fired (3.1); Chain Lightning reads it at the cast; Meteor reads it at cast time (3.4). So moving after casting does not reduce a bolt already in flight.
 - Feedback: a faint gold ring pulses around the Wizard's feet while it is active, a soft chime plays when it
   switches on, and a small gold "FOCUS" mark shows by the HP bar.
 - Implemented as a character trait script (`CharacterData.trait_script`, a `Node` subclass) that the Player
@@ -164,7 +165,7 @@ applies the modifier again through `Stats`. 12 ability upgrades and the 6 shared
 regen, Deep Well, Fleet Foot, Magnet, Power), 18 in total. Each new upgrade needs a `.tres` with
 `display_name`, `description` and `tag` (the ability name) for the level-up card.
 
-Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `blink`, `lightning`, `meteor`. Stats read through
+Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `phase`, `lightning`, `meteor`. Stats read through
 `caster.value(data, &stat, base)`, so every key below must be read through that call in the behavior.
 
 **Arcane Bolt**
@@ -173,16 +174,12 @@ Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `blink`, `lightning`, `
 - **Piercing Bolt:** the bolt passes through +1 enemy per level. (`bolt.pierce` add 1)
 - **Rapid Fire:** -15% cooldown per level. (`bolt.cooldown` x0.85)
 
-**Blink**
-- **Long Blink:** +30% distance per level. (`blink.range` x1.3)
-- **Rift:** the first Blink of a chain leaves a damaging field at the origin for 2s: every 0.5s it deals
-  `blink damage x 0.25 x level` (about 4 per level at base), over the burst radius. The first tick is
-  immediate, 5 ticks in total. Follow-up blinks of a Double Blink chain do **not** leave a Rift (only the burst).
-  (`blink.rift` add 1)
-- **Double Blink:** max level 2. After a Blink you may Blink again within 1.0s for free (no mana, no
-  cooldown check); level 2 allows two follow-ups. The cooldown starts when the chain ends. This reuses the
-  caster's chain mechanism built for Double Dash (it is read generically from `<id>.chain`). Each follow-up
-  still does the burst and gives the 0.25s immunity. (`blink.chain` add 1)
+**Phase Shift**
+- **Long Phase:** +30% duration per level (0.8s, 1.04s, 1.35s, 1.76s at level 3). (`phase.duration` x1.3)
+- **Swift Phase:** +20% walking speed per level on top of the +50% (so +70%, +90%, +110%).
+  (`phase.speed_bonus` add 0.2)
+- **Ghost Touch:** enemies you are touching while phased take 6 damage per level every 0.25s (within 16px).
+  The damage uses `damage_of`, so Power and Arcane Focus apply. (`phase.touch` add 1)
 
 **Chain Lightning**
 - **Extra Jumps:** +2 jumps per level. (`lightning.jumps` add 2)
@@ -202,7 +199,7 @@ Stat keys are `<ability id>.<stat>`. The ids are `bolt`, `blink`, `lightning`, `
   immediate, 7 ticks in total. Extra meteors from Twin Meteor do not leave extra fire. (`meteor.scorch` add 1)
 
 Damage (`damage`) and cooldown modifiers read by the Knight's keys keep working for the Wizard's ability ids.
-The global Power passive and Arcane Focus both apply to fields (Rift and Scorched Earth), because field damage
+The global Power passive and Arcane Focus both apply to fields (Scorched Earth), because field damage
 is computed through `damage_of`.
 
 ## 6. New and changed systems
@@ -227,7 +224,7 @@ is computed through `damage_of`.
 - `AbilityBehavior` gains `can_cast(caster, aim, data) -> bool` (default true). It runs in
   `AbilityCaster._try_cast` **after the cooldown check and before the mana check**. A false result rejects the
   cast with `cast_failed` (reason `no_target` or `blocked`) and spends nothing. It does **not** run for
-  chained follow-up casts (Double Dash, Double Blink), which already skip those checks.
+  chained follow-up casts (Double Dash), which already skip those checks.
 - `AbilityCaster.cast_failed`'s reason list (a comment in `ability_caster.gd`) gains `no_target` and `blocked`.
   `Hud._on_cast_failed` treats them like a failed cast: flash that slot's icon and play the blip, but do not
   flash the mana bar.
@@ -283,12 +280,13 @@ is computed through `damage_of`.
 
 ### 6.8 Character Select text
 
-- Ability rows print `AbilityData.damage` as "Damage". For Blink this is the burst damage; its description says
-  so ("Teleport away. Leaves a damaging burst behind."). Cooldown, mana and damage still come from data.
+- Ability rows print `AbilityData.damage` as "Damage". For Phase Shift this is the Ghost Touch tick damage and
+  is not shown unless the ability deals damage by itself; the row for an ability with no direct damage omits
+  the Damage field. Cooldown and mana still come from data.
 
 ## 7. Sounds
 
-New sounds, generated by `tools/gen_sfx.py` like the others: `bolt_fire`, `bolt_hit`, `blink`, `lightning`,
+New sounds, generated by `tools/gen_sfx.py` like the others: `bolt_fire`, `bolt_hit`, `phase`, `lightning`,
 `meteor_fall`, `meteor_impact`, `focus_on` (soft chime when Arcane Focus switches on). Added to the `Audio`
 autoload list. Each ability's `sfx` is set in its `AbilityData` (the meteor impact sound goes through the burst
 `extras`).
@@ -301,27 +299,27 @@ New `AbilityData` fields: `target_range`, `cone_degrees`. Existing fields used: 
 | Ability | id | cooldown | mana | damage | range | radius | other |
 |---|---|---|---|---|---|---|---|
 | Arcane Bolt | `bolt` | 0.65 | 0 | **10** | 200 | 4 | target_range 150 |
-| Blink | `blink` | 1.8 | 12 | 15 | 80 | 36 | immunity_after 0.25, knockback **220** |
-| Chain Lightning | `lightning` | 1.8 | 15 | **22** | 150 | 60 | cone_degrees 40 |
+| Phase Shift | `phase` | 1.8 | 12 | 6 (Ghost Touch) | - | - | duration 0.8, speed_multiplier 1.5, immunity_after 0.2 |
+| Chain Lightning | `lightning` | **1.2** | 15 | **22** | 150 | 60 | cone_degrees 40 |
 | Meteor Strike | `meteor` | 5.0 | 29 | 90 | 120 | 64 | windup **0.7**, knockback 140 |
 
 Constants kept in the behavior scripts (as the Knight's are): bolt speed 260, lightning jumps 4 and falloff
 0.85, meteor shake 3px for 0.2s, Twin Meteor delay 0.4s and scatter 50px, Arcane Focus delay 1.0s and bonus
-1.25, Rift and Scorched Earth tick 0.5s with ratios 0.25 and 0.04.
+1.25, Scorched Earth tick 0.5s with ratio 0.04, Ghost Touch radius 16px and tick 0.25s.
 
 ## 9. Interaction notes
 
-- **Dashers:** Blink's immunity and its teleport avoid a locked lane; Chain Lightning with Static Shock or a
+- **Dashers:** Phase Shift's immunity and speed avoid a locked lane; Chain Lightning with Static Shock or a
   Meteor can interrupt a charge (stun cancels a telegraph; knockback does not).
 - **Ranged enemies:** Ranged enemies hold at 130px and resume walking at 160px, and their shots (110 px/s,
-  3s lifetime) travel far, so the Wizard's 150px reach does **not** out-range them. The answers are Blink,
+  3s lifetime) travel far, so the Wizard's 150px reach does **not** out-range them. The answers are Phase Shift,
   closing in to kill them, or breaking line of sight with distance.
-- **Double Blink and Arcane Focus:** Blink counts as movement for Arcane Focus.
+- **Phase Shift and Arcane Focus:** moving while phased counts as movement; casting Phase Shift alone does not.
 - **Meteor and other abilities:** the Wizard can cast anything else while a meteor falls; the meteor never
   blocks the caster.
 - **Level-up menu, pause, end screen, restart:** unchanged. Restart keeps the Wizard.
-- **HUD:** unchanged apart from the `no_target` and `blocked` flashes and the FOCUS mark. The Q icon shows the
-  same chain ring as Double Dash when Double Blink has a follow-up ready.
+- **HUD:** unchanged apart from the `no_target` and `blocked` flashes and the FOCUS mark. The Q icon is
+  unchanged for Phase Shift.
 
 ## 10. Build order
 
@@ -331,8 +329,8 @@ Constants kept in the behavior scripts (as the Knight's are): bolt speed 260, li
    re-skinned Knight with Wizard stats.*
 2. **M17 Player projectiles and Arcane Bolt:** `PlayerProjectiles`, the bolt behavior, sounds. *Review stop
    (does the Wizard's basic attack feel right?).*
-3. **M18 Blink:** behavior, `can_cast`, the `blocked` path, burst and immunity, `DamageZones.add_field`
-   (needed by Rift), chain reuse test.
+3. **M18 Phase Shift (was Blink):** the timed ghost state on the Player, `can_cast`, `DamageZones.add_field`
+   (needed by Scorched Earth).
 4. **M19 Chain Lightning:** the `no_target` path and HUD flash, targeting cone, jump logic, lightning visual.
 5. **M20 Meteor Strike:** burst `extras`, fire-and-forget scheduling, filling marker, falling meteor visual,
    impact. *Review stop (the full kit).*
@@ -349,16 +347,16 @@ Each item has a check:
   match the table in section 8 exactly, and a full run is playable.
 - **Arcane Bolt:** auto-fires at an enemy up to 150px away, none beyond; a bolt aimed at an enemy on top of the
   Wizard still travels; with Piercing Bolt level 1 one bolt damages two different enemies once each.
-- **Blink:** moves 80px in open ground; against a wall or prop it moves less, and under 8px the cast is
-  rejected with no mana spent; immunity lasts 0.25s; enemies inside 36px end up outside it.
+- **Phase Shift:** while phased the Wizard takes no damage from contact hits, Dasher lunges or projectiles, walks 50%
+  faster, and can cast other abilities; the state ends after 0.8s and on death; with Ghost Touch an enemy standing
+  in the Wizard takes damage every 0.25s.
 - **Chain Lightning:** hits up to 5 distinct enemies; with no enemy in the cone, no mana is spent and the icon
   flashes; it never targets an enemy killed earlier in the same frame.
 - **Meteor Strike:** the blast lands on the marker's center within 1 physics frame of the marker finishing
-  filling; the Wizard can Blink and shoot during the 0.7s; marker and blast use the radius and damage from the
+  filling; the Wizard can Phase and shoot during the 0.7s; marker and blast use the radius and damage from the
   cast time.
-- **Upgrades:** all 12 work and show correct text on the level-up card; Double Blink and Twin Meteor stop at
-  level 2.
-- **Arcane Focus:** switches on after 1.0s of no movement and no Blink, off on movement, with the ring, mark and
+- **Upgrades:** all 12 work and show correct text on the level-up card; Twin Meteor stops at level 2.
+- **Arcane Focus:** switches on after 1.0s of no movement, off on movement, with the ring, mark and
   chime.
 - **Knight unchanged:** the Knight's `.tres` files have no value changes (checked as a diff) and
   `AUTO_TARGET_RANGE` still gives 90px when `target_range` is 0; the existing scripted checks from v0.2
@@ -382,7 +380,7 @@ Each item has a check:
 - Twin Bolt at full damage per bolt combined with Piercing Bolt multiplies damage quickly (up to 4 bolts, each
   piercing). A reduced damage per extra bolt is a possible change.
 - Projectiles ignore props; this is simple but makes props irrelevant against Wizard shots.
-- Blink's burst can hit the same enemies up to three times in a Double Blink chain.
+- Phase Shift's value is immunity and speed; with 0.8s duration and a 1.8s cooldown it is up for 44% of the time, which may be too much (or too little) uptime for an untouchable state.
 
 ## 13. Changes from revision 1 (after review)
 
@@ -406,3 +404,17 @@ timing; the Ranged enemy range claim; and checkable Definition of Done items.
   comes from the first Blink of a chain.
 - Meteor Strike's falling whistle (`meteor_fall`) plays at cast and the impact boom (`meteor_impact`) plays
   from the burst.
+
+## 15. Revision 3: Blink replaced by Phase Shift
+
+Decided by the product owner after playing M18 to M20: Blink as a teleport was too confusing, so Q is now
+**Phase Shift** (the "Phase Shift" option from the original move suggestions): a timed ghost state with
+immunity and extra speed. Also: **Chain Lightning cooldown 1.8s to 1.2s**.
+
+- Removed: Blink's teleport, wall-blocked rule, origin burst, Long Blink, Rift, Double Blink. Sections 3.2, 5, 8 and
+  11 describe the replacement. The `blocked` cast-failure reason and the follow-up flag are still supported by the
+  caster but unused by the Wizard.
+- `DamageZones.add_field` is still built (Scorched Earth uses it).
+- New: `AbilityData.speed_multiplier`, `Player.start_phase`/`end_phase`, `PhaseBehavior`, the `phase` sound.
+- The Wizard's upgrade pool keeps 12 ability upgrades (3 each for Arcane Bolt, Phase Shift, Chain Lightning and
+  Meteor Strike, with Twin Meteor at 2 levels) plus the 6 shared passives.

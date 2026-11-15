@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/abilities/phase_behavior.gd" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/phase.wav" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"phase"
+display_name = "Phase Shift"
+description = "Become a ghost: untouchable and 50% faster for a moment. You can still cast."
+cooldown = 1.8
+mana_cost = 12.0
+damage = 6.0
+duration = 0.8
+immunity_after = 0.2
+speed_multiplier = 1.5
+behavior = ExtResource("2")
+sfx = ExtResource("3")
