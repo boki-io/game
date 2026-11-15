@@ -11,10 +11,6 @@ var pool: Array[UpgradeData] = []
 @onready var stats: Stats = player.get_node("Stats")
 
 
-func _ready() -> void:
-	pool = UpgradePool.sword()
-
-
 func level_of(data: UpgradeData) -> int:
 	return levels.get(data.id, 0)
 

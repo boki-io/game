@@ -16,3 +16,4 @@ radius = 56.0
 windup = 0.3
 behavior = ExtResource("2")
 sfx = ExtResource("3")
+description = "Mark the ground, then smash it. Knocks enemies back."

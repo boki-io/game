@@ -27,6 +27,7 @@ func _ready() -> void:
 
 	_spawn_props()
 	var player: Player = PLAYER_SCENE.instantiate()
+	player.character = GameSession.character
 	player.position = Vector2(Arena.SIZE) / 2.0
 	players_root.add_child(player)
 	player.died.connect(run_manager.on_player_died)

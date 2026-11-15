@@ -17,3 +17,4 @@ arc_degrees = 120.0
 duration = 0.15
 behavior = ExtResource("2")
 sfx = ExtResource("3")
+description = "Dash through enemies. You can't be hurt while dashing."

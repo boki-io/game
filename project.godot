@@ -4,7 +4,7 @@ config_version=5
 [application]
 
 config/name="Hero Horde"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
@@ -13,6 +13,7 @@ InputSetup="*res://scripts/systems/input_setup.gd"
 PlayerRegistry="*res://scripts/systems/player_registry.gd"
 EnemyGrid="*res://scripts/systems/enemy_grid.gd"
 Audio="*res://scripts/systems/audio.gd"
+GameSession="*res://scripts/systems/game_session.gd"
 
 [display]
 

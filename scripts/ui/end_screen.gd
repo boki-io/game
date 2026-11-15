@@ -18,8 +18,11 @@ func _ready() -> void:
 	_stats = UiKit.label("")
 	box.add_child(_stats)
 	_restart = UiKit.button("Restart")
-	_restart.pressed.connect(_on_restart)
+	_restart.pressed.connect(GameSession.restart)
 	box.add_child(_restart)
+	var menu := UiKit.button("Main Menu")
+	menu.pressed.connect(GameSession.go_to_main_menu)
+	box.add_child(menu)
 	add_child(UiKit.centered(box))
 
 
@@ -34,8 +37,3 @@ func show_result(won: bool) -> void:
 	visible = true
 	get_tree().paused = true
 	_restart.grab_focus.call_deferred()
-
-
-func _on_restart() -> void:
-	get_tree().paused = false
-	get_tree().reload_current_scene()

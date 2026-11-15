@@ -15,3 +15,4 @@ range = 40.0
 arc_degrees = 90.0
 behavior = ExtResource("2")
 sfx = ExtResource("3")
+description = "Automatically cuts the nearest enemy."

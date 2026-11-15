@@ -6,6 +6,9 @@ signal died
 @export var move_speed: float = 90.0
 @export var max_hp: float = 100.0
 
+## Set before adding to the tree. Supplies abilities, base stats, color and upgrade pool.
+var character: CharacterData
+
 var facing := Vector2.RIGHT
 var dead := false
 ## Set by abilities that take over movement (dash). Walls still apply.
@@ -30,10 +33,23 @@ var _face_time := 0.0
 
 
 func _ready() -> void:
+	if character:
+		_apply_character()
 	PlayerRegistry.register(self)
 	health.setup(stats.value(&"max_hp", max_hp))
 	health.died.connect(_on_died)
 	hurtbox.hit_taken.connect(_on_hit_taken)
+
+
+func _apply_character() -> void:
+	max_hp = character.max_hp
+	move_speed = character.move_speed
+	sprite.body_color = character.body_color
+	caster.ability_auto = character.ability_auto
+	caster.ability_q = character.ability_q
+	caster.ability_e = character.ability_e
+	caster.ability_r = character.ability_r
+	upgrades.pool = character.upgrade_pool
 
 
 func _exit_tree() -> void:
