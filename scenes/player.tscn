@@ -6,6 +6,9 @@
 [ext_resource type="Script" path="res://scripts/systems/health.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/systems/hurtbox.gd" id="5"]
 
+[ext_resource type="Script" path="res://scripts/player/basic_attack.gd" id="6"]
+[ext_resource type="Resource" path="res://data/abilities/slash.tres" id="7"]
+
 [sub_resource type="CircleShape2D" id="1"]
 radius = 5.0
 
@@ -40,3 +43,7 @@ script = ExtResource("5")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -8)
 shape = SubResource("2")
+
+[node name="BasicAttack" type="Node" parent="."]
+script = ExtResource("6")
+data = ExtResource("7")

@@ -77,5 +77,11 @@ func _acquire() -> Enemy:
 		return _pool.pop_back()
 	var enemy: Enemy = enemy_scene.instantiate()
 	enemy.director = self
+	enemy.died.connect(_on_enemy_died)
 	enemies_root.add_child(enemy)
 	return enemy
+
+
+func _on_enemy_died(enemy: Enemy) -> void:
+	run_manager.kills += 1
+	release(enemy)

@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="7"]
 [ext_resource type="Script" path="res://scripts/ui/dev_readout.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/ui/end_overlay.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/systems/effects.gd" id="10"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -32,6 +33,7 @@ y_sort_enabled = true
 y_sort_enabled = true
 
 [node name="Effects" type="Node2D" parent="World"]
+script = ExtResource("10")
 
 [node name="Camera" type="Camera2D" parent="."]
 script = ExtResource("4")

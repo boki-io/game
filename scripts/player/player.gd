@@ -9,6 +9,9 @@ signal died
 var facing := Vector2.RIGHT
 var dead := false
 
+var _face_dir := Vector2.RIGHT
+var _face_time := 0.0
+
 @onready var player_input: PlayerInput = $PlayerInput
 @onready var sprite: Node2D = $Sprite
 @onready var health: Health = $Health
@@ -26,7 +29,7 @@ func _exit_tree() -> void:
 	PlayerRegistry.unregister(self)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if dead:
 		return
 	var move := player_input.move_vector
@@ -34,8 +37,15 @@ func _physics_process(_delta: float) -> void:
 	move_and_slide()
 	if move != Vector2.ZERO:
 		facing = move.normalized()
-	sprite.facing = facing
+	_face_time -= delta
+	sprite.facing = _face_dir if _face_time > 0.0 else facing
 	sprite.aim = player_input.aim_vector
+
+
+## Briefly turn the sprite toward a cast direction (it otherwise faces movement).
+func face_towards(dir: Vector2, duration: float) -> void:
+	_face_dir = dir
+	_face_time = duration
 
 
 func _on_hit_taken(_amount: float) -> void:

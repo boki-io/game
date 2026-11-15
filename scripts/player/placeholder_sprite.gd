@@ -5,6 +5,11 @@ extends Node2D
 @export var body_size := Vector2(14, 22)
 ## Debug marker showing the aim vector.
 @export var show_aim := true
+## White body flash on hit.
+var flash := false:
+	set(v):
+		flash = v
+		queue_redraw()
 @export var facing := Vector2.RIGHT:
 	set(v):
 		facing = v
@@ -19,7 +24,7 @@ extends Node2D
 func _draw() -> void:
 	_draw_shadow()
 	var rect := Rect2(-body_size.x / 2.0, -body_size.y - 2.0, body_size.x, body_size.y)
-	draw_rect(rect, body_color)
+	draw_rect(rect, Color.WHITE if flash else body_color)
 	draw_rect(rect, body_color.darkened(0.5), false)
 	var eye_y := rect.position.y + body_size.y * 0.3
 	draw_rect(Rect2(-2 + facing.x * 4, eye_y + facing.y * 2, 4, 4), Color.WHITE)

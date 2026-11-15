@@ -6,6 +6,7 @@ signal run_ended(won: bool)
 const RUN_DURATION := 300.0  # seconds
 
 var elapsed := 0.0
+var kills := 0
 var running := true
 
 
