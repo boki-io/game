@@ -21,6 +21,9 @@ This becomes `spec-0.2.md` once the open questions are answered.
 - The timing (1.5s) is a guess and should be adjusted to the existing pace of the game.
 - It must be clearly visible that the player needs to dodge it.
 
+### New upgrade: Double Dash
+- A new upgrade option for the player's Q ability that lets the dash be used twice (double dash).
+
 ### New enemy: Ranged
 - Stops to shoot a projectile.
 - About 1 shot per 2 seconds (a guess; adjust for pace).
@@ -58,6 +61,6 @@ This becomes `spec-0.2.md` once the open questions are answered.
    (Restart, Main Menu). Restart keeps the same character.
 4. Projectiles are **dodge only**. No ability destroys them.
 
-## 5. Still open
-- The section 3 defaults stand unless changed.
-- Name and one-line description for the Sword character on the select screen.
+## 5. Status
+- Written up as `spec-0.2.md` with the section 3 defaults, plus Knight as a placeholder character name.
+- Double Dash details (2 levels, free follow-ups within 1.0s) are proposals, listed in the spec's assumptions.
