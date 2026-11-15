@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/abilities/dash_slash_behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"dash"
+display_name = "Dash & Slash"
+cooldown = 1.5
+mana_cost = 10.0
+damage = 25.0
+range = 64.0
+radius = 28.0
+arc_degrees = 120.0
+duration = 0.15
+behavior = ExtResource("2")

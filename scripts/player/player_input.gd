@@ -3,6 +3,9 @@ extends Node
 ## Turns device input into move_vector and aim_vector. Combat code reads only these.
 ## device_id: -1 = keyboard and mouse, 0+ = that gamepad.
 
+signal ability_pressed(slot: StringName)
+
+const TRIGGER_THRESHOLD := 0.5
 const MOVE_DEADZONE := 0.2
 const STICK_DEADZONE := 0.25
 
@@ -16,12 +19,38 @@ var aim_vector := Vector2.RIGHT
 var _has_aim_input := false
 var _mouse_active := false
 var _last_mouse_screen := Vector2.INF
+var _pad_prev: Dictionary = {}  # slot -> bool, for gamepad edge detection
 
 
 func _physics_process(_delta: float) -> void:
 	var pad := _active_pad()
 	move_vector = _read_move(pad)
 	_update_aim(pad)
+	_poll_abilities(pad)
+
+
+func _poll_abilities(pad: int) -> void:
+	for slot: StringName in [&"q", &"e", &"r"]:
+		var pressed := false
+		if device_id == -1 and Input.is_action_just_pressed(StringName("ability_%s" % slot)):
+			pressed = true
+		if pad >= 0:
+			var down := _pad_down(pad, slot)
+			if down and not _pad_prev.get(slot, false):
+				pressed = true
+			_pad_prev[slot] = down
+		if pressed:
+			ability_pressed.emit(slot)
+
+
+func _pad_down(pad: int, slot: StringName) -> bool:
+	match slot:
+		&"q":
+			return Input.is_joy_button_pressed(pad, JOY_BUTTON_X)
+		&"e":
+			return Input.is_joy_button_pressed(pad, JOY_BUTTON_Y)
+		_:
+			return Input.get_joy_axis(pad, JOY_AXIS_TRIGGER_RIGHT) > TRIGGER_THRESHOLD
 
 
 func _active_pad() -> int:

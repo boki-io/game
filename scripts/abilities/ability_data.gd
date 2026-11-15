@@ -11,5 +11,6 @@ extends Resource
 @export var radius: float = 32.0  # px (AoE / spin / slam)
 @export var arc_degrees: float = 90.0  # arc width for slashes
 @export var windup: float = 0.0  # seconds before the hit lands
+@export var duration: float = 0.0  # seconds the cast lasts (dash time, spin time)
 @export var behavior: Script  # e.g. DashSlashBehavior
 @export var sfx: AudioStream
