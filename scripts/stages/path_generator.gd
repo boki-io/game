@@ -14,9 +14,10 @@ const RANGES := {
 	StageData.Tier.HARD: {population = [10, 20], difficulty = [5, 10], experience = [15, 30], currency = [10, 20]},
 }
 
+## Name i goes with thumbnail i (assets/stages/stage_<i>.png, themed to match; see tools/gen_stage_thumbs.py).
 const NAMES := [
 	"Mossy Hollow", "Crystal Vault", "Ember Depths", "Frostbite Grotto", "Spore Cavern",
-	"Bone Warren", "Flooded Gallery", "Sulfur Pits", "Gloomroot Pass", "Ashen Chasm",
+	"Bone Warren", "Flooded Gallery", "Sulfur Pits",
 ]
 const THUMBNAIL_COUNT := 8
 const THUMBNAIL_PATH := "res://assets/stages/stage_%d.png"
@@ -35,8 +36,7 @@ static func generate(path_seed: int) -> StagePath:
 		[[0], [0], [0]],
 	]
 
-	var names := _shuffled(NAMES.size(), rng)
-	var thumbs := _shuffled(THUMBNAIL_COUNT, rng)
+	var order := _shuffled(NAMES.size(), rng)  # which name (and so which thumbnail) each stage gets
 	var used := 0
 	for column in COLUMN_SIZES.size():
 		var tiers: Array = []
@@ -47,8 +47,8 @@ static func generate(path_seed: int) -> StagePath:
 		var stages: Array = []
 		for row in COLUMN_SIZES[column]:
 			var stage := _roll_stage(tiers[row], rng)
-			stage.name = NAMES[names[used]]
-			stage.thumbnail = load(THUMBNAIL_PATH % thumbs[used])
+			stage.name = NAMES[order[used]]
+			stage.thumbnail = load(THUMBNAIL_PATH % order[used])
 			used += 1
 			stages.append(stage)
 		path.columns.append(stages)
