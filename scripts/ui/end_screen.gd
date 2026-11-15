@@ -5,7 +5,7 @@ var run_manager: RunManager
 
 var _title: Label
 var _stats: Label
-var _restart: Button
+var _hub: Button
 
 
 func _ready() -> void:
@@ -17,12 +17,9 @@ func _ready() -> void:
 	box.add_child(_title)
 	_stats = UiKit.label("")
 	box.add_child(_stats)
-	_restart = UiKit.button("Restart")
-	_restart.pressed.connect(GameSession.restart_run)
-	box.add_child(_restart)
-	var hub := UiKit.button("Return to Hub")
-	hub.pressed.connect(GameSession.go_to_hub)
-	box.add_child(hub)
+	_hub = UiKit.button("Return to Hub")
+	_hub.pressed.connect(GameSession.go_to_hub)
+	box.add_child(_hub)
 	add_child(UiKit.centered(box))
 
 
@@ -36,4 +33,4 @@ func show_result(won: bool) -> void:
 		UiKit.format_time(run_manager.elapsed), level, run_manager.kills]
 	visible = true
 	get_tree().paused = true
-	_restart.grab_focus.call_deferred()
+	_hub.grab_focus.call_deferred()

@@ -39,6 +39,9 @@ func _ready() -> void:
 	player.character = GameSession.character
 	player.position = Vector2(Arena.world_size) / 2.0
 	players_root.add_child(player)
+	# Level, XP and upgrades carried from the previous stage. Restored before leveled_up is connected.
+	if GameSession.run_progress != null:
+		RunProgress.restore(player, GameSession.run_progress)
 	player.died.connect(run_manager.on_player_died)
 	player.xp.leveled_up.connect(func(_level: int) -> void: $UI/LevelUpMenu.queue_level_up(player))
 	$UI/Hud.bind(player, run_manager)
