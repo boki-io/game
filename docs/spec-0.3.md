@@ -28,7 +28,7 @@ from the Knight to justify more characters, and does the ability framework hold 
 | | Knight (v0.1) | Wizard |
 |---|---|---|
 | Role | Close-range brawler | Ranged spellcaster |
-| HP | 100 | **110** |
+| HP | 100 | **90** |
 | Move speed | 90 px/s | **85 px/s** |
 | Max mana / regen | 100 / 8 per s | **140 / 10 per s** |
 | Auto | Slash (90px targeting, melee arc) | **Arcane Bolt** (150px targeting, projectile) |
@@ -370,9 +370,9 @@ Each item has a check:
 
 ## 12. Assumptions to Revisit Later
 
-- All Wizard numbers are first guesses. At 110 HP the Wizard has more HP than the Knight (100), which
-  weakens the glass-cannon idea; his 85 px/s and ranged role are what keep him distinct. Ranged enemies'
-  shots out-range him.
+- All Wizard numbers are first guesses. At 90 HP the Wizard is only slightly more fragile than the Knight
+  (100), so he is a spellcaster rather than a true glass cannon; his 85 px/s and ranged role are what keep
+  him distinct. Ranged enemies' shots out-range him.
 - Arcane Focus may be too weak (or encourage standing still too much); it is the easiest piece to cut.
 - Gold is a placeholder color and clashes with the pale-yellow damage numbers.
 - Meteor Strike being fire-and-forget is a deliberate difference from Slam and may need a longer cooldown if
