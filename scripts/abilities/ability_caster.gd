@@ -160,7 +160,9 @@ func _auto_cast() -> void:
 	var target := EnemyGrid.nearest(player.global_position, reach)
 	if target == null:
 		return
-	var dir := (target.global_position - player.global_position).normalized()
+	var to_target := target.global_position - player.global_position
+	# An enemy standing on the player gives no direction: fall back to the aim.
+	var dir := to_target.normalized() if to_target.length() >= 1.0 else player.player_input.aim_vector
 	_begin(&"auto", ability_auto, dir)
 
 

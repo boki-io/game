@@ -22,6 +22,8 @@
 [ext_resource type="Resource" path="res://data/enemies/dasher.tres" id="21"]
 [ext_resource type="Script" path="res://scripts/systems/projectiles.gd" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_projectile.tscn" id="23"]
+[ext_resource type="Script" path="res://scripts/systems/player_projectiles.gd" id="24"]
+[ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="25"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -55,6 +57,10 @@ script = ExtResource("13")
 [node name="Projectiles" type="Node2D" parent="World"]
 script = ExtResource("22")
 projectile_scene = ExtResource("23")
+
+[node name="PlayerProjectiles" type="Node2D" parent="World"]
+script = ExtResource("24")
+projectile_scene = ExtResource("25")
 
 [node name="Effects" type="Node2D" parent="World"]
 script = ExtResource("10")

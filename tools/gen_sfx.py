@@ -84,4 +84,6 @@ save("dasher_dash", mix(noise(0.35, 0.7, 0.05, 1.2, 0.05), tone(180, 60, 0.3, "s
 save("ranged_windup", tone(300, 700, 0.4, "triangle", 0.4), 0.35)
 save("ranged_shot", mix(tone(900, 200, 0.12, "square", 2.5), noise(0.08, 0.7, 0.2, 2.0)), 0.45)
 save("projectile_hit", mix(tone(180, 60, 0.12, "sine", 2.0), noise(0.08, 0.4, 0.1, 3.0)), 0.55)
+save("bolt_fire", mix(tone(700, 1500, 0.09, "sine", 2.0), noise(0.05, 0.8, 0.3, 2.0)), 0.4)
+save("bolt_hit", mix(tone(520, 220, 0.07, "square", 2.5), noise(0.04, 0.6, 0.2, 2.0)), 0.4)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))
