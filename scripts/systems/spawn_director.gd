@@ -118,6 +118,8 @@ func _acquire(type: EnemyData) -> Enemy:
 	enemy.director = self
 	enemy.died.connect(_on_enemy_died)
 	enemies_root.add_child(enemy)
+	if stage.theme != null:
+		enemy.apply_variant(stage.theme.variant_for(type.id))
 	return enemy
 
 
