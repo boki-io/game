@@ -3,6 +3,10 @@ extends Control
 ## Pauses the game and offers 3 random upgrades. Pick with mouse, keys 1/2/3, or D-pad + confirm.
 ## Level-ups that arrive while the menu is open (or from several players) are queued.
 
+const TABLET := preload("res://assets/ui/stone_tablet.png")
+const TABLET_FOCUS := preload("res://assets/ui/stone_tablet_focus.png")
+const TABLET_TEXT := Color("e8dcc8")
+
 var active := false
 
 var _queue: Array[Player] = []
@@ -55,11 +59,46 @@ func _open() -> void:
 		var b := UiKit.button("[%d] %s\n%s\n\n%s\nLv %d -> %d" % [i + 1, u.display_name, u.tag.to_upper(),
 			u.description, lv, lv + 1], Vector2(120, 84))
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_style_tablet(b)
 		b.pressed.connect(_pick.bind(i))
 		_row.add_child(b)
 		if first == null:
 			first = b
 	first.grab_focus.call_deferred()
+
+
+## Cracked, bloodied stone tablet instead of the default grey button.
+static func _tablet_box(tex: Texture2D) -> StyleBoxTexture:
+	var sb := StyleBoxTexture.new()
+	sb.texture = tex
+	for side in [SIDE_LEFT, SIDE_RIGHT, SIDE_TOP, SIDE_BOTTOM]:
+		sb.set_texture_margin(side, 12)
+		sb.set_content_margin(side, 12)
+	return sb
+
+
+static func _style_tablet(b: Button) -> void:
+	var normal := _tablet_box(TABLET)
+	var lit := _tablet_box(TABLET_FOCUS)
+	b.add_theme_stylebox_override("normal", normal)
+	b.add_theme_stylebox_override("hover", lit)
+	b.add_theme_stylebox_override("pressed", lit)
+	# The focus glow only shows once a key or D-pad is used (_input), so the card focused on open is not lit for mouse players.
+	b.add_theme_stylebox_override("focus", normal)
+	b.set_meta(&"lit", lit)
+	for c in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]:
+		b.add_theme_color_override(c, TABLET_TEXT)
+	b.add_theme_color_override("font_outline_color", Color("15120f"))
+	b.add_theme_constant_override("outline_size", 2)
+
+
+func _input(event: InputEvent) -> void:
+	if not active:
+		return
+	if (event is InputEventKey and event.pressed) or event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.5):
+		for b in _row.get_children():
+			if b is Button and b.has_meta(&"lit"):
+				b.add_theme_stylebox_override("focus", b.get_meta(&"lit"))
 
 
 func _pick(index: int) -> void:
