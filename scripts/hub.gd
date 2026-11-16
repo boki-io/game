@@ -37,6 +37,8 @@ var player: Player
 ## The camp screen (a Control with `open()`, spec 0.7 7), built by `_build_camp_screen()`.
 var camp_screen: Control
 var camp_site: CampSite
+var gold_counter: GoldCounter
+var reward_banner: Label
 
 var _lockout := 0.0
 var _entering_run := false
@@ -62,6 +64,7 @@ func _ready() -> void:
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
 	_build_camp_screen()
+	_show_reward(GameSession.take_reward())  # before the early return below
 	# Coming back from a run: walk mode as the character just played, below the door.
 	var last := GameSession.last_character
 	if last:
@@ -265,6 +268,31 @@ func _spawn_player(index: int, pos: Vector2) -> void:
 	player.position = pos
 	players_root.add_child(player)
 	hud.bind(player)
+
+
+## Top-right gold counter, and after a run a "+N gold" banner while the counter counts up from the old total
+## (spec 0.7, 7.4). `reward` is what the run just banked (GameSession.take_reward()).
+func _show_reward(reward: int) -> void:
+	gold_counter = GoldCounter.new()
+	gold_counter.name = "GoldCounter"
+	gold_counter.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	gold_counter.offset_left = -76.0
+	gold_counter.offset_top = 6.0
+	gold_counter.offset_right = -8.0
+	gold_counter.offset_bottom = 18.0
+	$UI.add_child(gold_counter)
+	gold_counter.set_amount(GameSession.gold - reward)
+	if reward <= 0:
+		return
+	reward_banner = UiKit.label("+%d gold" % reward, 12, Color("ffd866"))
+	reward_banner.name = "RewardBanner"
+	reward_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	reward_banner.offset_top = 30.0
+	$UI.add_child(reward_banner)
+	gold_counter.count_to(GameSession.gold, 1.2)
+	var tween := create_tween()
+	tween.tween_property(reward_banner, "modulate:a", 0.0, 0.5).set_delay(2.0)
+	tween.tween_callback(reward_banner.queue_free)
 
 
 ## Camp screen block (spec 0.7, 6.4, 7): the screen lives in the UI layer; closing it after a change rebuilds the Player

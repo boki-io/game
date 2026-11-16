@@ -486,3 +486,15 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
   asserts a new Player instance at the same position and, if `Player.attribute_levels` exists, that it equals
   `GameSession.attribute_levels`. The save-related lines of the spec's `camp_screen.gd` list belong to the save step.
 - Rendered at 0, 120 and 530 gold: eight rows fit 640x360 (panel about 445x270). Layout checked by eye.
+
+## v0.7 camp, integration (step 7 wiring)
+- **I1. Merge:** the four builder branches were merged into `spec-0.7-camp`; `hub.gd` deduped (`camp_screen` declared once,
+  `_spawn_player` sets `attribute_levels` without the `in` guard).
+- **I2. Banner and counter:** `hub.gd._show_reward()` runs before the last-character early return: a top-right
+  `GoldCounter` at `GameSession.gold - reward` counting up to `gold`, and a "+N gold" label that fades after 2 s.
+  Test: `tests/camp/camp_banner.gd` (a test must await one frame before touching `GameSession`, whose `_ready`
+  loads the save and would overwrite `gold`).
+- **I3. Spec deviations from the build:** `AttributeData.describe` has its own number formatter (`HubInfoPanel` pulls in
+  `UiKit` and `Audio`); `display_values` of percent attributes are percent numbers; the camp screen's minus button is
+  disabled at level 0 and Reset all does nothing with nothing bought; `SaveGame` uses a `JSON` instance so a bad file
+  prints no engine error.
