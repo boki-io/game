@@ -86,7 +86,8 @@ Every step goes **spec, review, approval, build, PR**, in that order. Do not sta
 - `GameSession.scene_hook` (a Callable) replaces a scene change in tests, so a flow can be checked without leaving the
   scene under test. After freeing a scene in a test, set `paused = false` (the real scene change does that).
 - Headless has a dummy renderer, so **pixels are not tested**. To look at a screen, render real frames:
-  `godot --path . <scene> --write-movie <scratchpad>/x.png --fixed-fps 30 --quit-after 45`, then read a PNG. Drive state
+  `godot --path . <scene> --write-movie <scratchpad>/x.png --fixed-fps 30 --quit-after 45`, then read a PNG. Set `HERO_HORDE_SAVE=<scratchpad>/save.json` for any non-headless run, or reaching a run end
+  writes the real save (`user://camp.json`). Drive state
   with a small scratch scene, and delete it afterwards.
 - Run the whole suite before a PR and say which tests failed and why. Existing tests may need updating when a flow
   changes (the door now opens the select screen, not the arena).

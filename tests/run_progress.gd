@@ -98,12 +98,13 @@ func _init() -> void:
 	main = _stage(F, 0)
 	await F.frames(self, 2)
 	main.run_manager.kills = 5
-	_gs.gold += 7
+	_gs.run_gold += 7
 	_loaded.clear()
 	_gs.finish_run()
 	_check(_gs.run_summary.stages_cleared == 3, "summary: 3 stages cleared")
 	_check(_gs.run_summary.kills == 57, "summary: total kills 57 (got %d)" % _gs.run_summary.kills)
 	_check(_gs.run_summary.gold_earned == 7, "summary: gold earned this run")
+	_check(_gs.gold == gold_start + 7 and _gs.run_gold == 0, "finish_run banks the purse after the summary")
 	_check(_gs.run_summary.level == level, "summary: final level")
 	_check(_gs.path == null and _gs.run_progress == null and _gs.current_stage == null, "finish_run clears the run")
 	_check(_loaded.is_empty(), "finish_run does not change scene itself")
@@ -111,22 +112,24 @@ func _init() -> void:
 	paused = false  # the real scene change unpauses; the stand-in hook does not
 	await process_frame
 
-	# Death and abandon clear the run and go to the hub; gold stays.
+	# Death and abandon clear the run and go to the hub; the purse is banked.
 	for ending in ["fail_run", "abandon_run"]:
 		_gs.new_run(knight, 11)
 		_gs.run_progress = {level = 3, xp = 1, upgrades = {}}
 		_gs.beaten.append(0)
 		_gs.current_column = 1
 		_loaded.clear()
+		_gs.run_gold = 3
 		_gs.call(ending)
+		_check(_gs.run_gold == 0, ending + " empties the purse")
 		_check(_loaded == [_gs.HUB], ending + " goes to the hub")
 		_check(_gs.path == null and _gs.current_stage == null and _gs.run_progress == null, ending + " clears the run")
 		_check(_gs.current_column == 0 and _gs.beaten.is_empty(), ending + " resets the column")
-	_check(_gs.gold == gold_start + 7, "gold survives the end of a run")
+	_check(_gs.gold == gold_start + 7 + 3 * 2, "banked gold survives the end of a run (got %d)" % (_gs.gold - gold_start))
 
-	# A new run starts again at column 1 with a new path and no progress, and gold earned counts from its start.
+	# A new run starts again at column 1 with a new path and no progress, and the purse is empty.
 	_gs.new_run(knight, 99)
-	_check(_gs.current_column == 0 and _gs.run_progress == null and _gs.run_start_gold == _gs.gold, "new run starts clean")
+	_check(_gs.current_column == 0 and _gs.run_progress == null and _gs.run_gold == 0, "new run starts clean")
 	_check(_gs.has_method("restart_run") == false, "restart_run is gone")
 
 	_gs.scene_hook = Callable()

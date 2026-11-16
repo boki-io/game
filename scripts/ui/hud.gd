@@ -86,7 +86,7 @@ func _draw() -> void:
 
 ## A drawn coin and the gold number, right-aligned under the kills counter.
 func _draw_gold(font: Font, view: Vector2) -> void:
-	var text := str(GameSession.gold)
+	var text := str(GameSession.run_gold)
 	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
 	var right := view.x - 6.0
 	_text(font, Vector2(right, 24), text, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)

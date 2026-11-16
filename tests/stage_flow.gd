@@ -100,7 +100,6 @@ func _init() -> void:
 	_loaded.clear()
 
 	# Win in column 3: victory with the run summary, no banner, Return to Hub only.
-	_gs.gold += 0
 	main = _stage(2)
 	main.run_manager.kills = 12
 	await _F.seconds(self, 0.3)

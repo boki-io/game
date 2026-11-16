@@ -23,6 +23,8 @@ const CAMERA_BLEND := 0.3
 const WALL_BAND := 16.0  # the rock band; matches the Arena's wall_band in hub.tscn
 const SIGN_POS := Vector2(480, 290)
 const TRAINING_AREA := Rect2(110, 100, 140, 120)
+const CAMP_POS := Vector2(170, 300)  # below the training dummies
+const CAMP_RADIUS := 48.0  # interact within this of CAMP_POS to open the camp
 const BROWSE_HINT := "< >  Browse      Enter  Choose      Esc  Menu"
 const WALK_HINT := "WASD  Move      Mouse  Aim      Q E R  Abilities      I  Info      Esc  Menu"
 
@@ -31,6 +33,12 @@ var characters: Array[CharacterData] = []
 var pedestals: Array[HubPedestal] = []
 var focus_index := 0  # browse: the focused pedestal. walk: the character being played
 var player: Player
+
+## The camp screen (a Control with `open()`, spec 0.7 7), built by `_build_camp_screen()`.
+var camp_screen: Control
+var camp_site: CampSite
+var gold_counter: GoldCounter
+var reward_banner: Label
 
 var _lockout := 0.0
 var _entering_run := false
@@ -50,10 +58,13 @@ func _ready() -> void:
 	characters = CharacterRegistry.all()
 	_build_pedestals()
 	_build_dummies()
+	_build_camp()
 	_build_cave()
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
+	_build_camp_screen()
+	_show_reward(GameSession.take_reward())  # before the early return below
 	# Coming back from a run: walk mode as the character just played, below the door.
 	var last := GameSession.last_character
 	if last:
@@ -66,7 +77,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_lockout = maxf(_lockout - delta, 0.0)
-	prompt.visible = mode == Mode.WALK and is_instance_valid(player) and _pedestal_near_player() != null
+	var target := _interact_target()
+	prompt.visible = target != &""
+	if target == &"camp":
+		prompt.text = "F: Camp"
+	elif target == &"pedestal":
+		prompt.text = "F: Change character"
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -83,8 +99,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	else:
 		if event.is_action_pressed(&"interact"):
-			if _lockout <= 0.0 and _pedestal_near_player() != null:
+			if _lockout > 0.0:
+				pass
+			elif _interact_target() == &"pedestal":
 				_enter_browse(focus_index, false)
+			elif _interact_target() == &"camp":
+				_open_camp()
 		elif event.is_action_pressed(&"hub_info"):
 			panel.visible = not panel.visible
 		else:
@@ -101,6 +121,30 @@ func _build_pedestals() -> void:
 		p.setup(characters[i])
 		p.clicked.connect(_on_pedestal_clicked)
 		pedestals.append(p)
+
+
+func _build_camp() -> void:
+	camp_site = CampSite.new()
+	camp_site.position = CAMP_POS
+	camp_site.z_index = -1  # under the Player wherever it stands
+	$World.add_child(camp_site)
+
+
+## What interact would act on now: &"pedestal", &"camp" or &"" (nothing, and always nothing in browse mode).
+func _interact_target() -> StringName:
+	if mode != Mode.WALK or not is_instance_valid(player):
+		return &""
+	if _pedestal_near_player() != null:
+		return &"pedestal"
+	if CAMP_POS.distance_to(player.global_position) < CAMP_RADIUS:
+		return &"camp"
+	return &""
+
+
+## Opens the camp screen, if one has been assigned.
+func _open_camp() -> void:
+	if camp_screen != null:
+		camp_screen.open()
 
 
 ## Torches on the walls and the decor, which keeps clear of everything gameplay uses.
@@ -122,7 +166,8 @@ func _build_cave() -> void:
 ## Floor the decor must stay off: the pedestals, the training area, the lane from the door and the sign.
 func reserved_areas() -> Array[Rect2]:
 	var out: Array[Rect2] = [TRAINING_AREA, Rect2(SIGN_POS.x - 70.0, SIGN_POS.y - 30.0, 140.0, 50.0),
-		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0)]
+		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0),
+		Rect2(CAMP_POS.x - 50.0, CAMP_POS.y - 45.0, 100.0, 80.0)]
 	for p in pedestals:
 		out.append(Rect2(p.position + Vector2(-34, -60), Vector2(68, 90)))
 	return out
@@ -205,18 +250,74 @@ func _enter_walk(index: int, pos: Vector2, instant: bool) -> void:
 	for i in pedestals.size():
 		pedestals[i].focused = false
 		pedestals[i].set_figure_visible(i != index)
-	player = PLAYER_SCENE.instantiate()
-	player.character = characters[index]
-	player.hub_mode = true
-	player.position = pos
-	players_root.add_child(player)
-	hud.bind(player)
+	_spawn_player(index, pos)
 	panel.visible = false
 	_place_hint(WALK_HINT, true)  # the ability icons sit at the bottom in walk mode
 	camera.set_base_offset(Vector2.ZERO, 0.0 if instant else CAMERA_BLEND)
 	if instant:
 		camera.browse_to(pos - Vector2(0, 12), true)
 	door.set_open(true)
+
+
+## Creates the hub Player as characters[index] at `pos` and binds the HUD to it.
+func _spawn_player(index: int, pos: Vector2) -> void:
+	player = PLAYER_SCENE.instantiate()
+	player.character = characters[index]
+	player.hub_mode = true
+	player.attribute_levels = GameSession.attribute_levels
+	player.position = pos
+	players_root.add_child(player)
+	hud.bind(player)
+
+
+## Top-right gold counter, and after a run a "+N gold" banner while the counter counts up from the old total
+## (spec 0.7, 7.4). `reward` is what the run just banked (GameSession.take_reward()).
+func _show_reward(reward: int) -> void:
+	gold_counter = GoldCounter.new()
+	gold_counter.name = "GoldCounter"
+	gold_counter.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	gold_counter.offset_left = -76.0
+	gold_counter.offset_top = 6.0
+	gold_counter.offset_right = -8.0
+	gold_counter.offset_bottom = 18.0
+	$UI.add_child(gold_counter)
+	gold_counter.set_amount(GameSession.gold - reward)
+	if reward <= 0:
+		return
+	reward_banner = UiKit.label("+%d gold" % reward, 12, Color("ffd866"))
+	reward_banner.name = "RewardBanner"
+	reward_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	reward_banner.offset_top = 30.0
+	$UI.add_child(reward_banner)
+	gold_counter.count_to(GameSession.gold, 1.2)
+	var tween := create_tween()
+	tween.tween_property(reward_banner, "modulate:a", 0.0, 0.5).set_delay(2.0)
+	tween.tween_callback(reward_banner.queue_free)
+
+
+## Camp screen block (spec 0.7, 6.4, 7): the screen lives in the UI layer; closing it after a change rebuilds the Player
+## in place, because attributes are applied once, at Player creation.
+func _build_camp_screen() -> void:
+	var screen := CampScreen.new()
+	screen.name = "CampScreen"
+	$UI.add_child(screen)
+	screen.closed.connect(_on_camp_closed)
+	camp_screen = screen
+
+
+func _on_camp_closed(changed: bool) -> void:
+	_lockout = MODE_LOCKOUT
+	if changed:
+		_rebuild_player()
+
+
+## A fresh Player at the old one's position (same creation path as _enter_walk; cooldowns and effects reset).
+func _rebuild_player() -> void:
+	if mode != Mode.WALK or not is_instance_valid(player):
+		return
+	var pos := player.position
+	_remove_player()
+	_spawn_player(focus_index, pos)
 
 
 ## Removes the Player immediately (not queue_free, so a same-frame spawn can never leave two) and clears

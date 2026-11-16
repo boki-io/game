@@ -1,7 +1,7 @@
 class_name Coin
 extends Area2D
 ## Pooled gold pickup. Moves like an XPGem (XPCollector pulls in anything with attract()), but on arrival adds
-## to GameSession.gold. Not an XPGem: that class is tied to XP.
+## to GameSession.run_gold. Not an XPGem: that class is tied to XP.
 
 const START_SPEED := 70.0
 const ACCEL := 500.0
@@ -45,7 +45,7 @@ func _physics_process(delta: float) -> void:
 	var to := target.global_position + Vector2(0, -6) - global_position
 	var dist := to.length()
 	if dist < COLLECT_DISTANCE:
-		GameSession.gold += value
+		GameSession.run_gold += value
 		Audio.play(&"coin")
 		pool.release_coin(self)
 		return

@@ -18,6 +18,8 @@ const SPAWN_RADIUS := 7.0  # a mob's footprint when checking a spawn against obs
 var run_manager: RunManager
 ## The stage being played. Its modifiers last for this stage only (a new arena is built for the next one).
 var stage := StageData.new()
+## Added to the stage's coin chance (camp Greed); the run sets it before the first spawn.
+var coin_bonus := 0.0
 var pickups: Pickups
 var enemies_root: Node2D
 ## Walls and pillars; spawns avoid them and enemies are given it. Null in scenes without any.
@@ -141,6 +143,6 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	if pickups:
 		pickups.spawn_gem(enemy.global_position, stage.scaled_xp(enemy.data.xp_drop))
 		# Mobs that drop no XP (the hub dummies) drop no coins either.
-		if enemy.data.xp_drop > 0 and randf() < stage.coin_chance():
+		if enemy.data.xp_drop > 0 and randf() < clampf(stage.coin_chance() + coin_bonus, 0.0, 1.0):
 			pickups.spawn_coin(enemy.global_position)
 	release(enemy)

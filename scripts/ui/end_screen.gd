@@ -1,6 +1,6 @@
 class_name EndScreen
 extends Control
-## The end of a run: DEATH ("You died", stage reached, kills in it, time, level) or VICTORY ("Victory!", stages
+## The end of a run: DEATH ("You died", stage reached, kills in it, time, gold earned, level) or VICTORY ("Victory!", stages
 ## cleared, total kills, gold earned, final level). Return to Hub is the only button.
 
 enum Mode { DEATH, VICTORY }
@@ -39,11 +39,13 @@ func show_result(mode: Mode) -> void:
 			summary.get("stages_cleared", 0), summary.get("kills", 0), summary.get("gold_earned", 0),
 			summary.get("level", 1)]
 	else:
+		# The coins are kept on death: bank them now (the screen can be closed without the button).
+		var reward := GameSession.bank_run()
 		var level := 1
 		if not PlayerRegistry.players.is_empty():
 			level = PlayerRegistry.players[0].xp.level
-		_stats.text = "Stage reached  %d\nKills in this stage  %d\nTime survived  %s\nLevel  %d" % [
-			GameSession.current_column + 1, run_manager.kills, UiKit.format_time(run_manager.elapsed), level]
+		_stats.text = "Stage reached  %d\nKills in this stage  %d\nTime survived  %s\nGold earned  %d\nLevel  %d" % [
+			GameSession.current_column + 1, run_manager.kills, UiKit.format_time(run_manager.elapsed), reward, level]
 	visible = true
 	get_tree().paused = true
 	_hub.grab_focus.call_deferred()

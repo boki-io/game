@@ -1,6 +1,7 @@
 extends Node
 ## Autoload. Remembers the selected character, owns scene changes between the Hub, the stage select screen and
-## the arena, and holds the path of the current run (in memory only; nothing is saved to disk).
+## the arena, holds the path of the current run (in memory only) and the camp state (banked gold and attribute
+## levels), which is loaded from and saved to disk through SaveGame.
 
 const HUB := "res://scenes/hub.tscn"
 const SELECT := "res://scenes/select.tscn"
@@ -24,15 +25,21 @@ var current_stage: StageData
 var current_row := -1
 ## Kills over the cleared stages of this run.
 var run_kills := 0
-## Gold when the run started, so gold earned = gold - run_start_gold.
-var run_start_gold := 0
 ## What the victory screen shows, written by finish_run().
 var run_summary: Dictionary = {}
 ## The Player's carried level, XP and upgrades (see RunProgress). Null at the start of a run and outside a run.
 var run_progress: Variant = null
-## Coins collected. Unlike the path it is not reset when a run ends: it waits for the future trade system.
+## Banked gold, spendable at the camp. Saved (SaveGame); only bank_run() and the camp raise it.
 var gold := 0
+## Coins collected in the current run (the run purse). Not saved; banked when the run ends.
+var run_gold := 0
+## Gold banked since the hub last read it with take_reward().
+var last_reward := 0
+## Camp attribute levels (spec 0.7): attribute id -> level, shared by all characters. Saved (SaveGame).
+var attribute_levels: Dictionary = {}
 
+## Emitted after any attribute level or the gold spent on it changes.
+signal attributes_changed
 
 ## Test seam: when valid, scene changes call it with the scene path instead of fading to the scene.
 var scene_hook: Callable
@@ -41,6 +48,62 @@ var scene_hook: Callable
 func _ready() -> void:
 	# Default so the run scene also runs directly from the editor.
 	character = CharacterRegistry.all()[0]
+	var saved := SaveGame.load_data()
+	gold = saved.gold
+	attribute_levels = saved.levels
+
+
+## The camp level of attribute `id` (0 if never bought).
+func level_of(id: StringName) -> int:
+	var attr := AttributeRegistry.find(id)
+	return 0 if attr == null else CampShop.level_of(_shop_state(), attr)
+
+
+## Buys the next level of attribute `id` with `gold`. False if unknown, maxed or too poor.
+func buy_attribute(id: StringName) -> bool:
+	var attr := AttributeRegistry.find(id)
+	if attr == null:
+		return false
+	var state := _shop_state()
+	var ok := CampShop.buy(state, attr)
+	if ok:
+		_commit_shop(state)
+	return ok
+
+
+## Undoes one level of attribute `id` and refunds its cost. False at level 0.
+func undo_attribute(id: StringName) -> bool:
+	var attr := AttributeRegistry.find(id)
+	if attr == null:
+		return false
+	var state := _shop_state()
+	var ok := CampShop.undo(state, attr)
+	if ok:
+		_commit_shop(state)
+	return ok
+
+
+## Undoes every level and refunds the total spent.
+func reset_attributes() -> void:
+	var state := _shop_state()
+	CampShop.reset_all(state)
+	_commit_shop(state)
+
+
+## Gold sunk into the current attribute levels.
+func spent_total() -> int:
+	return CampShop.spent(_shop_state())
+
+
+func _shop_state() -> Dictionary:
+	return CampShop.make_state(gold, attribute_levels.duplicate())
+
+
+func _commit_shop(state: Dictionary) -> void:
+	gold = state.gold
+	attribute_levels = state.levels
+	SaveGame.save(gold, attribute_levels)
+	attributes_changed.emit()
 
 
 ## The seed of the map being played (spec 0.6, 6.1): a string hash of the path seed and the theme id, so each map
@@ -68,7 +131,7 @@ func new_run(selected: CharacterData, seed_value: int) -> void:
 	current_stage = null
 	current_row = -1
 	run_kills = 0
-	run_start_gold = gold
+	run_gold = 0
 	run_summary = {}
 	run_progress = null
 
@@ -127,9 +190,10 @@ func finish_run() -> void:
 	run_summary = {
 		stages_cleared = path.column_count() if path else 0,
 		kills = run_kills + _stage_kills(),
-		gold_earned = gold - run_start_gold,
+		gold_earned = run_gold,
 		level = player.xp.level if player else 1,
 	}
+	bank_run()
 	_clear_run()
 
 
@@ -139,13 +203,36 @@ func fail_run() -> void:
 	go_to_hub()
 
 
-## The player gave up: same as death.
+## The player gave up: banks the purse, same as death.
 func abandon_run() -> void:
+	bank_run()
 	_clear_run()
 	go_to_hub()
 
 
+## Moves the run purse into the banked gold and saves. Returns the reward (0 with an empty purse, when nothing
+## changes). Called when a run ends (victory, death screen, abandon) and again by go_to_hub as a safety net.
+func bank_run() -> int:
+	var reward := run_gold
+	if reward <= 0:
+		run_gold = 0
+		return 0
+	gold += reward
+	run_gold = 0
+	last_reward += reward
+	SaveGame.save(gold, attribute_levels)
+	return reward
+
+
+## What the hub shows once: the gold banked since the last call, which is cleared.
+func take_reward() -> int:
+	var reward := last_reward
+	last_reward = 0
+	return reward
+
+
 func go_to_hub() -> void:
+	bank_run()
 	_go(HUB)
 
 
