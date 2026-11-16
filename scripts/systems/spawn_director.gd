@@ -11,6 +11,8 @@ extends Node
 @export var alive_cap: int = 300
 @export var hp_scale_per_minute: float = 0.15
 @export var ring_margin: float = 24.0  # px beyond the screen corner
+const SPAWN_RADIUS := 7.0  # a mob's footprint when checking a spawn against obstacles
+
 @export var teleport_margin: float = 120.0  # px beyond the ring before an enemy is recycled
 
 var run_manager: RunManager
@@ -18,6 +20,8 @@ var run_manager: RunManager
 var stage := StageData.new()
 var pickups: Pickups
 var enemies_root: Node2D
+## Walls and pillars; spawns avoid them and enemies are given it. Null in scenes without any.
+var obstacles: ObstacleMap
 var alive := 0
 var alive_by_type: Dictionary = {}  # id -> count
 
@@ -95,10 +99,17 @@ func _pick_type(t: float) -> EnemyData:
 ## A random point on the spawn ring around `around` that lies inside the arena, or null.
 func ring_position(around: Vector2) -> Variant:
 	var bounds := Rect2(Vector2.ZERO, Vector2(Arena.world_size)).grow(-8.0 - Arena.wall_margin)
+	var best: Variant = null
 	for i in 8:
 		var p := around + Vector2.from_angle(randf() * TAU) * ring_radius
 		if bounds.has_point(p):
-			return p
+			if obstacles == null or not obstacles.blocked(p, SPAWN_RADIUS):
+				return p
+			if best == null:
+				best = p
+	if best != null:  # every inside candidate was in an obstacle: take the nearest free spot instead
+		var out := obstacles.push_out(best, SPAWN_RADIUS)
+		return out if bounds.has_point(out) else best
 	return null
 
 
@@ -116,6 +127,7 @@ func _acquire(type: EnemyData) -> Enemy:
 	var enemy: Enemy = enemy_scene.instantiate()
 	enemy.data = type
 	enemy.director = self
+	enemy.obstacles = obstacles
 	enemy.died.connect(_on_enemy_died)
 	enemies_root.add_child(enemy)
 	if stage.theme != null:
