@@ -22,6 +22,14 @@ One folder per map: `content/maps/<id>/` holds `map.tres` (a `MapTheme`), `thumb
    (the whole arena), `<id>_monsters.png`, `contact_sheet.png` and `monsters_sheet.png` into `<folder>`
    (`--seed=N` after the folder changes the seed, default 7). Look at the PNGs; pixels are not tested.
 
+## Ambient life
+
+Each `map.tres` has an "Ambience" group (spec v0.9 section 3): `ambience_kind` (`0` none, `1` dust, `2` embers, `3` spores, `4` frost,
+`5` glint), `ambience_color` (its alpha is ignored; the kind sets it) and `ambience_count` (0 to 80 motes alive at once). The kind is
+the motion: dust drifts sideways, embers rise and flicker, spores wander, frost falls, glints twinkle in place. The motes are drawn by
+`Ambience` (`scripts/systems/ambience.gd`) in the world, apart from the hit-effect particles. A new map starts with the template's warm
+dust; pick a kind and a colour that suit it. `ambience.gd` checks every map's kind, colour and count against the table in the spec.
+
 ## The workbench and the screenshot tool
 
 - `scenes/dev/map_preview.tscn` (F6 in the editor, or `godot --path . scenes/dev/map_preview.tscn`): the map picked in

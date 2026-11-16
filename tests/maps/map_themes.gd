@@ -79,6 +79,8 @@ func _check_theme(theme, id: String, is_default: bool) -> void:
 	_check(theme.ambient.r >= 0.8 and theme.ambient.g >= 0.8 and theme.ambient.b >= 0.8, tag + "ambient channels at least 0.8")
 	_check(theme.torch_count >= 4 and theme.torch_count <= 12, tag + "torch_count 4..12")
 	_check(theme.vignette >= 0.4 and theme.vignette <= 0.8, tag + "vignette 0.4..0.8")
+	_check(theme.ambience_kind >= 0 and theme.ambience_kind <= 5, tag + "ambience_kind is one of the six kinds")
+	_check(theme.ambience_count >= 0 and theme.ambience_count <= 80, tag + "ambience_count 0..80")
 	_check(theme.horizontal_bias >= 0.0 and theme.horizontal_bias <= 1.0, tag + "horizontal_bias 0..1")
 	_check(theme.wall_count >= 0 and theme.pillar_count >= 0, tag + "counts are not negative")
 	_check(theme.wall_count + theme.pillar_count <= 16, tag + "walls + pillars <= 16 (%d)" % (theme.wall_count + theme.pillar_count))

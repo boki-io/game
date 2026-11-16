@@ -21,6 +21,8 @@ class Targets extends RefCounted:
 	var decor: Node2D
 	## The world's canvas, where the ambient CanvasModulate goes (not the UI layer).
 	var ambient_parent: Node
+	## The world node the Ambience (drifting motes) goes in; not the root, so the motes are in the world's canvas under the UI.
+	var ambience_parent: Node
 	## The vignette TextureRect (its darkness is set from the theme).
 	var vignette: TextureRect
 	## The ObstacleMap is added here, and also set in `obstacles` when it exists.
@@ -62,6 +64,8 @@ static func build(theme: MapTheme, map_seed: int, size: Vector2, targets: Target
 		targets.decor.add_child(decor)
 	if targets.ambient_parent != null:
 		MapLook.apply_ambient(targets.ambient_parent, theme)
+	if targets.ambience_parent != null:
+		MapLook.apply_ambience(targets.ambience_parent, theme, map_seed)
 	if targets.vignette != null:
 		MapLook.apply_vignette(targets.vignette, theme)
 	if targets.obstacles_parent != null:

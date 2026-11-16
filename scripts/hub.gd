@@ -60,6 +60,7 @@ func _ready() -> void:
 	_build_dummies()
 	_build_camp()
 	_build_cave()
+	MapLook.apply_ambience($World, MapRegistry.default(), 0)  # the hub builds no theme: the default cave's dust
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)

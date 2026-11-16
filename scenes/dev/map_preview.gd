@@ -65,6 +65,7 @@ func rebuild() -> void:
 	_targets.props = $World/Props
 	_targets.decor = $World/Decor
 	_targets.ambient_parent = self
+	_targets.ambience_parent = $World
 	_targets.vignette = $UI/Vignette
 	_targets.obstacles_parent = self
 	_layout = MapBuilder.build(map, seed, Vector2(Arena.world_size), _targets)

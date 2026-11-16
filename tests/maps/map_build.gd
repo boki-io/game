@@ -74,6 +74,10 @@ func _init() -> void:
 		var main: Node = F.start_run(self, &"knight")
 		await F.frames(self, 3)
 
+		# The drifting motes of the theme (the default cave for no theme), in the world node.
+		var ambience: Node = main.get_node_or_null("World/Ambience")
+		_check(ambience != null and ambience.kind == map_theme.ambience_kind and ambience.motes().size() == map_theme.ambience_count, tag + "the run has the theme's Ambience")
+
 		# The same layout as the generator, in the nodes.
 		var props: Node = main.get_node("World/Props")
 		_check(_count(props, WallScript) == expected.walls.size(), tag + "wall count equals the layout")

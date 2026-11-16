@@ -76,6 +76,7 @@ func _build_map() -> void:
 	targets.props = props_root
 	targets.decor = $World/Decor
 	targets.ambient_parent = self
+	targets.ambience_parent = $World
 	targets.vignette = $UI/Vignette
 	targets.obstacles_parent = self
 	var layout := MapBuilder.build(theme, GameSession.map_seed(), Vector2(Arena.world_size), targets)

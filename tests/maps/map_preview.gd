@@ -51,6 +51,7 @@ func _init() -> void:
 			var v = theme.variant_for(m.data.id)
 			_check(v != null and m.sprite.body_color == v.body_color and m.sprite.mark == int(v.mark), tag + "%s wears the map's variant" % m.data.id)
 		_check(preview._targets.obstacles != null and preview._targets.obstacles.has_obstacles(), tag + "an ObstacleMap exists")
+		_check(preview.get_node("World").get_children().filter(func(n): return n.name == &"Ambience").size() == (1 if theme.ambience_kind != 0 and theme.ambience_count > 0 else 0), tag + "the workbench has one Ambience, not one per rebuild")
 	# Keys: Tab goes to the next map, R changes the seed, L reloads from disk, O and Z toggle.
 	var before: String = preview.map.id
 	preview._unhandled_key_input(_key(KEY_TAB))

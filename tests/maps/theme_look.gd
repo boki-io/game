@@ -193,6 +193,16 @@ func _init() -> void:
 	_check(LookScript.apply_ambient(holder, null) == mod and mod.color == Color.WHITE and holder.get_child_count() == 1,
 		"apply_ambient updates the same node")
 
+	# Ambience: created, updated in place and removed by apply_ambience.
+	theme.ambience_kind = 2
+	theme.ambience_count = 12
+	var amb = LookScript.apply_ambience(holder, theme, 4)
+	_check(amb != null and amb.kind == 2 and amb.motes().size() == 12 and amb.get_parent() == holder, "apply_ambience builds the theme's motes")
+	theme.ambience_count = 0
+	_check(LookScript.apply_ambience(holder, theme, 4) == null and holder.get_node_or_null("Ambience") == null, "a count of 0 removes the Ambience")
+	var dust = LookScript.apply_ambience(holder, null, 4)
+	_check(dust != null and dust.kind == 1 and dust.motes().size() == 40, "a null theme gives today's cave dust")
+
 	# Every registered theme reaches the classes (not only the synthetic one).
 	for t in Registry.all():
 		var w: StaticBody2D = WallScript.new()

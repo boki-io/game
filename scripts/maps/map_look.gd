@@ -34,6 +34,24 @@ static func ambient_color(theme: MapTheme) -> Color:
 	return Color.WHITE if theme == null else theme.ambient
 
 
+## Adds, updates or removes the child named "Ambience" of `parent` (the world node): the theme's drifting motes. A null theme keeps today's
+## cave with 40 motes of warm dust; a kind of NONE or a count of 0 removes the node (and returns null). `map_seed` seeds the motes.
+static func apply_ambience(parent: Node, theme: MapTheme, map_seed: int) -> Ambience:
+	var node := parent.get_node_or_null("Ambience") as Ambience
+	var wanted := theme == null or (theme.ambience_kind != MapTheme.AmbienceKind.NONE and theme.ambience_count > 0)
+	if not wanted:
+		if node != null:
+			parent.remove_child(node)
+			node.queue_free()
+		return null
+	if node == null:
+		node = Ambience.new()
+		node.name = "Ambience"
+		parent.add_child(node)
+	node.setup(theme, map_seed)
+	return node
+
+
 ## Adds (or updates, when `parent` already has one named "Ambient") a CanvasModulate that tints the world.
 ## Put it in the world's canvas, not on the UI CanvasLayer's, so the HUD, menus and vignette stay untinted.
 static func apply_ambient(parent: Node, theme: MapTheme) -> CanvasModulate:

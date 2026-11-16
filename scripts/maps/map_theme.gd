@@ -5,6 +5,8 @@ extends Resource
 ## name it. Colours are Color, counts are ints.
 
 enum Style { SCATTER, LANES, CLUSTERS }
+## The motion of the drifting motes (Ambience): dust drifts sideways, embers rise, spores wander, frost falls, glints twinkle in place.
+enum AmbienceKind { NONE, DUST, EMBERS, SPORES, FROST, GLINT }
 
 @export_group("Identity")
 ## Unique, equal to the folder name.
@@ -70,6 +72,13 @@ enum Style { SCATTER, LANES, CLUSTERS }
 @export_range(0, 140) var decor_count := 110
 ## CaveDecor.Kind -> weight (float).
 @export var decor_weights: Dictionary = {}
+
+@export_group("Ambience")
+## Drifting motes in the air (spec v0.9 section 3). NONE or a count of 0 means none.
+@export var ambience_kind := AmbienceKind.NONE
+## The mote colour; its alpha is ignored (the kind sets it).
+@export var ambience_color := Color.WHITE
+@export_range(0, 80) var ambience_count := 40
 
 
 ## The variant that dresses `enemy_id` on this map, or null when there is none (the enemy keeps its own look).
