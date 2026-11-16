@@ -134,3 +134,35 @@ map has its variant file (spec 3.8).
 `NAMES`, `THUMBNAIL_COUNT` and `THUMBNAIL_PATH` are deleted (nothing else read them). The shuffle still draws one
 permutation of the registry (so the same seeds produce the same name/thumbnail pairing as v0.5, since the registry order
 equals the old name order).
+
+## v0.6 layout (build steps 2 and 3: `MapLayout`, `MapLayoutData`)
+
+Assumptions where the spec left room (all in `scripts/maps/map_layout.gd` unless noted):
+- **L1. Legacy path duplicates `main.gd`'s pillar loop and torch list.** `main.gd` cannot be edited from this branch, so
+  `MapLayout._legacy` copies `_spawn_props` (seed 1, margin 48, skip within 60 of the centre or 16 px of a wall) and the
+  hand-placed torches; `CaveWall.layout` and `CaveDecor.layout` are called, not copied. `tests/maps/map_layout.gd`
+  pins all four against today's code (the pillar loop copied into the test). Pillar count is `theme.pillar_count` (8).
+- **L2. Pillar positions in `MapLayoutData.pillars` are base positions** (a Prop's origin). Every rule is checked on the
+  collider centre = base + (0, -6), radius 6. "40 px from walls/pillars" means edge to edge (shape gap 40); "60 px from
+  the centre" and "band + 24" are measured on the collider centre; a pillar's circle may not touch the start square.
+- **L3. Wall gaps use the Chebyshev `Rect2.grow` test, as `CaveWall.layout` does**: SCATTER 56, LANES between segments
+  of any lane 64 (cross pieces 56), CLUSTERS 56 between islands and 40..56 inside an island. The test checks the true
+  rectangle distance against 56 (SCATTER) or 40 (others).
+- **L4. LANES:** lane coordinates are evenly spaced inside the wall margin with a per-lane jitter of up to 24 px (one
+  jitter per lane, not per wall); walls go to lanes round-robin; share on lanes is `round(wall_count * dominant share)`,
+  the rest are SCATTER cross pieces in the other orientation. A lane through the spawn clearing is cut by rejection.
+- **L5. CLUSTERS:** anchors by rejection (280 apart), a pair is accepted only whole (the last island of an odd count has
+  one wall). The L shape hangs the second wall 40..56 px past the first wall's side at one of its ends. The first half
+  of the pillars (rounded up) are tried within 90 px of an anchor (60 tries each), then fall back to SCATTER rules.
+- **L6. Torches:** distributed over the four sides by side length (largest remainder), even spacing inside
+  `[40, length - 40]` with jitter of up to 20% of the spacing, on the same band positions the hand-placed ones use.
+- **L7. Decor:** 35% hug the rock band (as `CaveDecor`), the rest are uniform; kind by `decor_weights` (keys sorted so the
+  roll does not depend on dictionary order). Off `start.grow(24)`, 8 px off every wall, 14 px off a pillar centre, 26 px
+  from the arena edge. Decor stays drawn-only; no new kinds.
+- **L8. The sealed-area test implements the flow-field rule locally** (cell centre inside an obstacle grown by 8 px on a
+  16 px grid; cells whose centre is in the rock band are neither free nor reachable). It carries a TODO to switch to
+  `FlowField.cell_blocked`. "A free cell across every gap" is checked for every pair of obstacles closer than 80 px:
+  a free cell centre within 12 px of the midpoint of their closest points (pillars by their bounding square).
+- **L9. Seeds in the test** are `hash("%d:%s" % [i, theme.id])` for i in 0..29, the spec's 6.1 form.
+- Results: all eight maps place 100% of walls, pillars and decor on all 30 seeds, and 100% of free cells are reachable;
+  no theme's numbers in `map.tres` needed changing.
