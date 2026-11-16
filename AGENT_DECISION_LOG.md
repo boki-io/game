@@ -134,3 +134,31 @@ map has its variant file (spec 3.8).
 `NAMES`, `THUMBNAIL_COUNT` and `THUMBNAIL_PATH` are deleted (nothing else read them). The shuffle still draws one
 permutation of the registry (so the same seeds produce the same name/thumbnail pairing as v0.5, since the registry order
 equals the old name order).
+
+# v0.6 variants
+
+## V1. Sprite fields and the "today" defaults
+`PlaceholderSprite.outline_color` defaults to a fully transparent colour, meaning "the body darkened by half" (today's
+look); `eye_color` defaults to white, `mark` to `NONE`. The sprite has its own `Mark` enum (same order as
+`MonsterVariant.Mark`; the test checks they agree) so the sprite does not depend on the map classes.
+
+## V2. Danger signals stay untouched
+The themed outline is used only in the plain look: during the warn blink, the hit flash and the dim the outline is
+derived from the current body colour as before. The mark is hidden by the flash and follows the blink and dim
+(lightened / darkened like the body). The warn colour and `!` are unchanged.
+
+## V3. Mark shapes (24-32 px bodies, 12x16 to 20x36)
+STRIPE: a band across the lower body (at least 2 px). SPOTS: three squares (at least 2 px) low in the body, clear of
+the eye. CREST: two or three small triangles inside the top of the body (3 px tall or more; two teeth when the body
+is narrower than 14 px). Rendered at several variants and looked at: all three read, the grunt's spots are the
+faintest (2 px), which is down to `mark_color` contrast in the variant files.
+
+## V4. Applying
+`SpawnDirector._acquire` applies the variant only when `stage.theme` is not null (an editor run has none). Pooled
+enemies are not re-dressed. `Enemy.apply_variant(null)` returns without touching anything. The death puff uses
+`sprite.body_color`.
+
+## V5. The "no extra fields" guard
+`monster_variants.gd` lists the script's own stored properties of `MonsterVariant` and requires exactly the six
+appearance fields; behaviour is compared as the same `EnemyData` object plus its fields, the hitbox radius, the brain
+script, health and weight read from enemies the director built under every theme and under no theme.
