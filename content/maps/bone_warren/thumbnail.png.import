@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dbgfvvt1l58mr"
-path="res://.godot/imported/stage_4.png-8df79e750c69d3787accc39f5f55a086.ctex"
+uid="uid://dk4h0mw0w07o5"
+path="res://.godot/imported/thumbnail.png-c50011909afaa5d372ba85bde239a42b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/stages/stage_4.png"
-dest_files=["res://.godot/imported/stage_4.png-8df79e750c69d3787accc39f5f55a086.ctex"]
+source_file="res://content/maps/bone_warren/thumbnail.png"
+dest_files=["res://.godot/imported/thumbnail.png-c50011909afaa5d372ba85bde239a42b.ctex"]
 
 [params]
 

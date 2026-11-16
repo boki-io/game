@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkahso2rixjjs"
-path="res://.godot/imported/stage_3.png-90bc71e0a6c2e63ba2ad835de378c848.ctex"
+uid="uid://6aalp70tyu1q"
+path="res://.godot/imported/thumbnail.png-fb37451bf52a879795f3f904fa71d330.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/stages/stage_3.png"
-dest_files=["res://.godot/imported/stage_3.png-90bc71e0a6c2e63ba2ad835de378c848.ctex"]
+source_file="res://content/maps/spore_cavern/thumbnail.png"
+dest_files=["res://.godot/imported/thumbnail.png-fb37451bf52a879795f3f904fa71d330.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7ed2a0f76pcw"
-path="res://.godot/imported/stage_2.png-360715c7f6e74ce4b601e9a079921c5f.ctex"
+uid="uid://dm3egtn00sx12"
+path="res://.godot/imported/thumbnail.png-1658af7c759ac750536e450ae862bb1b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/stages/stage_2.png"
-dest_files=["res://.godot/imported/stage_2.png-360715c7f6e74ce4b601e9a079921c5f.ctex"]
+source_file="res://content/maps/crystal_vault/thumbnail.png"
+dest_files=["res://.godot/imported/thumbnail.png-1658af7c759ac750536e450ae862bb1b.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6da217k2d1eb"
-path="res://.godot/imported/stage_7.png-1c8135f6d4faf0b4f2d040dd7e0bfc30.ctex"
+uid="uid://e0binqi06ui2"
+path="res://.godot/imported/thumbnail.png-6bb4cd94669ec923e83c08224d3ab95e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/stages/stage_7.png"
-dest_files=["res://.godot/imported/stage_7.png-1c8135f6d4faf0b4f2d040dd7e0bfc30.ctex"]
+source_file="res://content/maps/sulfur_pits/thumbnail.png"
+dest_files=["res://.godot/imported/thumbnail.png-6bb4cd94669ec923e83c08224d3ab95e.ctex"]
 
 [params]
 

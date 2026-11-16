@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
-"""Generates the placeholder stage thumbnails into assets/stages/. Pure stdlib; rerun to tweak."""
+"""Generates each map's thumbnail into content/maps/<id>/thumbnail.png. Pure stdlib; rerun to tweak.
+
+The rock, floor and glow colours below are the source of truth: content/maps/<id>/map.tres uses the same values for
+`rock`, `floor_plain[0]` and `glow_color` (tests/maps/map_themes.gd checks they stay close)."""
 import os
 import random
 import struct
 import zlib
 
 W, H = 64, 40
-OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "stages")
+OUT = os.path.join(os.path.dirname(__file__), "..", "..", "content", "maps")
 
-# name, rock colour, floor colour, glow colour (crystals, lava, water ...)
+# map id, rock colour, floor colour, glow colour (crystals, lava, water ...)
 THEMES = [
-    ("mossy", (40, 52, 40), (62, 92, 58), (120, 200, 90)),
-    ("crystal", (38, 40, 60), (58, 64, 96), (110, 230, 240)),
-    ("ember", (56, 36, 32), (96, 56, 40), (255, 140, 50)),
-    ("frost", (46, 58, 72), (110, 130, 150), (200, 235, 255)),
-    ("spore", (52, 38, 62), (84, 60, 96), (210, 120, 240)),
-    ("bone", (66, 58, 48), (120, 108, 88), (235, 225, 200)),
-    ("flooded", (34, 44, 58), (40, 72, 110), (90, 160, 255)),
-    ("sulfur", (62, 58, 34), (104, 96, 46), (250, 230, 70)),
+    ("mossy_hollow", (40, 52, 40), (62, 92, 58), (120, 200, 90)),
+    ("crystal_vault", (38, 40, 60), (58, 64, 96), (110, 230, 240)),
+    ("ember_depths", (56, 36, 32), (96, 56, 40), (255, 140, 50)),
+    ("frostbite_grotto", (46, 58, 72), (110, 130, 150), (200, 235, 255)),
+    ("spore_cavern", (52, 38, 62), (84, 60, 96), (210, 120, 240)),
+    ("bone_warren", (66, 58, 48), (120, 108, 88), (235, 225, 200)),
+    ("flooded_gallery", (34, 44, 58), (40, 72, 110), (90, 160, 255)),
+    ("sulfur_pits", (62, 58, 34), (104, 96, 46), (250, 230, 70)),
 ]
 
 
@@ -85,7 +88,8 @@ def draw(index, theme):
     return px
 
 
-os.makedirs(OUT, exist_ok=True)
 for i, theme in enumerate(THEMES):
-    write_png(os.path.join(OUT, "stage_%d.png" % i), draw(i, theme))
-print("wrote", len(THEMES), "thumbnails to", os.path.abspath(OUT))
+    folder = os.path.join(OUT, theme[0])
+    os.makedirs(folder, exist_ok=True)
+    write_png(os.path.join(folder, "thumbnail.png"), draw(i, theme))
+print("wrote", len(THEMES), "thumbnails under", os.path.abspath(OUT))

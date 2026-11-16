@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b02es2rcxmyqi"
-path="res://.godot/imported/stage_5.png-2fe604ad40c50feb78070701f5e0f34f.ctex"
+uid="uid://dxtru3q6gcg2r"
+path="res://.godot/imported/thumbnail.png-2877e0a405ee988f6cf9737cba964d15.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/stages/stage_5.png"
-dest_files=["res://.godot/imported/stage_5.png-2fe604ad40c50feb78070701f5e0f34f.ctex"]
+source_file="res://content/maps/mossy_hollow/thumbnail.png"
+dest_files=["res://.godot/imported/thumbnail.png-2877e0a405ee988f6cf9737cba964d15.ctex"]
 
 [params]
 

@@ -13,6 +13,8 @@ const BASE_COIN_CHANCE := 0.25
 
 @export var name := "Cave"
 @export var thumbnail: Texture2D
+## The map this stage is played on (spec 0.6). `name` and `thumbnail` come from it.
+@export var theme: MapTheme
 @export var tier := Tier.NORMAL
 ## Spawn rate and alive cap change by this percent.
 @export var population := 0
