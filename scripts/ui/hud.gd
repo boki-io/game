@@ -8,6 +8,11 @@ const BAR_SIZE := Vector2(90, 8)
 const ICON_RADIUS := 11.0
 const ICON_GAP := 6.0
 const FLASH_TIME := 0.3
+## The red edge pulse when the player takes a hit: bands stepping in from every screen edge, fading over HURT_PULSE_TIME.
+const HURT_PULSE_TIME := 0.35
+const HURT_BANDS := 8
+const HURT_BAND_WIDTH := 6.0
+const HURT_ALPHA := 0.3
 const SLOTS := [
 	{slot = &"auto", key = "", color = Color("e8e8e8")},
 	{slot = &"q", key = "Q", color = Color("6cb4ff")},
@@ -21,6 +26,7 @@ var run_manager: RunManager
 var _stage_text := ""
 var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
 var _mana_flash := 0.0
+var _hurt_pulse := 0.0  # seconds of the red edge pulse left
 
 
 func bind(p: Player, rm: RunManager = null) -> void:
@@ -30,13 +36,19 @@ func bind(p: Player, rm: RunManager = null) -> void:
 	var stage := GameSession.current_stage
 	if rm != null and stage != null and GameSession.path != null:
 		_stage_text = "Stage %d/%d - %s" % [GameSession.current_column + 1, GameSession.path.column_count(), stage.name]
+	_hurt_pulse = 0.0
 	player.caster.cast_failed.connect(_on_cast_failed)
+	player.hurtbox.hit_taken.connect(_on_hit_taken)
 	player.tree_exiting.connect(_on_player_exiting.bind(p))
 
 
 func _on_player_exiting(p: Player) -> void:
 	if player == p:
 		player = null
+
+
+func _on_hit_taken(_amount: float) -> void:
+	_hurt_pulse = HURT_PULSE_TIME
 
 
 func _on_cast_failed(slot: StringName, reason: StringName) -> void:
@@ -54,12 +66,15 @@ func _process(delta: float) -> void:
 		if _flash[slot] <= 0.0:
 			_flash.erase(slot)
 	_mana_flash = maxf(_mana_flash - delta, 0.0)
+	_hurt_pulse = maxf(_hurt_pulse - delta, 0.0)
 	queue_redraw()
 
 
 func _draw() -> void:
 	if not is_instance_valid(player):
 		return
+	if _hurt_pulse > 0.0:
+		_draw_hurt_pulse()
 	var font := ThemeDB.fallback_font
 	if run_manager == null:
 		_draw_bar(Vector2(6, 6), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
@@ -82,6 +97,19 @@ func _draw() -> void:
 
 	_draw_xp(font)
 	_draw_icons(font)
+
+
+## Red bands along the four screen edges, strongest at the edge and fading inward and over time.
+func _draw_hurt_pulse() -> void:
+	var view := get_viewport_rect().size
+	var fade := _hurt_pulse / HURT_PULSE_TIME
+	for i in HURT_BANDS:
+		var color := Color(0.9, 0.1, 0.1, HURT_ALPHA * (1.0 - i / float(HURT_BANDS)) * fade)
+		var off := i * HURT_BAND_WIDTH
+		draw_rect(Rect2(0, off, view.x, HURT_BAND_WIDTH), color)  # top
+		draw_rect(Rect2(0, view.y - off - HURT_BAND_WIDTH, view.x, HURT_BAND_WIDTH), color)  # bottom
+		draw_rect(Rect2(off, 0, HURT_BAND_WIDTH, view.y), color)  # left
+		draw_rect(Rect2(view.x - off - HURT_BAND_WIDTH, 0, HURT_BAND_WIDTH, view.y), color)  # right
 
 
 ## A drawn coin and the gold number, right-aligned under the kills counter.

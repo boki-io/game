@@ -74,6 +74,7 @@ func _init() -> void:
 	await _hit_tests(main, fx)
 	await _death_tests(main, fx)
 	await _pickup_tests(main)
+	await _pulse_tests(main)
 
 	main.queue_free()
 	await process_frame
@@ -215,3 +216,23 @@ func _pickup_tests(main) -> void:
 		if c.visible and c.global_position.distance_to(edge) < 40.0:
 			inside = inside and c.global_position.x >= 6.0 + Arena.wall_margin - 0.01 and c.global_position.y >= 6.0 + Arena.wall_margin - 0.01
 	_check(inside, "a pickup near the edge stays inside the arena")
+
+
+func _pulse_tests(main) -> void:
+	var p = _F.player()
+	var hud = main.get_node("UI/Hud")
+	_check(hud._hurt_pulse == 0.0, "no pulse before a hit")
+	# A landed hit sets the pulse and it runs out within 0.4 s.
+	p.hurtbox.grace_left = 0.0
+	p.hurtbox.invulnerable = false
+	_check(p.hurtbox.receive_hit(5.0), "the hit landed")
+	_check(absf(hud._hurt_pulse - 0.35) < 0.0001, "the pulse is 0.35 s, got %s" % hud._hurt_pulse)
+	await _F.seconds(self, 0.4)
+	_check(hud._hurt_pulse == 0.0, "the pulse is over after 0.4 s")
+	# A hit that does not land (i-frames, grace, Phase Shift) makes none.
+	p.hurtbox.grant_grace(1.0)
+	_check(not p.hurtbox.receive_hit(5.0) and hud._hurt_pulse == 0.0, "a hit during grace does not pulse")
+	p.hurtbox.grace_left = 0.0
+	p.hurtbox.invulnerable = true
+	_check(not p.hurtbox.receive_hit(5.0) and hud._hurt_pulse == 0.0, "a hit while invulnerable does not pulse")
+	p.hurtbox.invulnerable = false
