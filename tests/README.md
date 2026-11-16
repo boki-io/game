@@ -31,6 +31,8 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
 | `maps/map_content.gd` | `content/maps/` on disk against `MapRegistry`, required files, 64x40 thumbnails, ids, unique names, a monster variant per enemy type, no stray files (also `_template`, `_default`) |
 | `maps/map_themes.gd` | Every `MapTheme` field in range, ambient near white, the eight maps differ, monsters readable on the floor, thumbnail colour close to the theme |
+| `maps/obstacle_blocking.gd` | Walls and pillars block enemies: push-out and sliding, knockback, going round a wall, the director's spawn rule, flow-field budget and rebuild rules, Ranged and Dasher line of sight, the stuck failsafe, corner hysteresis, the hub unchanged (about 60 s) |
+| `maps/crowd_bone_warren.gd` | 300 enemies on a dense hand-made Bone-Warren-like layout, stationary and moving Player, under the crowd frame limit (logs worst frame and the mean without obstacles) |
 | `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
 
 ## Writing one

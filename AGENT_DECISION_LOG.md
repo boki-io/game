@@ -134,3 +134,75 @@ map has its variant file (spec 3.8).
 `NAMES`, `THUMBNAIL_COUNT` and `THUMBNAIL_PATH` are deleted (nothing else read them). The shuffle still draws one
 permutation of the registry (so the same seeds produce the same name/thumbnail pairing as v0.5, since the registry order
 equals the old name order).
+
+
+# Agent decision log: spec v0.6, build step 4 (obstacles block enemies)
+
+## v0.6 obstacles
+
+### O1. `ObstacleMap` is a Node that also works outside the tree; no autoload is named
+Spec says "pure logic plus a thin node". `ObstacleMap extends Node` (group `obstacles`, `ObstacleMap.get_for(node)`), and
+`setup()` plus every query work on an instance that was never added to the tree. It reaches `PlayerRegistry` by path
+(`/root/PlayerRegistry`) instead of by name, so the script (and `FlowField`) compile in a `--script` test that preloads them
+before the autoloads exist (a layout test can `preload` them). `setup(walls, pillars, arena_size, playable := Rect2())`.
+
+### O2. How enemies find the map
+The director gets `obstacles` and hands it to each enemy it creates; an enemy with none falls back to
+`ObstacleMap.get_for(self)` in `_ready`. The fallback is needed because `tests/fixture.gd` spawns enemies without a director.
+The hub has no ObstacleMap, so its dummies get null (also skipped for `immovable`).
+
+### O3. `FlowField.cell_blocked(map, cell)` signature
+`static func cell_blocked(map: ObstacleMap, cell: Vector2i) -> bool`: cell centre outside `map.bounds` (the playable
+area: the rock band plus `Enemy.ARENA_PADDING`) or inside an obstacle grown by 8 px (`map.blocked(centre, 8)`, so the
+growth is round at corners, not square). The sealed-area layout test should build an `ObstacleMap` and call this; pass the
+same `playable` rect as `main.gd` (or none: then only obstacles block).
+
+### O4. Spatial grid and radius limit
+64 px cells; every shape is listed in all cells within 32 px of it. A point query looks only at the cell of the point, so
+`blocked`/`push_out` are valid for radius <= 16; `segment_clear`/`ray_distance` sample the segment every 16 px. Rectangles
+use the wall footprint (equal to the CaveWall collider), pillars the circle r=6 at base + (0,-6).
+
+### O5. Order inside `Enemy._physics_process`
+Moves in steps of at most 5 px (up to 8), each followed by `push_out`, so a 600 px/s knockback or a dash cannot jump a 16 px
+wall (a single push-out tunnelled in a test). Then the arena clamp, then one more `push_out` (the last position change),
+then the contact hit and the teleport-back, whose ring position is already obstacle-free.
+
+### O6. Straight-or-flow details
+LOS for `chase()` is a swept circle of `hitbox_radius + 6`. An enemy hugging a wall (within that margin of it) therefore
+counts as blocked and uses the flow field: harmless, the flow field leads the same way. Flow mode lasts 0.5 s (counted in
+physics frames). The first search starts at once (not after 0.25 s) so a run has a field from its first frames.
+The field search never restarts while one is running; a search that is slower than 0.25 s (about 6 frames) cannot happen at
+the 1,000 budget, so a moving Player is followed with about one search per 0.25 s.
+
+### O7. Ranged and Dasher
+- Ranged line of sight is tested on the shot line (both ends lifted by the 8 px shot height) with a 2 px radius, because
+  that is the path the projectile flies. APPROACH goes to HOLD only with `dist <= hold_distance` and a clear shot; HOLD goes
+  to APPROACH after 0.3 s without one or beyond `resume_distance`. A shot is also re-checked when the wind-up ends: a blocked
+  shot is not fired (cooldown 0.2 s).
+- Dasher AIM needs LOS with its own hitbox radius (not the 6 px extra). The lane is `ray_distance(dir, dash_distance,
+  hitbox_radius)` each AIM frame and once more when the dash starts; if the Player steps behind a wall mid-AIM the dash is just
+  short.
+- New `EnemyBrain.asks_to_move()` (default true; Ranged only in APPROACH, Dasher only in APPROACH) so the stuck failsafe
+  skips holding shooters and a Dasher in AIM/LOCK/DASH/RECOVER.
+
+### O8. Stuck failsafe is a 3 s window
+"Moved under 2 px over 3 s" is measured as a window: every 3 s of continuous asking-to-move the position is compared with
+the one at the window start. (A rolling anchor that resets at 2 px never fired because a grunt pressed on a wall drifts
+about 1 px/s along it.) So a stuck enemy is recycled between 3 and 6 s after it gets stuck. Needs a director (it uses
+`ring_position`), so director-less test enemies are never recycled.
+
+### O9. Teleport-back is independent of obstacles
+Enemies further than `teleport_distance` (about 415 px) from the Player are still recycled to the ring. Tests that park a
+Player far from an enemy therefore see it teleport: keep them close.
+
+### O10. `main.gd` hook
+`_build_obstacles()` builds the ObstacleMap from `rock_walls` and the new `prop_positions` (recorded in `_spawn_props`) and
+gives it to the director. Marked HOOK: MapBuilder (step 6) replaces it by calling `ObstacleMap.setup()` with the layout.
+
+### O11. Tests
+- `tests/maps/obstacle_blocking.gd` removes the arena's legacy walls and pillars and places its own (real `CaveWall` colliders
+  plus an ObstacleMap), so it does not depend on any layout. About 60 s of real time (limit 120 s). Do not use
+  `Engine.time_scale` in tests: it scales the physics delta, it does not add steps.
+- `tests/maps/crowd_bone_warren.gd` uses a HAND-MADE dense layout (10 walls in 5 rows, 2 pillars), marked in the file,
+  because `MapLayout` is built elsewhere. Replace `_dense_layout()` with the generator's Bone Warren output later.
+- Spec's "20 grunts behind a lane wall" is implemented with a 400 px wall and the Player 120 px behind it.
