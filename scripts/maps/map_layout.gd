@@ -50,8 +50,13 @@ static func generate(theme: MapTheme, map_seed: int, size: Vector2) -> MapLayout
 		for length: float in WallScript.LENGTHS:
 			lengths.append(length)
 	var anchors: Array[Vector2] = []
-	# Step 2: every style is laid out as SCATTER; LANES and CLUSTERS follow in step 3.
-	_scatter_walls(theme, rng, size, start, lengths, data.walls, theme.wall_count, -1)
+	match theme.style:
+		MapTheme.Style.LANES:
+			_lane_walls(theme, rng, size, start, lengths, data.walls)
+		MapTheme.Style.CLUSTERS:
+			_cluster_walls(theme, rng, size, start, lengths, data.walls, anchors)
+		_:
+			_scatter_walls(theme, rng, size, start, lengths, data.walls, theme.wall_count, -1)
 	_place_pillars(theme, rng, size, start, data, anchors)
 	_place_torches(theme, rng, size, data.torches)
 	_place_decor(theme, rng, size, start, data)
@@ -133,6 +138,99 @@ static func _scatter_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 		var rect := Rect2(pos, dims)
 		if wall_ok(rect, walls, start, size, MARGIN):
 			walls.append(rect)
+
+
+## LANES: lines across the arena with broken rows of walls on them (gaps of at least LANE_GAP), and the other
+## orientation's share as scattered cross pieces.
+static func _lane_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
+		lengths: Array[float], walls: Array[Rect2]) -> void:
+	var edge := BAND + MARGIN
+	var horizontal := theme.horizontal_bias >= 0.5
+	var share := theme.horizontal_bias if horizontal else 1.0 - theme.horizontal_bias
+	var on_lanes := clampi(roundi(theme.wall_count * share), 0, theme.wall_count)
+	var lane_count := 3 if theme.wall_count <= 6 else 4
+	# A lane is the coordinate across the walls' direction: y for left-right walls, x for up-down ones.
+	var across_size := size.y if horizontal else size.x
+	var along_size := size.x if horizontal else size.y
+	var lo := edge
+	var hi := across_size - edge - WallScript.THICKNESS
+	var lanes: Array[float] = []
+	for i in lane_count:
+		var line := lo + (hi - lo) * float(i + 1) / float(lane_count + 1)
+		lanes.append(clampf(line + rng.randf_range(-LANE_JITTER, LANE_JITTER), lo, hi))
+	for k in on_lanes:
+		var lane := lanes[k % lane_count]
+		for attempt in 300:
+			var length := _pick_length(rng, lengths)
+			var hi_along := along_size - edge - length
+			if hi_along < edge:
+				continue
+			var along := rng.randf_range(edge, hi_along)
+			var pos := Vector2(along, lane) if horizontal else Vector2(lane, along)
+			var dims := Vector2(length, WallScript.THICKNESS) if horizontal else Vector2(WallScript.THICKNESS, length)
+			var rect := Rect2(pos.round(), dims)
+			if wall_ok(rect, walls, start, size, LANE_GAP):
+				walls.append(rect)
+				break
+	_scatter_walls(theme, rng, size, start, lengths, walls, theme.wall_count - on_lanes, 0 if horizontal else 1)
+
+
+## CLUSTERS: anchors at least CLUSTER_APART apart, two walls at each (parallel or an L), 40 to 56 px between them.
+static func _cluster_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
+		lengths: Array[float], walls: Array[Rect2], anchors: Array[Vector2]) -> void:
+	var edge := BAND + MARGIN
+	var tries := 0
+	while walls.size() < theme.wall_count and tries < WALL_TRIES:
+		tries += 1
+		var anchor := Vector2(rng.randf_range(edge + 40.0, size.x - edge - 40.0),
+			rng.randf_range(edge + 40.0, size.y - edge - 40.0)).round()
+		var near := false
+		for other in anchors:
+			if other.distance_to(anchor) < CLUSTER_APART:
+				near = true
+		if near:
+			continue
+		var pair := _cluster_pair(theme, rng, anchor, lengths, mini(2, theme.wall_count - walls.size()))
+		var ok := true
+		for rect in pair:
+			if not wall_ok(rect, walls, start, size, MARGIN):
+				ok = false
+		if ok:
+			walls.append_array(pair)
+			anchors.append(anchor)
+
+
+## One island: `need` (1 or 2) walls around `anchor`, parallel or an L, the second 40..56 px from the first.
+static func _cluster_pair(theme: MapTheme, rng: RandomNumberGenerator, anchor: Vector2, lengths: Array[float],
+		need: int) -> Array[Rect2]:
+	var t := WallScript.THICKNESS
+	var horizontal := rng.randf() < theme.horizontal_bias
+	var l1 := _pick_length(rng, lengths)
+	var l2 := _pick_length(rng, lengths)
+	var gap := float(rng.randi_range(int(CLUSTER_GAP_MIN), int(CLUSTER_GAP_MAX)))
+	var as_l := rng.randf() < 0.5
+	var flip := rng.randf() < 0.5
+	var shift := roundf(rng.randf_range(-0.25, 0.25) * minf(l1, l2))
+	var out: Array[Rect2] = []
+	if horizontal:
+		var first := Rect2(Vector2(roundf(anchor.x - l1 / 2.0), anchor.y - t), Vector2(l1, t))
+		out.append(first)
+		if need > 1:
+			if as_l:  # a wall hanging below one end
+				var x := first.position.x if flip else first.end.x - t
+				out.append(Rect2(Vector2(x, anchor.y + gap), Vector2(t, l2)))
+			else:
+				out.append(Rect2(Vector2(roundf(anchor.x - l2 / 2.0 + shift), anchor.y + gap), Vector2(l2, t)))
+	else:
+		var first := Rect2(Vector2(anchor.x - t, roundf(anchor.y - l1 / 2.0)), Vector2(t, l1))
+		out.append(first)
+		if need > 1:
+			if as_l:  # a wall running right from one end
+				var y := first.position.y if flip else first.end.y - t
+				out.append(Rect2(Vector2(anchor.x + gap, y), Vector2(l2, t)))
+			else:
+				out.append(Rect2(Vector2(anchor.x + gap, roundf(anchor.y - l2 / 2.0 + shift)), Vector2(t, l2)))
+	return out
 
 
 # --- Pillars -------------------------------------------------------------------------------------------------------

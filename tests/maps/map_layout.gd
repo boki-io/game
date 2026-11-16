@@ -192,6 +192,7 @@ func _check_layout(theme, layout, tag: String, seed_index: int) -> void:
 		for b in range(a + 1, walls.size()):
 			_check(_rect_gap(walls[a], walls[b]) >= wall_gap - 0.001 and not walls[a].intersects(walls[b]),
 				tag + "walls %s and %s are closer than %.0f px (%.1f)" % [walls[a], walls[b], wall_gap, _rect_gap(walls[a], walls[b])])
+	_check_style(theme, walls, tag)
 	# Obstacle budget and placement.
 	_check(walls.size() + layout.pillars.size() <= 16, tag + "more than 16 obstacles")
 	var share := float(walls.size()) / float(maxi(theme.wall_count, 1))
@@ -243,6 +244,37 @@ func _check_layout(theme, layout, tag: String, seed_index: int) -> void:
 			if _rect_gap(shapes[a], shapes[b]) < 80.0:
 				var pair := _closest_pair(shapes[a], shapes[b])
 				_check(_free_cell_near(blocked, (pair[0] + pair[1]) / 2.0), tag + "no free cell across the gap near %s" % ((pair[0] + pair[1]) / 2.0))
+
+
+## What makes each style recognisable (spec 6.3).
+func _check_style(theme, walls: Array[Rect2], tag: String) -> void:
+	if theme.style == ThemeScript.Style.LANES:
+		var horizontal: bool = theme.horizontal_bias >= 0.5
+		var share: float = theme.horizontal_bias if horizontal else 1.0 - theme.horizontal_bias
+		var wanted := roundi(theme.wall_count * share)
+		var lines := {}
+		var dominant := 0
+		for rect in walls:
+			if (rect.size.x > rect.size.y) == horizontal:
+				dominant += 1
+				lines[rect.position.y if horizontal else rect.position.x] = true
+		_check(dominant >= wanted, tag + "%d walls along the lanes, wanted %d" % [dominant, wanted])
+		_check(lines.size() <= (3 if theme.wall_count <= 6 else 4) + (theme.wall_count - wanted), tag + "walls spread over %d lines" % lines.size())
+		# Segments of one lane are at least 64 px apart.
+		for a in walls.size():
+			for b in range(a + 1, walls.size()):
+				if (walls[a].size.x > walls[a].size.y) == horizontal and (walls[b].size.x > walls[b].size.y) == horizontal \
+						and (walls[a].position.y if horizontal else walls[a].position.x) == (walls[b].position.y if horizontal else walls[b].position.x):
+					_check(_rect_gap(walls[a], walls[b]) >= 64.0 - 0.001, tag + "lane segments closer than 64 px")
+	elif theme.style == ThemeScript.Style.CLUSTERS:
+		var paired := 0
+		for a in walls.size():
+			for b in walls.size():
+				var gap := _rect_gap(walls[a], walls[b])
+				if a != b and gap >= 40.0 - 0.001 and gap <= 56.0 + 0.001 and _rect_gap(walls[a], walls[b]) < 57.0:
+					paired += 1
+					break
+		_check(paired >= (theme.wall_count / 2) * 2, tag + "only %d walls sit in an island pair" % paired)
 
 
 func _init() -> void:
