@@ -12,10 +12,19 @@ const SEPARATION_MAX_NEIGHBORS := 6  # bounds the cost of a dense crowd
 const ARENA_PADDING := 6.0
 const FLASH_TIME := 0.06
 const KNOCKBACK_DECAY := 640.0  # px/s^2
+const LOS_MARGIN := 6.0  # extra clearance around the body when deciding to walk straight (obstacles)
+const FLOW_HOLD := 0.5  # seconds an enemy that switched to the flow field stays on it
+const LOS_REFRESH := 4  # physics frames between line-of-sight refreshes
+const MAX_STEP := 5.0  # px an enemy moves between two push-outs
+const STUCK_TIME := 3.0  # asked to move but moved under STUCK_MOVE for this long: recycled
+const STUCK_MOVE := 2.0
+const STUCK_MIN_TARGET := 60.0
 
 ## Set by the SpawnDirector before the enemy is added to the tree.
 var data: EnemyData
 var director: SpawnDirector
+## Walls and pillars that block it; null in scenes without any (the hub). Set by the director or found in the tree.
+var obstacles: ObstacleMap
 var active := false
 var facing := Vector2.RIGHT
 var brain: EnemyBrain
@@ -25,6 +34,12 @@ var _flash_left := 0.0
 var _knockback := Vector2.ZERO
 var _stun_left := 0.0
 var _separation_cache := Vector2.ZERO
+var _los_clear := true
+var _on_flow := false
+var _flow_until := 0
+var _flow_dir := Vector2.ZERO
+var _stuck_anchor := Vector2.ZERO
+var _stuck_t := 0.0
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -41,6 +56,8 @@ func _ready() -> void:
 	$Hitbox/CollisionShape2D.shape = shape
 	brain = data.brain.new()
 	brain.setup(self)
+	if obstacles == null:
+		obstacles = ObstacleMap.get_for(self)
 
 
 func activate(pos: Vector2, hp_multiplier: float) -> void:
@@ -56,6 +73,10 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	sprite.shake = 0.0
 	sprite.dim = false
 	brain.reset()
+	_los_clear = true
+	_on_flow = false
+	_stuck_t = 0.0
+	_stuck_anchor = pos
 	active = true
 	visible = true
 	process_mode = Node.PROCESS_MODE_INHERIT
@@ -105,9 +126,36 @@ func apply_knockback(impulse: Vector2) -> void:
 func chase(target: Player, speed: float) -> Vector2:
 	var to := target.global_position - global_position
 	var dir := to.normalized() if to.length_squared() > 0.01 else Vector2.ZERO
+	if obstacles != null and obstacles.has_obstacles():
+		dir = _steer(target, dir)
 	if dir != Vector2.ZERO:
 		facing = dir
 	return (dir + _separation() * SEPARATION_WEIGHT) * speed
+
+
+## Whether the way to `target` is open for a circle of `radius` (always true without obstacles).
+func has_line_of_sight(target: Player, radius: float, lift := Vector2.ZERO) -> bool:
+	return obstacles == null or obstacles.segment_clear(global_position + lift, target.global_position + lift, radius)
+
+
+## Straight at the target when the way is clear, otherwise along the flow field. Switching to the flow field
+## sticks for FLOW_HOLD seconds so an enemy at a wall corner does not flip-flop. The line-of-sight result is
+## cached and refreshed every LOS_REFRESH-th physics frame.
+func _steer(target: Player, straight: Vector2) -> Vector2:
+	var frame := Engine.get_physics_frames()
+	if (frame + get_instance_id()) % LOS_REFRESH == 0:
+		_los_clear = has_line_of_sight(target, data.hitbox_radius + LOS_MARGIN)
+		if not _los_clear or _on_flow:
+			_flow_dir = obstacles.flow_direction(global_position)
+	if _on_flow and frame >= _flow_until:
+		_on_flow = false
+	if _los_clear and not _on_flow:
+		return straight
+	if not _on_flow:
+		_on_flow = true
+		_flow_until = frame + int(FLOW_HOLD * Engine.physics_ticks_per_second)
+		_flow_dir = obstacles.flow_direction(global_position)
+	return _flow_dir if _flow_dir != Vector2.ZERO else straight
 
 
 ## Standing still, turned toward `target`, but still easing away from neighbors.
@@ -134,11 +182,22 @@ func _physics_process(delta: float) -> void:
 			sprite.modulate = Color.WHITE
 	else:
 		velocity = brain.think(delta, target)
-	global_position += (velocity + _knockback) * delta
+	var asked := velocity + _knockback
+	if obstacles == null:
+		global_position += asked * delta
+	else:
+		# Short steps, each pushed out of obstacles, so a fast knockback or dash cannot jump over a wall.
+		var steps := clampi(ceili(asked.length() * delta / MAX_STEP), 1, 8)
+		for i in steps:
+			global_position = obstacles.push_out(global_position + asked * delta / steps, data.hitbox_radius)
 	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	global_position = global_position.clamp(
 		Vector2(ARENA_PADDING, ARENA_PADDING) + Vector2(Arena.wall_margin, Arena.wall_margin),
 		Vector2(Arena.world_size) - Vector2(ARENA_PADDING, ARENA_PADDING) - Vector2(Arena.wall_margin, Arena.wall_margin))
+	if obstacles != null and not data.immovable:
+		# The last position change of the frame: shortest way out of any wall or pillar, so it slides along them.
+		global_position = obstacles.push_out(global_position, data.hitbox_radius)
+		_check_stuck(delta, asked, target)
 	sprite.facing = facing
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
@@ -150,6 +209,27 @@ func _physics_process(delta: float) -> void:
 		var ring_pos: Variant = director.ring_position(target.global_position)
 		if ring_pos != null:
 			global_position = ring_pos
+
+
+## An enemy that asked to move (at least half its speed) but covered under 2 px in a 3 s window, far from its
+## target, is recycled through the teleport-back. Covers whatever the flow field misses.
+func _check_stuck(delta: float, asked: Vector2, target: Player) -> void:
+	if (_stun_left > 0.0 or director == null or not brain.asks_to_move() or asked.length() < data.speed * 0.5
+			or global_position.distance_to(target.global_position) <= STUCK_MIN_TARGET):
+		_stuck_anchor = global_position
+		_stuck_t = 0.0
+		return
+	_stuck_t += delta
+	if _stuck_t < STUCK_TIME:
+		return
+	var moved := global_position.distance_to(_stuck_anchor)
+	_stuck_anchor = global_position
+	_stuck_t = 0.0
+	if moved < STUCK_MOVE:
+		var ring_pos: Variant = director.ring_position(target.global_position)
+		if ring_pos != null:
+			global_position = ring_pos
+			_stuck_anchor = global_position
 
 
 func _try_contact_hit() -> void:

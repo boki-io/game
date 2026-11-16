@@ -11,6 +11,8 @@ const STAGE_CLEARED_TIME := 2.0  # seconds the "Stage cleared" banner stays
 
 ## Footprints of the freestanding rock walls (see CaveWall.layout).
 var rock_walls: Array[Rect2] = []
+## Base positions of the pillars (see _spawn_props).
+var prop_positions: Array[Vector2] = []
 
 @onready var players_root: Node2D = $World/Players
 @onready var props_root: Node2D = $World/Props
@@ -36,6 +38,7 @@ func _ready() -> void:
 
 	_build_cave()
 	_spawn_props()
+	_build_obstacles()
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.character = GameSession.character
 	player.position = Vector2(Arena.world_size) / 2.0
@@ -97,6 +100,19 @@ func _build_cave() -> void:
 		$World/Decor.add_child(decor)
 
 
+## Hands the walls and pillars to the enemies, which cannot walk through them (spec 0.6, 6.6).
+## HOOK: built here from the legacy walls and pillars of the default theme. When MapBuilder (build step 6) builds
+## the arena it returns the MapLayoutData and calls the same `ObstacleMap.setup()` with its walls and pillars,
+## and this function goes away.
+func _build_obstacles() -> void:
+	var obstacles := ObstacleMap.new()
+	var pad := Vector2(Arena.wall_margin, Arena.wall_margin) + Vector2(Enemy.ARENA_PADDING, Enemy.ARENA_PADDING)
+	var size := Vector2(Arena.world_size)
+	obstacles.setup(rock_walls, prop_positions, size, Rect2(pad, size - pad * 2.0))
+	add_child(obstacles)
+	spawn_director.obstacles = obstacles
+
+
 func _spawn_props() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1
@@ -117,3 +133,4 @@ func _spawn_props() -> void:
 		prop.set_script(PROP_SCRIPT)
 		prop.position = pos
 		props_root.add_child(prop)
+		prop_positions.append(pos)

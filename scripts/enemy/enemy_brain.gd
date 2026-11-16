@@ -25,6 +25,11 @@ func cancel() -> void:
 	pass
 
 
+## False while the brain is standing still on purpose (holding, aiming, dashing): the stuck failsafe skips it.
+func asks_to_move() -> bool:
+	return true
+
+
 func can_contact() -> bool:
 	return true
 
