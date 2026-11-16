@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_variant")
 enemy_id = &"ranged"
-body_color = Color(0.3, 0.712, 0.58, 1)
-outline_color = Color(0.15, 0.356, 0.29, 1)
+body_color = Color(0.28, 0.80, 0.70, 1)
+outline_color = Color(0.14, 0.40, 0.35, 1)
 eye_color = Color(1, 1, 1, 1)
 mark = 1
-mark_color = Color(0.515, 0.721, 1, 1)
+mark_color = Color(0.85, 1, 0.98, 1)
