@@ -10,7 +10,13 @@ const SEPARATION_RADIUS := 12.0
 const SEPARATION_WEIGHT := 0.8
 const SEPARATION_MAX_NEIGHBORS := 6  # bounds the cost of a dense crowd
 const ARENA_PADDING := 6.0
-const FLASH_TIME := 0.06
+const FLASH_TIME := 0.09
+const RECOIL_TIME := 0.1  # a visual shove of the body away from the player after a hit; the enemy itself does not move
+const RECOIL_DISTANCE := 2.0
+const SPARK_COUNT := 3
+const SPARK_SPEED := Vector2(60.0, 110.0)
+const SPARK_LIFE := 0.18
+const SPARK_SPREAD := deg_to_rad(100.0)
 const KNOCKBACK_DECAY := 640.0  # px/s^2
 const LOS_MARGIN := 6.0  # extra clearance around the body when deciding to walk straight (obstacles)
 const FLOW_HOLD := 0.5  # seconds an enemy that switched to the flow field stays on it
@@ -35,6 +41,8 @@ var brain: EnemyBrain
 
 var _contact_cd := 0.0
 var _flash_left := 0.0
+var _recoil_left := 0.0
+var _recoil_dir := Vector2.ZERO
 var _knockback := Vector2.ZERO
 var _stun_left := 0.0
 var _separation_cache := Vector2.ZERO
@@ -115,6 +123,8 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	health.setup(data.max_health * hp_multiplier)
 	_contact_cd = 0.0
 	_flash_left = 0.0
+	_recoil_left = 0.0
+	sprite.position = Vector2.ZERO
 	_knockback = Vector2.ZERO
 	_stun_left = 0.0
 	sprite.modulate = Color.WHITE
@@ -158,6 +168,15 @@ func take_damage(amount: float) -> void:
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -data.body_size.y - 6.0), amount)
 	if health.current > 0.0:
+		var near := PlayerRegistry.nearest(global_position)
+		var away := (global_position - near.global_position).normalized() if near else Vector2.ZERO
+		if fx:
+			fx.burst(global_position + Vector2(0, -data.body_size.y / 2.0), sprite.body_color.lightened(0.5), SPARK_COUNT,
+				SPARK_SPEED, SPARK_LIFE, 2.0, away, SPARK_SPREAD, Vector2.ZERO, true)
+		if not data.immovable and away != Vector2.ZERO:
+			_recoil_dir = away
+			_recoil_left = RECOIL_TIME
+			sprite.position = away * RECOIL_DISTANCE
 		if _anim and _anim.sprite_frames.has_animation(&"hit"):
 			_anim.play(&"hit")  # the art flashes itself
 		else:
@@ -227,6 +246,9 @@ func _physics_process(delta: float) -> void:
 		_flash_left -= delta
 		if _flash_left <= 0.0:
 			sprite.flash = false
+	if _recoil_left > 0.0:
+		_recoil_left = maxf(_recoil_left - delta, 0.0)
+		sprite.position = _recoil_dir * RECOIL_DISTANCE * (_recoil_left / RECOIL_TIME)
 	var target := PlayerRegistry.nearest(global_position)
 	if target == null:
 		return

@@ -71,7 +71,56 @@ func _init() -> void:
 	await create_timer(0.5).timeout
 	_check(fx._bits.is_empty(), "bits are gone after their life, %d left" % fx._bits.size())
 
+	await _hit_tests(main, fx)
+
 	main.queue_free()
 	await process_frame
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+# A frozen enemy has its physics process off, so the recoil ease is stepped by hand.
+func _step(e, frames: int) -> void:
+	for i in frames:
+		e._physics_process(1.0 / 60.0)
+
+
+func _hit_tests(main, fx) -> void:
+	var p = _F.player()
+	var spot: Vector2 = p.global_position + Vector2(60, 0)
+	var e = _F.spawn_enemy(main, "ranged", spot, 1.0, true)  # no drawn frames: it flashes white
+	await _F.frames(self, 3)
+
+	# A hit that does not kill: 3 sparks, the flash, a recoil away from the player that eases back to nothing.
+	fx.clear()
+	e.take_damage(1.0)
+	_check(fx._bits.size() == 3, "a hit gives 3 sparks, got %d" % fx._bits.size())
+	_check(absf(e._flash_left - 0.09) < 0.0001 and e.sprite.flash, "the flash lasts 0.09 s")
+	_check(e.sprite.position.x > 0.0 and e.sprite.position.length() <= 2.0001, "recoil is up to 2 px, away from the player, got %s" % e.sprite.position)
+	_step(e, 2)
+	_check(e.sprite.position.length() < 2.0, "the recoil is easing back")
+	_step(e, 6)  # 0.133 s in all
+	_check(e.sprite.position == Vector2.ZERO, "the recoil is over after 0.1 s, got %s" % e.sprite.position)
+	e.deactivate()
+
+	# Over the spark budget the sparks are skipped.
+	fx.clear()
+	fx.burst(Vector2.ZERO, Color.WHITE, fx.SPARK_BUDGET + 8, Vector2(10, 10), 5.0, 2.0)
+	var n: int = fx._bits.size()
+	var e2 = _F.spawn_enemy(main, "ranged", spot, 1.0, true)
+	await _F.frames(self, 3)
+	e2.take_damage(1.0)
+	_check(fx._bits.size() == n, "no sparks over the budget")
+	e2.deactivate()
+
+	# A training dummy gets the sparks but never moves, tints or recoils.
+	fx.clear()
+	var d = _F.spawn_enemy(main, "training_dummy", spot + Vector2(0, 40), 1.0, true)
+	await _F.frames(self, 3)
+	var start: Vector2 = d.global_position
+	d.take_damage(5.0)
+	_check(fx._bits.size() == 3, "a dummy gets the sparks")
+	_step(d, 3)
+	_check(d.sprite.position == Vector2.ZERO and d.global_position == start, "a dummy does not recoil or move")
+	_check(d.sprite.modulate == Color.WHITE, "a dummy is not tinted")
+	d.deactivate()
