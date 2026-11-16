@@ -62,7 +62,7 @@ const ABILITY_ANIMS: Array[StringName] = [&"lightning", &"meteor"]
 const PHASE_ANIM := &"phase"
 ## Every animation that plays once and then hands back to idle/walk. The ability animations are added from ABILITY_ANIMS, so a
 ## new cast animation cannot be left looping (a looping animation never finishes, so `_anim_busy` would stay true).
-const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death"] + ABILITY_ANIMS
+const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death", &"dash"] + ABILITY_ANIMS
 var _face_time := 0.0
 
 @onready var player_input: PlayerInput = $PlayerInput
@@ -313,7 +313,9 @@ func _on_cast_started(_slot: StringName, data: AbilityData) -> void:
 	if data != null and data.id == PHASE_ANIM:
 		return  # Phase Shift is instant to cast; its look is the looping phase animation
 	var anim: StringName
-	if data != null and ABILITY_ANIMS.has(data.id) and _anim.sprite_frames.has_animation(data.id):
+	if data != null and data.animation != &"":
+		anim = data.animation
+	elif data != null and ABILITY_ANIMS.has(data.id) and _anim.sprite_frames.has_animation(data.id):
 		anim = data.id
 	else:
 		_attack_toggle = not _attack_toggle

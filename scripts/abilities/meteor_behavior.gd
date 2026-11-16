@@ -5,7 +5,6 @@ extends AbilityBehavior
 ## Impact point, radius and damage are fixed at cast time.
 ## Upgrades: Bigger Blast (meteor.radius), Twin Meteor (meteor.extra), Scorched Earth (meteor.scorch).
 
-const ARENA_INSET := 8.0
 const EXTRA_DELAY := 0.4  # each extra meteor lands this long after the previous one
 const SCATTER := 50.0  # extra meteors land within this distance of the first
 const SHAKE := Vector2(3.0, 0.2)  # strength px, seconds
@@ -26,13 +25,13 @@ func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 	var radius := c.value(d, &"radius", d.radius)
 	var damage := c.damage_of(d)
 	var count := 1 + int(c.value(d, &"extra", 0.0))
-	var first := _clamp_to_arena(c.player.global_position + aim * c.value(d, &"range", d.range))
+	var first := clamp_to_arena(c.player.global_position + aim * c.value(d, &"range", d.range))
 	var extras := {"sfx": IMPACT_SOUND, "shake": SHAKE, "visual": &"meteor"}
 
 	for i in count:
 		var pos := first
 		if i > 0:
-			pos = _clamp_to_arena(first + Vector2.from_angle(randf() * TAU) * randf_range(0.0, SCATTER))
+			pos = clamp_to_arena(first + Vector2.from_angle(randf() * TAU) * randf_range(0.0, SCATTER))
 		var delay := d.windup + EXTRA_DELAY * i
 		if fx:
 			fx.telegraph(pos, radius, delay, true)
@@ -43,8 +42,3 @@ func cast(c: AbilityCaster, aim: Vector2, d: AbilityData) -> void:
 		zones.add_field(first, radius, damage * SCORCH_RATIO * scorch, SCORCH_INTERVAL, SCORCH_TICKS,
 			SCORCH_COLOR, d.windup)
 	c.play_sfx(d)  # the falling whistle; the impact sound plays from the burst
-
-
-func _clamp_to_arena(pos: Vector2) -> Vector2:
-	var inset := ARENA_INSET + Arena.wall_margin
-	return pos.clamp(Vector2(inset, inset), Vector2(Arena.world_size) - Vector2(inset, inset))

@@ -18,6 +18,10 @@ extends Resource
 @export var immunity_after: float = 0.0  # seconds the player stays unhittable after the cast
 @export var speed_multiplier: float = 1.0  # walking speed while the cast lasts (Phase: 1.5 = +50%)
 @export var knockback: float = 0.0  # px/s shove on nearby enemies when the cast ends
+## Animation played when cast; empty = the id if listed in Player.ABILITY_ANIMS, else attack1/attack2 in turn.
+@export var animation: StringName
+## Behavior numbers that have no field of their own (arrow counts, speeds, ticks ...), read with param().
+@export var params: Dictionary = {}
 @export var behavior: Script  # e.g. DashSlashBehavior
 @export var sfx: AudioStream
 ## Optional second sound played together with `sfx` (Slam's boom), unvaried.
@@ -29,3 +33,8 @@ extends Resource
 @export var effect: SpriteFrames
 @export var effect_scale: float = 1.0
 @export var effect_offset: float = 0.0  # px from the player along the aim (slash)
+
+
+## The number `key` from `params`, or `fallback` when the data does not set it.
+func param(key: StringName, fallback: float) -> float:
+	return float(params.get(key, fallback))

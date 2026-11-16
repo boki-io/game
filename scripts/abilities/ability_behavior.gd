@@ -4,11 +4,18 @@ extends RefCounted
 ## cast() starts it; the caster then calls update() every physics frame until it returns true.
 
 const ENEMY_RADIUS := 6.0  # added to reach so edge-touching enemies are hit
+const ARENA_INSET := 8.0  # clamp_to_arena keeps points this far inside the wall margin
 
 var caster: AbilityCaster
 var data: AbilityData
 ## Why can_cast() last returned false: &"no_target" or &"blocked".
 var fail_reason: StringName = &""
+
+
+## `pos` pulled inside the arena, clear of its walls (a target point for a ground effect).
+static func clamp_to_arena(pos: Vector2) -> Vector2:
+	var inset := ARENA_INSET + Arena.wall_margin
+	return pos.clamp(Vector2(inset, inset), Vector2(Arena.world_size) - Vector2(inset, inset))
 
 
 ## Checked before mana is spent or the cooldown starts. Return false to reject the cast.

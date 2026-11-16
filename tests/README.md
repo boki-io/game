@@ -13,6 +13,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `double_dash.gd` | Knight's Double Dash: free follow-up, frozen cooldown, expiry |
 | `dash_immunity.gd` | Unhittable while dashing and for `immunity_after` seconds afterwards |
 | `dasher_lane.gd` | A Dasher's locked lane hurts a player standing in it and misses one who stepped out |
+| `archer_plumbing.gd` | Spec 1.1 plumbing: `uses_mana = false` (no MP bar, no MP flash, panel text without Mana/Regen, free casts at 0 mana), `AbilityData.animation`/`param()`, `dash` as a one-shot, `AbilityBehavior.clamp_to_arena` |
 | `wizard_abilities.gd` | Arcane Bolt, Arcane Focus, Phase Shift, Chain Lightning, Meteor Strike |
 | `wizard_animations.gd` | The Wizard's SpriteFrames (nine animations, drawn timings, loops) and the Player playing them: bolt alternates attack1/attack2, lightning and meteor their own, phase loops while phased, hurt, and death surviving a killing hit |
 | `phase_belt.gd` | Phase Shift's orb belt: appears, hurts, follows, ends, Orbital Ring |
