@@ -27,6 +27,9 @@ func _init() -> void:
 	# The default is true, for every character that exists.
 	_check(CharacterData.new().uses_mana, "uses_mana defaults to true")
 	for c in CharacterRegistry.all():
+		if c.id == &"archer":
+			_check(not c.uses_mana and not hud_script.shows_mana(c), "the Archer has no MP bar")
+			continue
 		_check(c.uses_mana and hud_script.shows_mana(c), "%s uses mana: the MP bar shows" % c.display_name)
 
 	# A stand-in character without mana: no MP bar, no Mana or Regen in the panel text.
