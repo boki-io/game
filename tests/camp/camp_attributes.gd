@@ -117,8 +117,9 @@ func _check_play() -> void:
 	_check(_near(p.caster.cooldown_of(p.caster.ability_q), p.caster.ability_q.cooldown), "no levels: Q cooldown unchanged")
 	_check(_near(p.caster.cooldown_of(p.caster.ability_auto), 0.6), "no levels: auto cooldown unchanged")
 	_check(_near(main.spawn_director.coin_bonus, 0.0), "no levels: no coin bonus")
+	p.player_input.set_physics_process(false)  # it would reset move_vector to the (empty) device input every frame
 	p.player_input.move_vector = Vector2.RIGHT
-	await physics_frame
+	await _F.seconds(self, p.accel_time + 0.1)
 	_check(_near(p.velocity.length(), 90.0), "no levels: speed 90, got %s" % p.velocity.length())
 	_check(_near(p.health.max_health, 100.0) and _near(p.mana.base_max, p.character.max_mana), "no levels: max mana base")
 
@@ -143,8 +144,9 @@ func _check_play() -> void:
 	_F.upgrade(p, "damage")
 	_check(_near(p.stats.value(&"damage", 1.0), 1.21 * 1.1), "Might x Power multiply: %s" % p.stats.value(&"damage", 1.0))
 	# Agility.
+	p.player_input.set_physics_process(false)
 	p.player_input.move_vector = Vector2.RIGHT
-	await physics_frame
+	await _F.seconds(self, p.accel_time + 0.1)
 	_check(_near(p.velocity.length(), 108.9), "Agility 7: speed 108.9, got %s" % p.velocity.length())
 	p.player_input.move_vector = Vector2.ZERO
 

@@ -68,7 +68,7 @@ if the time is 0 or top is 0:  _move_vel = target                 (no division: 
 else:                          _move_vel = _move_vel.move_toward(target, rate * delta)
 velocity  = _move_vel
 move_and_slide()
-_move_vel = velocity           # keeps the wall's effect: pushing into a wall leaves no speed in that direction
+_move_vel = get_real_velocity()  # the speed really moved: pushing into a wall leaves none in that direction
 ```
 
 - `_move_vel` is a new private `Vector2` on `Player`. `velocity` stays what tests and `move_and_slide` read.
