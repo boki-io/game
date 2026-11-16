@@ -23,6 +23,8 @@ const CAMERA_BLEND := 0.3
 const WALL_BAND := 16.0  # the rock band; matches the Arena's wall_band in hub.tscn
 const SIGN_POS := Vector2(480, 290)
 const TRAINING_AREA := Rect2(110, 100, 140, 120)
+const CAMP_POS := Vector2(170, 300)  # below the training dummies
+const CAMP_RADIUS := 48.0  # interact within this of CAMP_POS to open the camp
 const BROWSE_HINT := "< >  Browse      Enter  Choose      Esc  Menu"
 const WALK_HINT := "WASD  Move      Mouse  Aim      Q E R  Abilities      I  Info      Esc  Menu"
 
@@ -31,6 +33,10 @@ var characters: Array[CharacterData] = []
 var pedestals: Array[HubPedestal] = []
 var focus_index := 0  # browse: the focused pedestal. walk: the character being played
 var player: Player
+
+## The camp screen (a Control with `open()`), assigned by the camp screen's builder; null until then.
+var camp_screen: Control
+var camp_site: CampSite
 
 var _lockout := 0.0
 var _entering_run := false
@@ -50,6 +56,7 @@ func _ready() -> void:
 	characters = CharacterRegistry.all()
 	_build_pedestals()
 	_build_dummies()
+	_build_camp()
 	_build_cave()
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
@@ -66,7 +73,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_lockout = maxf(_lockout - delta, 0.0)
-	prompt.visible = mode == Mode.WALK and is_instance_valid(player) and _pedestal_near_player() != null
+	var target := _interact_target()
+	prompt.visible = target != &""
+	if target == &"camp":
+		prompt.text = "F: Camp"
+	elif target == &"pedestal":
+		prompt.text = "F: Change character"
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -83,8 +95,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	else:
 		if event.is_action_pressed(&"interact"):
-			if _lockout <= 0.0 and _pedestal_near_player() != null:
+			if _lockout > 0.0:
+				pass
+			elif _interact_target() == &"pedestal":
 				_enter_browse(focus_index, false)
+			elif _interact_target() == &"camp":
+				_open_camp()
 		elif event.is_action_pressed(&"hub_info"):
 			panel.visible = not panel.visible
 		else:
@@ -101,6 +117,30 @@ func _build_pedestals() -> void:
 		p.setup(characters[i])
 		p.clicked.connect(_on_pedestal_clicked)
 		pedestals.append(p)
+
+
+func _build_camp() -> void:
+	camp_site = CampSite.new()
+	camp_site.position = CAMP_POS
+	camp_site.z_index = -1  # under the Player wherever it stands
+	$World.add_child(camp_site)
+
+
+## What interact would act on now: &"pedestal", &"camp" or &"" (nothing, and always nothing in browse mode).
+func _interact_target() -> StringName:
+	if mode != Mode.WALK or not is_instance_valid(player):
+		return &""
+	if _pedestal_near_player() != null:
+		return &"pedestal"
+	if CAMP_POS.distance_to(player.global_position) < CAMP_RADIUS:
+		return &"camp"
+	return &""
+
+
+## Opens the camp screen, if one has been assigned.
+func _open_camp() -> void:
+	if camp_screen != null:
+		camp_screen.open()
 
 
 ## Torches on the walls and the decor, which keeps clear of everything gameplay uses.
@@ -122,7 +162,8 @@ func _build_cave() -> void:
 ## Floor the decor must stay off: the pedestals, the training area, the lane from the door and the sign.
 func reserved_areas() -> Array[Rect2]:
 	var out: Array[Rect2] = [TRAINING_AREA, Rect2(SIGN_POS.x - 70.0, SIGN_POS.y - 30.0, 140.0, 50.0),
-		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0)]
+		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0),
+		Rect2(CAMP_POS.x - 50.0, CAMP_POS.y - 45.0, 100.0, 80.0)]
 	for p in pedestals:
 		out.append(Rect2(p.position + Vector2(-34, -60), Vector2(68, 90)))
 	return out
