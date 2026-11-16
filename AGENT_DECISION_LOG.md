@@ -347,3 +347,25 @@ stone, and enemies in the map's colours (orange, yellow, pink). The ambient tint
 after the look. Seen but not changed: at the full-arena zoom the walls of Ember Depths and Crystal Vault are thin dark lines
 close to the floor's value (at the normal zoom they read); worth a pass in the per-map tuning (spec build step 10). The scratch
 scene was deleted.
+## v0.6 tools
+
+### T1. `new_map.py`
+- Copies `_template` without its `.import` and `.uid` files (a copied `.import` would share the template's uid); Godot makes
+  the new one on the next `--import`, which the README says to run. Also replaces the `res://content/maps/_template/` paths
+  in every copied `.tres`. Refuses: ids that are not lowercase snake_case (so no `_` prefix), an existing folder, an id
+  already in `IDS`, and a display name another map already uses (map_content.gd needs unique names).
+- Tried with a scratch map: `map_content.gd` and `map_themes.gd` fail for any ninth map, for two reasons the spec's "no
+  test changes" did not foresee: both hard-code "eight maps" (`IDS.size() == 8`, `all().size() == 8`), and the template has
+  mossy_hollow's palette, so a fresh copy is not 0.05 away from it. The second is right (the map must be given its own look);
+  the first is noted in the README (the count checks need updating). Not changed here: `map_content.gd` belongs to another
+  track. The scratch map was removed.
+
+### T2. Signature thumbnails (step 9)
+- `gen_thumbnails.py` keeps the rock, floor and glow table and the base scene (ceiling, rocks, halo) and replaces the generic
+  crystals by one drawing function per map: moss patches and vines, faceted crystal clusters, lava cracks and embers,
+  icicles and frost sparkle, glowing mushrooms and spores, a ribcage with a skull, a water pool with drips and ripples, sulfur
+  vents with steam. All colours derive from the table's glow/rock/floor. Same 64x40, same seeds (`100 + index`).
+- It also writes `_template/thumbnail.png` as a copy of mossy_hollow's, since the template's map.tres has that palette.
+- Thumbnail average against the rock/floor blend, measured: 0.017 (frost) to 0.064 (bone warren); the old thumbnails were
+  0.047 to 0.091. `THUMB_TOLERANCE` is tightened from 0.12 to 0.07. The 0.05 theme-difference rule is unchanged.
+

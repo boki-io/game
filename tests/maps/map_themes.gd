@@ -15,8 +15,10 @@ const COLOR_FIELDS := [
 const MIN_THEME_DISTANCE := 0.05   # OKLab, between any two maps' rock distance plus floor distance
 const MIN_FLOOR_DISTANCE := 0.12   # a monster body against each floor colour of its own map
 const MIN_TYPE_DISTANCE := 0.08    # between the three monster types of one map
-## Loose for now: the thumbnails are regenerated with each map's signature in build step 9 (spec 14).
-const THUMB_TOLERANCE := 0.12      # OKLab, thumbnail average against the rock/floor blend
+## Measured with the signature thumbnails (spec 14 step 9): 0.017 (frost) to 0.064 (bone warren, pale bones on a dark
+## rock; the template is a copy of mossy_hollow's). 0.07 keeps the margin small, so a changed colour or a thumbnail that was not
+## regenerated fails; the old 0.12 let a wrong-hued thumbnail pass.
+const THUMB_TOLERANCE := 0.07      # OKLab, thumbnail average against the rock/floor blend
 
 var _failed := false
 var _fails_logged := 0
