@@ -32,6 +32,8 @@ var pedestals: Array[HubPedestal] = []
 var focus_index := 0  # browse: the focused pedestal. walk: the character being played
 var player: Player
 
+## The camp menu (spec 0.7, 7). Declared by the camp-screen step and by the camp-site step; dedupe when merging.
+var camp_screen: Control
 var _lockout := 0.0
 var _entering_run := false
 
@@ -54,6 +56,7 @@ func _ready() -> void:
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
+	_build_camp_screen()
 	# Coming back from a run: walk mode as the character just played, below the door.
 	var last := GameSession.last_character
 	if last:
@@ -205,18 +208,50 @@ func _enter_walk(index: int, pos: Vector2, instant: bool) -> void:
 	for i in pedestals.size():
 		pedestals[i].focused = false
 		pedestals[i].set_figure_visible(i != index)
-	player = PLAYER_SCENE.instantiate()
-	player.character = characters[index]
-	player.hub_mode = true
-	player.position = pos
-	players_root.add_child(player)
-	hud.bind(player)
+	_spawn_player(index, pos)
 	panel.visible = false
 	_place_hint(WALK_HINT, true)  # the ability icons sit at the bottom in walk mode
 	camera.set_base_offset(Vector2.ZERO, 0.0 if instant else CAMERA_BLEND)
 	if instant:
 		camera.browse_to(pos - Vector2(0, 12), true)
 	door.set_open(true)
+
+
+## Creates the hub Player as characters[index] at `pos` and binds the HUD to it.
+func _spawn_player(index: int, pos: Vector2) -> void:
+	player = PLAYER_SCENE.instantiate()
+	player.character = characters[index]
+	player.hub_mode = true
+	if "attribute_levels" in player:  # added by the effects step
+		player.attribute_levels = GameSession.attribute_levels
+	player.position = pos
+	players_root.add_child(player)
+	hud.bind(player)
+
+
+## Camp screen block (spec 0.7, 6.4, 7): the screen lives in the UI layer; closing it after a change rebuilds the Player
+## in place, because attributes are applied once, at Player creation.
+func _build_camp_screen() -> void:
+	var screen := CampScreen.new()
+	screen.name = "CampScreen"
+	$UI.add_child(screen)
+	screen.closed.connect(_on_camp_closed)
+	camp_screen = screen
+
+
+func _on_camp_closed(changed: bool) -> void:
+	_lockout = MODE_LOCKOUT
+	if changed:
+		_rebuild_player()
+
+
+## A fresh Player at the old one's position (same creation path as _enter_walk; cooldowns and effects reset).
+func _rebuild_player() -> void:
+	if mode != Mode.WALK or not is_instance_valid(player):
+		return
+	var pos := player.position
+	_remove_player()
+	_spawn_player(focus_index, pos)
 
 
 ## Removes the Player immediately (not queue_free, so a same-frame spawn can never leave two) and clears

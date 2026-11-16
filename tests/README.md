@@ -27,6 +27,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `stage_modifiers.gd` | Additive percentage maths, the 300 alive cap ceiling, XP scaling, the SpawnDirector applying a stage |
 | `gold.gd` | Coin drop chance (25% + gold, clamped), drops, pickup through the XPCollector, gold persistence |
 | `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, each stage's theme (7 different), seed reproducibility (30 seeds) |
+| `camp/camp_screen.gd` | The camp screen in the hub: Esc and Enter with it closed, buy/undo by key and mouse, unaffordable (no_mana), MAX, Reset all, row keys ignored on a focused button, Esc closes without the pause menu, the hub rebuilds its Player on a change |
 | `run_progress.gd` | GameSession path state; level, XP and upgrades carried between stages; cleared on death, abandon, victory |
 | `camp/camp_shop.gd` | Camp attribute costs (40 to 456, 1288 each), buy, undo, reset, gold plus spent conserved over 30 seeds, the GameSession attribute API |
 | `camp/camp_attributes.gd` | Attribute data: totals at levels 0, 1 and 7 through `CampAttributes.apply`, `display_values` and summary text against the data |
