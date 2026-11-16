@@ -433,3 +433,11 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
 - **Q5. `CampAttributes.apply` clamps levels** to `0..max_level` and ignores unknown ids.
 - Tests: `tests/camp/camp_shop.gd`, and the data part of `tests/camp/camp_attributes.gd` (the in-play checks come in step 4).
   `run_all.sh` now also globs `tests/camp/*.gd`; the per-test save file is left to the saving step.
+
+## v0.7 camp, build step 5 (the camp in the hub)
+- **Q1. `CampSite` is added in code** (`hub._build_camp`, a child of `World`, `z_index = -1`), not in `hub.tscn`, to keep the shared scene untouched.
+- **Q2. Seam for the camp screen:** `hub.camp_screen: Control` (null) and `hub._open_camp()` calling `camp_screen.open()` if set.
+  `hub._interact_target()` returns `&"pedestal"`, `&"camp"` or `&""`; `_process` sets the prompt text ("F: Camp" / "F: Change character").
+- **Q3. Drawing was kept inside the reserved rect** (x 120..220, y 255..335) by placing parts at small offsets from `CAMP_POS`; the sign is a
+  small post sign above the tent. Rendered the hub and looked: the camp reads clearly and is clear of the dummies, pedestals and sign.
+- **Q4. `hub_walk.gd` unchanged:** the camp cases are all in `tests/camp/camp_site.gd` (it already passes with no camp screen).
