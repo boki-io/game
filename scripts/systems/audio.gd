@@ -12,6 +12,7 @@ const SOUNDS := [
 	&"hub_focus", &"hub_choose", &"door_open", &"door_enter", &"stage_clear", &"coin",
 	&"impact_crack", &"impact_thud", &"kill_pop", &"impact_boom",
 	&"relic_wave", &"relic_comet", &"relic_nova", &"relic_zap",
+	&"arrow_fire", &"arrow_bounce", &"arrow_rain",
 ]
 
 ## Random pitch range per sound: a sound plays at 1.0 plus or minus this much, so repeated hits do not sound identical. Sounds not
@@ -21,6 +22,7 @@ const PITCH_SPREAD := {
 	&"slash": 0.06, &"bolt_fire": 0.06, &"coin": 0.05, &"player_hurt": 0.05, &"ranged_shot": 0.05, &"lightning": 0.05,
 	&"spin": 0.04, &"dash": 0.04, &"slam": 0.04, &"dasher_dash": 0.04,
 	&"relic_zap": 0.05, &"relic_wave": 0.05,
+	&"arrow_fire": 0.06, &"arrow_bounce": 0.06,
 }
 const RECENT_MAX := 32
 
