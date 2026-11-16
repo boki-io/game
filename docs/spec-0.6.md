@@ -1,9 +1,28 @@
 # Spec v0.6: Stage maps (eight themed arenas)
 
-Builds on spec v0.5 (the stage path, built on branch `map-selector`). Status: draft rev 5 (walls and pillars block
+Builds on spec v0.5 (the stage path, built on branch `map-selector`). Status: built, rev 6 (rev 5 text below, with the deviations listed at the end of this note) (walls and pillars block
 enemies, section 6.6; per-map monster looks, section 7; working directory, section 3). Rev 5 applies an independent
 review: the obstacle/flow-field design is hardened (6.6), the monster variant is trimmed to colours and a mark (7), the
 directory design drops empty stub folders (3), and the build order, export and test details are corrected.
+
+Rev 6 (built, on branch `spec-0.6-maps`; every step of section 14 is done, the decisions are in `AGENT_DECISION_LOG.md`
+under "v0.6 ..." and "v0.6 final"). Deviations from the text below:
+- **Tests use 30 seeds** (as CLAUDE.md says), not the 1000+ the early text asked for.
+- **Stuck failsafe** is measured as a 3 s window (position compared with the one at the window's start), so a stuck enemy is
+  recycled between 3 and 6 s after it gets stuck, not exactly at 3 s (O8).
+- **The first flow-field search starts at once**; the 0.25 s minimum applies from the second on (O6).
+- **The preview scene** is `scenes/dev/map_preview.tscn` with `map_preview.gd` beside it, as in 3.6; it also has `Z` (whole-arena
+  zoom) and arrow keys (pan) besides Tab, R, L and O.
+- **`shot_maps.gd`** needs a real renderer (do not pass `--headless`); it renders into off-screen SubViewports and also writes
+  one PNG per map at normal zoom, the whole arena and the monster row. Map `i` uses seed `N + i`.
+- **Thresholds that moved while building:** the "two themes differ by 0.05" rule counts the rock distance plus the floor distance
+  (M6), since the thumbnails share dark rocks; the thumbnail colour tolerance is 0.07 (it started at 0.12). New rules from the
+  rendered review (step 10): a wall's top and a pillar are at least 0.10 OKLab from the plain floor, a monster's mark at least
+  0.30 from its body; marks are at least 3 px.
+- **Count checks** ask for at least eight maps (so a ninth map from `new_map.py` does not break them); `map_themes.gd` still
+  fails on an unchanged copy of the template, on purpose.
+- **`crowd_bone_warren.gd`** is a timing gate on the machine it runs on: it can fail when the machine is busy (see the log).
+- Not verified by playing: how enemies path on each map in a full run, and the look in motion.
 
 Terms: a **map** is the arena a stage is played in, built from a **map theme** (new). The eight themes match the
 eight thumbnails and stage names that v0.5 already generates (`assets/stages/stage_0..7.png`,
@@ -154,7 +173,7 @@ folder holds a stray top-level file.
 4. Add the map's colours to `tools/maps/gen_thumbnails.py` and run it to make `thumbnail.png`.
 5. Run `tests/run_all.sh`. `map_content.gd`, `map_themes.gd`, `map_layout.gd` and `monster_variants.gd` cover the new
    folder with no test changes.
-6. `godot --headless --path . --script tools/maps/shot_maps.gd -- <folder>` to review all maps side by side.
+6. `godot --path . --script tools/maps/shot_maps.gd -- <folder>` (not `--headless`: it needs a renderer) to review all maps side by side.
 
 `content/maps/README.md` carries these steps so they are next to the files they are about.
 

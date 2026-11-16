@@ -369,3 +369,51 @@ scene was deleted.
 - Thumbnail average against the rock/floor blend, measured: 0.017 (frost) to 0.064 (bone warren); the old thumbnails were
   0.047 to 0.091. `THUMB_TOLERANCE` is tightened from 0.12 to 0.07. The 0.05 theme-difference rule is unchanged.
 
+
+# v0.6 final
+
+## F1. Preview scene and shot tool (step 8, rest)
+- `scenes/dev/map_preview.tscn` + `map_preview.gd`: Ground, Decor, Props, Players, Enemies, Cave, Overlay, Camera, vignette and a
+  label, built into by `MapBuilder.build` with an `Arena` node (so a walking Player collides). The three monsters are real
+  `enemy.tscn` instances dressed with `apply_variant` and then set to `PROCESS_MODE_DISABLED` (a still sample, never in
+  `EnemyGrid`). `L` reloads with `CACHE_MODE_REPLACE_DEEP`, so the monster files change too. `Z` and arrow keys are additions.
+  The overlay is a child Node2D whose `draw` signal the script handles; its flow field is a private `FlowField` searched at once
+  from the Player (or the arena centre). Nothing reads or writes `GameSession` (the test checks `current_stage`/`path_seed`).
+- The enemy is created untyped and the shot tool loads the scene at run time: `Enemy` uses autoloads, which do not exist while a
+  `--script` file is compiled (a preloaded scene lost its script and failed on `data`).
+- `shot_maps.gd` DOES render in `--script` mode when the process is not headless (a window opens). It uses a SubViewport (640x360
+  for the normal view, 1600x896 for the whole arena). `await RenderingServer.frame_post_draw` stalled twice (the run hung after a
+  few maps), so it uses `process_frame` plus `force_draw(false)` and a 90 s watchdog; three clean runs after that. Not tried:
+  an exported build, or a machine with no display.
+
+## F2. Count checks
+`map_content.gd` and `map_layout.gd` ask for at least eight maps; `map_content.gd` for one theme per registry id. Tried with a
+scratch ninth map (removed): `map_content.gd` and `map_preview.gd` pass; `map_themes.gd` fails only for the unchanged copy
+of the palette (rock/floor and layout identical to Mossy Hollow), which is the rule working. `_template` is now a copy of Mossy
+Hollow's current files (the old one lacked the moss weight and the new wall and mark colours).
+
+## F3. Rendered review (step 10), real frames of all eight maps, looked at one by one
+Before: wall tops and pillars were 0.01 to 0.06 OKLab from the floor on seven maps (only the outline and the south face showed);
+grunt spots were 2 px; moss, frost and puddles were faint blobs. Changed (data in the `.tres`, drawing in two scripts):
+- Wall top, top light and pillar of seven maps moved 0.15 (tops) and 0.19 (pillars) in OKLab lightness away from the floor (lighter
+  on dark floors, darker on Frostbite's pale floor), keeping the hue (chroma x1.3). Bone Warren already read.
+- Mark colours of all 24 variants: near white or near black, whichever is further from the body (0.5 to 0.8 OKLab). `PlaceholderSprite`
+  marks: spots at least 3 px (0.22 of the width), stripe at least 3 px (0.16 of the height). Appearance only, no new field.
+- `CaveDecor` moss, frost and puddle get a rim and stronger fills (code constants, not theme data).
+- New checks in `map_themes.gd`: wall top and pillar at least 0.10 from the plain floor, mark at least 0.30 from the body.
+- Seen after: the eight read as different places by hue; LANES (Crystal Vault, Flooded Gallery long verticals; Bone Warren
+  long horizontals), CLUSTERS (Ember Depths short islands) and SCATTER (Mossy Hollow, Spore Cavern) are recognisable on the whole-arena
+  render; at the contact-sheet size the walls are thin lines but visible on all eight. Not changed: the floor's dark patches use
+  the same noise shape on every map when the seed is equal (the shot tool uses a seed per map; in runs the seed differs per map).
+  Marks are all near black or white now, so the map's identity is in body colour and decor, not in the mark.
+
+## F4. `crowd_bone_warren.gd` run solo
+The machine was not idle (the user's own `godot --path .` game and a browser were running, load average 4 to 4.6; nothing of
+mine). Eight solo runs: moving mean with obstacles 12.83 (FAIL), 9.77, 16.76 (FAIL), 10.51, 9.87, 9.92, 10.26, 10.73; stationary
+8.93, 10.18, 10.72, 8.95, 9.03, 11.27, 9.37, 12.83 (FAIL). The run without obstacles was as slow in the same runs (8.2 to 20.2 ms,
+about the same spread), so the noise is the machine's, not the flow field or line of sight (1 search stationary, 13 moving, never more than
+1000 expansions in a frame). The 12 ms gate sits close to the baseline's mean (about 9 to 10 ms), so a busy machine trips it.
+The gate was NOT loosened; changing the statistic (for example best of three runs) needs the user's approval.
+Three more runs (one inside the full `run_all.sh`, two solo) with the user's game still running: FAIL moving 14.52; FAIL stationary
+25.08 (without obstacles 11.59); FAIL moving 12.73. So 6 of 11 runs failed under load; the full suite otherwise passed (28 of 29).
+The gate needs an idle machine to be meaningful; rerun it once the other `godot` process is gone before believing a FAIL.
