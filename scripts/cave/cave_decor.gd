@@ -1,18 +1,24 @@
 class_name CaveDecor
 extends Node2D
-## One piece of non-blocking cave decor: a stalagmite, rock, pebbles, bones or a glowing mushroom.
+## One piece of non-blocking cave decor: a stalagmite, rock, pebbles, bones or a glowing mushroom, and (v0.6) moss,
+## crystals, icicles, frost, big fungi, puddles, vents and floor cracks. Drawing only.
 ## The hub and the run both use it. `layout()` decides where they go: seeded (the same every launch), mostly along the walls, and never on
 ## the reserved areas (pedestals, training area, door lane, sign).
 
-enum Kind { STALAGMITE, ROCK, PEBBLES, BONES, MUSHROOM }
+## New kinds are appended: the numbers of the first five are saved in theme files and must not change.
+enum Kind { STALAGMITE, ROCK, PEBBLES, BONES, MUSHROOM, MOSS, CRYSTAL, ICICLE, FROST, BIG_FUNGUS, PUDDLE, VENT, CRACK }
 
 const COUNT := 48  # at most 60
 const CLEARANCE := 24.0
 const WALL_MARGIN := 10.0  # how far in from the rock band decor may start
 const DECOR_SEED := 7
+## Glow of the kinds that glow when there is no theme (the mushroom's cyan).
+const GLOW := Color(0.3, 0.9, 0.85)
 
 var kind := Kind.ROCK
 var variant := 0
+## Optional (spec 0.6 section 8): the glowing kinds use its `glow_color`; null keeps today's cyan. Set before the node is added.
+var theme: MapTheme
 
 
 ## A list of {kind, pos, variant}. `size` is the room, `band` the rock band, `reserved` rectangles to keep clear.
@@ -61,7 +67,8 @@ static func _near_wall(rng: RandomNumberGenerator, size: Vector2, band: float) -
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
-	_shadow(7.0 if kind == Kind.STALAGMITE else 5.0)
+	if kind not in [Kind.MOSS, Kind.FROST, Kind.PUDDLE, Kind.CRACK]:
+		_shadow(7.0 if kind in [Kind.STALAGMITE, Kind.ICICLE, Kind.BIG_FUNGUS] else 5.0)
 	match kind:
 		Kind.STALAGMITE:
 			var h := 14.0 + variant * 5.0
@@ -86,6 +93,84 @@ func _draw() -> void:
 			draw_circle(Vector2(0, -4), 9.0, Color(0.3, 0.9, 0.85, 0.10))
 			draw_rect(Rect2(-1, -4, 2, 4), Color("b9c9c4"))
 			draw_colored_polygon(PackedVector2Array([Vector2(-4, -4), Vector2(-2, -8), Vector2(2, -8), Vector2(4, -4)]), Color("3fd6c4"))
+
+
+	_draw_new()
+
+
+## The v0.6 kinds. Flat ones (moss, frost, puddle, crack) have no shadow; the others reuse the small one drawn above.
+func _draw_new() -> void:
+	var glow := GLOW if theme == null else theme.glow_color
+	match kind:
+		Kind.MOSS:
+			var moss := Color("4f6b3a")
+			draw_colored_polygon(_blob(10.0 + variant * 2.0, 4.0), Color(0.29, 0.38, 0.2, 0.85))
+			draw_colored_polygon(_blob(6.0 + variant, 2.5), Color(0.35, 0.47, 0.25, 0.9))
+			for i in 4:
+				var x := -6.0 + i * 4.0 + variant
+				draw_line(Vector2(x, 0), Vector2(x + 1, -3 - (i % 2)), moss.lightened(0.2), 1.0)
+		Kind.CRYSTAL:
+			draw_circle(Vector2(0, -6), 12.0, Color(glow, 0.10))
+			var body := glow.lerp(Color.WHITE, 0.25)
+			var spikes := 2 + variant % 2
+			for i in spikes:
+				var x := (i - (spikes - 1) / 2.0) * 5.0
+				var h := 10.0 + ((i + variant) % 3) * 4.0
+				draw_colored_polygon(PackedVector2Array([Vector2(x - 3, 0), Vector2(x, -h), Vector2(x + 3, 0)]), body)
+				draw_colored_polygon(PackedVector2Array([Vector2(x, -h), Vector2(x + 3, 0), Vector2(x + 0.5, 0)]), body.darkened(0.35))
+		Kind.ICICLE:
+			var h := 18.0 + variant * 5.0
+			draw_colored_polygon(PackedVector2Array([Vector2(-5, 0), Vector2(0, -h), Vector2(5, 0)]), Color("b9dff0"))
+			draw_colored_polygon(PackedVector2Array([Vector2(0, -h), Vector2(5, 0), Vector2(1, 0)]), Color("7fb3d0"))
+			draw_line(Vector2(-1, -h + 4), Vector2(-2, -4), Color(1, 1, 1, 0.7), 1.0)
+		Kind.FROST:
+			draw_colored_polygon(_blob(11.0 + variant * 2.0, 4.5), Color(0.85, 0.94, 1.0, 0.45))
+			draw_colored_polygon(_blob(6.0 + variant, 2.5), Color(0.95, 0.99, 1.0, 0.55))
+			draw_line(Vector2(-4, 0), Vector2(3, -1), Color(1, 1, 1, 0.8), 1.0)
+		Kind.BIG_FUNGUS:
+			draw_circle(Vector2(0, -12), 16.0, Color(glow, 0.10))
+			var h := 12.0 + variant * 3.0
+			var cap := glow.lerp(Color(0.55, 0.3, 0.85), 0.35)
+			draw_rect(Rect2(-2, -h, 4, h), Color("c9bfd6"))
+			draw_colored_polygon(PackedVector2Array([Vector2(-11, -h + 1), Vector2(-8, -h - 6), Vector2(-3, -h - 9),
+				Vector2(3, -h - 9), Vector2(8, -h - 6), Vector2(11, -h + 1)]), cap)
+			draw_rect(Rect2(-11, -h + 1, 22, 2), cap.darkened(0.35))
+			draw_circle(Vector2(-4, -h - 4), 1.5, cap.lightened(0.5))
+			draw_circle(Vector2(4, -h - 5), 1.2, cap.lightened(0.5))
+		Kind.PUDDLE:
+			var r := 9.0 + variant * 2.0
+			draw_colored_polygon(_blob(r, r * 0.4), Color(0.22, 0.38, 0.55, 0.85))
+			draw_polyline(_ring(r * 0.6, r * 0.24), Color(0.6, 0.8, 0.95, 0.7), 1.0)
+		Kind.VENT:
+			draw_colored_polygon(_blob(8.0, 3.5), Color("4a4136"))
+			draw_colored_polygon(_blob(4.5, 2.0), Color("14100c"))
+			draw_polyline(PackedVector2Array([Vector2(0, -2), Vector2(2, -7), Vector2(-1, -12), Vector2(2, -17 - variant * 2)]),
+				Color(0.9, 0.9, 0.85, 0.45), 2.0)
+		Kind.CRACK:
+			var pts := PackedVector2Array()
+			var n := 5 + variant
+			for i in n:
+				pts.append(Vector2(-12.0 + i * 24.0 / (n - 1), (-2.0 if i % 2 == 0 else 2.0) + (i % 3) - 1.0))
+			draw_polyline(pts, Color(glow, 0.25), 5.0)
+			draw_polyline(pts, glow.lerp(Color.WHITE, 0.3), 1.5)
+
+
+## A flat ellipse with a slightly uneven edge, for patches on the floor.
+func _blob(rx: float, ry: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 14:
+		var a := TAU * i / 14.0
+		var wob := 1.0 + 0.12 * sin(a * 3.0 + variant * 2.0)
+		pts.append(Vector2(cos(a) * rx * wob, sin(a) * ry * wob))
+	return pts
+
+
+func _ring(rx: float, ry: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 17:
+		var a := TAU * i / 16.0
+		pts.append(Vector2(cos(a) * rx, sin(a) * ry))
+	return pts
 
 
 func _shadow(radius: float) -> void:
