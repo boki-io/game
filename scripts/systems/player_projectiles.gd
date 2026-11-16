@@ -19,8 +19,10 @@ func _ready() -> void:
 	z_index = 6  # above the y-sorted world, below effects
 
 
-## Returns false (and fires nothing) when the live cap is reached.
-func fire(pos: Vector2, dir: Vector2, speed: float, damage: float, range_px: float, pierce: int) -> bool:
+## Returns false (and fires nothing) when the live cap is reached. `opts` (all optional, see
+## PlayerProjectile.launch): hits, bounces, bounce_reach, arrow, steady, steady_full.
+func fire(pos: Vector2, dir: Vector2, speed: float, damage: float, range_px: float, pierce: int,
+		opts: Dictionary = {}) -> bool:
 	if _live >= MAX_LIVE:
 		return false
 	var p: PlayerProjectile
@@ -31,7 +33,7 @@ func fire(pos: Vector2, dir: Vector2, speed: float, damage: float, range_px: flo
 	else:
 		p = _pool.pop_back()
 	_live += 1
-	p.launch(pos, dir, speed, damage, range_px, pierce)
+	p.launch(pos, dir, speed, damage, range_px, pierce, opts)
 	return true
 
 
