@@ -83,11 +83,22 @@ static func _style_tablet(b: Button) -> void:
 	b.add_theme_stylebox_override("normal", normal)
 	b.add_theme_stylebox_override("hover", lit)
 	b.add_theme_stylebox_override("pressed", lit)
-	b.add_theme_stylebox_override("focus", lit)
+	# The focus glow only shows once a key or D-pad is used (_input), so the card focused on open is not lit for mouse players.
+	b.add_theme_stylebox_override("focus", normal)
+	b.set_meta(&"lit", lit)
 	for c in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]:
 		b.add_theme_color_override(c, TABLET_TEXT)
 	b.add_theme_color_override("font_outline_color", Color("15120f"))
 	b.add_theme_constant_override("outline_size", 2)
+
+
+func _input(event: InputEvent) -> void:
+	if not active:
+		return
+	if (event is InputEventKey and event.pressed) or event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.5):
+		for b in _row.get_children():
+			if b is Button and b.has_meta(&"lit"):
+				b.add_theme_stylebox_override("focus", b.get_meta(&"lit"))
 
 
 func _pick(index: int) -> void:
