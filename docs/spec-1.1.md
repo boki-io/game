@@ -1,6 +1,6 @@
 # Spec v1.1: The Archer
 
-Builds on spec v1.0 (merged, PR #10, `main` at `2866f79`: relics and enemy statuses) and on the character system of v0.1 to v0.4. Status: draft, rev 2 (rev 2 applies an independent review and your answer on bouncing: arrows bounce off enemies first, then walls; E is fire-and-forget; geometry, test and build-order fixes).
+Builds on spec v1.0 (merged, PR #10, `main` at `2866f79`: relics and enemy statuses) and on the character system of v0.1 to v0.4. Status: built (rev 3 records the build's deviations in section 14); rev 2 (rev 2 applies an independent review and your answer on bouncing: arrows bounce off enemies first, then walls; E is fire-and-forget; geometry, test and build-order fixes).
 
 Terms: the **Archer** is the third playable character: ranged, no mana, four arrow-based abilities (auto, Q, E, R). An **arrow** is a player projectile (a `PlayerProjectile` in the existing pool) with an arrow look. A **bounce** is an arrow changing direction: off an enemy it hits (towards the next nearest enemy) or off a wall, a pillar or the arena edge. **Steady Aim** is the Archer's trait: arrows hit harder the further they have flown.
 
@@ -181,3 +181,15 @@ Tests use `SEED_COUNT` (30) where randomised. `PlayerProjectile`, `PlayerProject
 - Three sounds in the three places; `git status` clean of unrelated files.
 - Existing tests pass (`hub_browse.gd` and `hub_data.gd` updated); `tests/run_all.sh` passes on a fresh clone; the crowd tests stay inside budget.
 - README and `tests/README.md` list the new files and tests. Nothing in v1.1 stops or slows time.
+
+## 14. Build notes (deviations from rev 2)
+
+- **Tests**: `archer_abilities.gd` became `archer_arrow_dash.gd` and `archer_ricochet_rain.gd` (written in parallel); `archer_upgrades.gd` was added for the 14 new upgrade files. `archer_plumbing.gd` no longer assumes every registered character uses mana.
+- **Build order**: steps 1 to 3 ran in parallel (step 2 did not need step 1's fields); abilities were split into two parts and the art and upgrades were built beside them.
+- **`PlayerInput` cannot be `preload`ed in a test** (it references the `SceneFader` autoload); `archer_arrows.gd` uses `load()`. `SteadyAim` can be preloaded.
+- **Ricochet "clear once" is relaxed for fast arrows**: an arrow also reflects if its previous position was clear, so a fast arrow cannot skip a reflection at a corner. On an enemy bounce the arrow stops checking other overlapping enemies that frame (they are picked up next frame; the hit set prevents repeats).
+- **Arrow Rain**: the falling-arrows effect is started by a SceneTree timer `windup - 0.35` s after the cast (there is no scheduling facility); a single zone sits at the centre; only the rain's centre is clamped to the arena, so a large rain can poke slightly past the inset.
+- **Dash Shot's spray** is `arrows` (7) plus `dashshot.arrows`, evenly spaced, with no upper cap beyond the shared 40-arrow pool.
+- **Hub**: the ground path became `Rect2(310, 360, 340, 40)`. Three ability descriptions and the Archer's description were shortened so the hub info panel fits; the panel is still tight.
+- **Icons**: the four Archer abilities use placeholder regions of `assets/32x32.png` (two are the same as existing abilities' icons).
+- **Not verified by hand**: hits and bounces in a real crowd (the render check had no visible enemies), the feel of E and R, the effects' timing, sprite offset during Q.
