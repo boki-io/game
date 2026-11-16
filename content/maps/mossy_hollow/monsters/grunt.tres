@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_variant")
 enemy_id = &"grunt"
-body_color = Color(0.66, 0.398, 0.23, 1)
-outline_color = Color(0.33, 0.199, 0.115, 1)
+body_color = Color(0.74, 0.64, 0.2, 1)
+outline_color = Color(0.37, 0.32, 0.1, 1)
 eye_color = Color(1, 1, 1, 1)
 mark = 2
-mark_color = Color(0.603, 0.838, 0.515, 1)
+mark_color = Color(0.9, 0.95, 0.6, 1)
