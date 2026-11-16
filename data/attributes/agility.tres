@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AttributeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/camp/attribute_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"agility"
+display_name = "Agility"
+description = "Move faster"
+max_level = 7
+base_cost = 40
+cost_growth = 1.5
+adds = {}
+scales = {
+"move_speed": 0.03
+}
+coin_chance = 0.0
+summary = "+{0}% move speed"
+display_values = Array[float]([3.0])

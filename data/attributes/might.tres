@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AttributeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/camp/attribute_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"might"
+display_name = "Might"
+description = "More damage with everything"
+max_level = 7
+base_cost = 40
+cost_growth = 1.5
+adds = {}
+scales = {
+"damage": 0.03
+}
+coin_chance = 0.0
+summary = "+{0}% damage"
+display_values = Array[float]([3.0])

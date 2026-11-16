@@ -417,3 +417,19 @@ The gate was NOT loosened; changing the statistic (for example best of three run
 Three more runs (one inside the full `run_all.sh`, two solo) with the user's game still running: FAIL moving 14.52; FAIL stationary
 25.08 (without obstacles 11.59); FAIL moving 12.73. So 6 of 11 runs failed under load; the full suite otherwise passed (28 of 29).
 The gate needs an idle machine to be meaningful; rerun it once the other `godot` process is gone before believing a FAIL.
+
+## v0.7 camp, build step 1 (data and logic, plus the GameSession attribute API)
+- **Q1. `AttributeData.describe` formats numbers with its own `_num`, not `HubInfoPanel.num`.** The spec says to use
+  `HubInfoPanel.num`, but that class pulls in `UiKit`, which names the `Audio` autoload, so any pure test (or script) that
+  touches `AttributeData` fails to compile ("Identifier not found: Audio"). The copy has the identical logic.
+- **Q2. `CampShop` state** is a `Dictionary {gold, levels}` (`CampShop.make_state(gold, levels)`). Extra helpers beyond the
+  spec's list: `level_of(state, attr)` and `next_cost(state, attr)` (-1 at max). `reset_all` returns the refund.
+- **Q3. `display_values` for percent attributes are in percent** (Might `[3.0]`, Haste `[3.0]`, Greed `[2.0]`), so `describe(7)`
+  gives "+21% damage" and the test checks them against `scales x 100` and `coin_chance x 100`.
+- **Q4. GameSession API** works on a copy of the state and writes it back (`_commit_shop`), then emits `attributes_changed`.
+  The `# save hook:` comment in `_commit_shop` marks where `SaveGame.save()` goes. `attribute_levels` is replaced by a new
+  Dictionary on each change, so a holder of the old reference (for example a Player's `attribute_levels`) keeps the old levels,
+  which suits "attributes are applied once at creation". `level_of` of an unknown id is 0; buy/undo of one return false.
+- **Q5. `CampAttributes.apply` clamps levels** to `0..max_level` and ignores unknown ids.
+- Tests: `tests/camp/camp_shop.gd`, and the data part of `tests/camp/camp_attributes.gd` (the in-play checks come in step 4).
+  `run_all.sh` now also globs `tests/camp/*.gd`; the per-test save file is left to the saving step.

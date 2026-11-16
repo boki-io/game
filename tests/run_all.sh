@@ -1,11 +1,11 @@
 #!/bin/zsh
-# Runs every test in tests/ and tests/maps/ headless and reports PASS or FAIL for each. Exit code is the number of failures.
+# Runs every test in tests/, tests/maps/ and tests/camp/ headless and reports PASS or FAIL for each. Exit code is the number of failures.
 # usage: tests/run_all.sh   (from anywhere; godot must be on the PATH)
 cd "$(dirname "$0")/.." || exit 1
 failures=0
 # A fresh clone has no global class cache (.godot/ is ignored), and new class_name types need it: import first.
 godot --headless --path . --import > /dev/null 2>&1
-for t in tests/*.gd tests/maps/*.gd; do
+for t in tests/*.gd tests/maps/*.gd tests/camp/*.gd; do
 	[[ "$t" == tests/fixture.gd ]] && continue
 	# A script error in a test leaves its SceneTree running forever, so give each test a time limit.
 	out=$(perl -e 'alarm 120; exec @ARGV' godot --headless --path . --script "$t" 2>&1)

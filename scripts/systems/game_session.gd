@@ -32,7 +32,11 @@ var run_summary: Dictionary = {}
 var run_progress: Variant = null
 ## Coins collected. Unlike the path it is not reset when a run ends: it waits for the future trade system.
 var gold := 0
+## Camp attribute levels (spec 0.7): attribute id -> level, shared by all characters. In memory only for now.
+var attribute_levels: Dictionary = {}
 
+## Emitted after any attribute level or the gold spent on it changes.
+signal attributes_changed
 
 ## Test seam: when valid, scene changes call it with the scene path instead of fading to the scene.
 var scene_hook: Callable
@@ -41,6 +45,59 @@ var scene_hook: Callable
 func _ready() -> void:
 	# Default so the run scene also runs directly from the editor.
 	character = CharacterRegistry.all()[0]
+
+
+## The camp level of attribute `id` (0 if never bought).
+func level_of(id: StringName) -> int:
+	var attr := AttributeRegistry.find(id)
+	return 0 if attr == null else CampShop.level_of(_shop_state(), attr)
+
+
+## Buys the next level of attribute `id` with `gold`. False if unknown, maxed or too poor.
+func buy_attribute(id: StringName) -> bool:
+	var attr := AttributeRegistry.find(id)
+	if attr == null:
+		return false
+	var state := _shop_state()
+	var ok := CampShop.buy(state, attr)
+	if ok:
+		_commit_shop(state)
+	return ok
+
+
+## Undoes one level of attribute `id` and refunds its cost. False at level 0.
+func undo_attribute(id: StringName) -> bool:
+	var attr := AttributeRegistry.find(id)
+	if attr == null:
+		return false
+	var state := _shop_state()
+	var ok := CampShop.undo(state, attr)
+	if ok:
+		_commit_shop(state)
+	return ok
+
+
+## Undoes every level and refunds the total spent.
+func reset_attributes() -> void:
+	var state := _shop_state()
+	CampShop.reset_all(state)
+	_commit_shop(state)
+
+
+## Gold sunk into the current attribute levels.
+func spent_total() -> int:
+	return CampShop.spent(_shop_state())
+
+
+func _shop_state() -> Dictionary:
+	return CampShop.make_state(gold, attribute_levels.duplicate())
+
+
+func _commit_shop(state: Dictionary) -> void:
+	gold = state.gold
+	attribute_levels = state.levels
+	# save hook: SaveGame.save() goes here (spec 0.7, section 8)
+	attributes_changed.emit()
 
 
 ## The seed of the map being played (spec 0.6, 6.1): a string hash of the path seed and the theme id, so each map
