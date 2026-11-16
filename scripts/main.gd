@@ -20,6 +20,7 @@ func _ready() -> void:
 	spawn_director.pickups = $Pickups
 	# Without a stage (main.tscn run from the editor) every modifier is 0%.
 	spawn_director.apply_stage(GameSession.current_stage if GameSession.current_stage else StageData.new())
+	spawn_director.coin_bonus = CampAttributes.coin_bonus(GameSession.attribute_levels)
 	var debug: Label = $UI/DebugOverlay
 	debug.run_manager = run_manager
 	debug.spawn_director = spawn_director
@@ -33,6 +34,7 @@ func _ready() -> void:
 	_build_map()
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.character = GameSession.character
+	player.attribute_levels = GameSession.attribute_levels
 	player.position = Vector2(Arena.world_size) / 2.0
 	players_root.add_child(player)
 	# Level, XP and upgrades carried from the previous stage. Restored before leveled_up is connected.

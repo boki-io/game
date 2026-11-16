@@ -94,7 +94,10 @@ func damage_of(data: AbilityData) -> float:
 
 
 func cooldown_of(data: AbilityData) -> float:
-	return value(data, &"cooldown", data.cooldown)
+	var base := value(data, &"cooldown", data.cooldown)
+	if data == ability_auto:
+		return base / maxf(stats.value(&"auto_speed", 1.0), 0.01)  # Fury
+	return base * stats.value(&"cooldown", 1.0)  # Haste (Q, E, R)
 
 
 func mana_cost_of(data: AbilityData) -> float:

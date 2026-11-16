@@ -417,3 +417,84 @@ The gate was NOT loosened; changing the statistic (for example best of three run
 Three more runs (one inside the full `run_all.sh`, two solo) with the user's game still running: FAIL moving 14.52; FAIL stationary
 25.08 (without obstacles 11.59); FAIL moving 12.73. So 6 of 11 runs failed under load; the full suite otherwise passed (28 of 29).
 The gate needs an idle machine to be meaningful; rerun it once the other `godot` process is gone before believing a FAIL.
+
+## v0.7 camp, build step 1 (data and logic, plus the GameSession attribute API)
+- **Q1. `AttributeData.describe` formats numbers with its own `_num`, not `HubInfoPanel.num`.** The spec says to use
+  `HubInfoPanel.num`, but that class pulls in `UiKit`, which names the `Audio` autoload, so any pure test (or script) that
+  touches `AttributeData` fails to compile ("Identifier not found: Audio"). The copy has the identical logic.
+- **Q2. `CampShop` state** is a `Dictionary {gold, levels}` (`CampShop.make_state(gold, levels)`). Extra helpers beyond the
+  spec's list: `level_of(state, attr)` and `next_cost(state, attr)` (-1 at max). `reset_all` returns the refund.
+- **Q3. `display_values` for percent attributes are in percent** (Might `[3.0]`, Haste `[3.0]`, Greed `[2.0]`), so `describe(7)`
+  gives "+21% damage" and the test checks them against `scales x 100` and `coin_chance x 100`.
+- **Q4. GameSession API** works on a copy of the state and writes it back (`_commit_shop`), then emits `attributes_changed`.
+  The `# save hook:` comment in `_commit_shop` marks where `SaveGame.save()` goes. `attribute_levels` is replaced by a new
+  Dictionary on each change, so a holder of the old reference (for example a Player's `attribute_levels`) keeps the old levels,
+  which suits "attributes are applied once at creation". `level_of` of an unknown id is 0; buy/undo of one return false.
+- **Q5. `CampAttributes.apply` clamps levels** to `0..max_level` and ignores unknown ids.
+- Tests: `tests/camp/camp_shop.gd`, and the data part of `tests/camp/camp_attributes.gd` (the in-play checks come in step 4).
+  `run_all.sh` now also globs `tests/camp/*.gd`; the per-test save file is left to the saving step.
+
+## v0.7 camp, build steps 2 and 3 (saving, run purse and banking)
+- **S1. `SaveGame` API:** `path()`, `save(gold, levels) -> bool`, `load_data() -> {gold, levels}` and the static `override_path`
+  (null = unset, "" = saving off). Parsing uses a `JSON` instance, not `parse_string`, so a bad file does not print an engine error.
+  A missing or non-numeric `gold`, or a non-numeric level, makes the file bad (moved to `.bad`). Values are clamped as floats
+  before `int()` so a huge number cannot overflow. A bad `.tmp` (used when `camp.json` is missing) is renamed to `camp.json.bad`.
+- **S2. `go_to_hub()` always banks** and `bank_run()` with an empty purse returns 0 and writes nothing (no pointless save).
+  `finish_run()` banks after computing the summary; `fail_run()` banks nothing itself (the death screen already did).
+- **S3. Death screen text** gains a "Gold earned N" line between time and level.
+- **S4. `run_all.sh`** sets `HERO_HORDE_SAVE=$(mktemp -u)` per test and removes the file, `.tmp` and `.bad` afterwards;
+  `CLAUDE.md` and `tests/README.md` carry the render-run note.
+- **S5. Tests changed:** `gold.gd`, `run_progress.gd`, `stage_flow.gd` (the no-op line removed). `select_screen.gd` and
+  `scene_flow.gd` needed no edit (empty purse, saving off headless). New: `tests/camp/camp_save.gd`, `tests/camp/camp_gold.gd`.
+  Neither new test touches the real save (`camp_save` uses a temp file under `$TMPDIR`).
+## v0.7 camp, build step 4 (effects in play)
+- **E1. Recovery check order.** `Player._physics_process` heals after `move_and_slide` and `_tick_phase`, only when
+  `hp_regen > 0` and `health.current < health.max_health`; `Health.heal` already ignores a dead Player, and `dead` returns early.
+- **E2. Fury/Haste in `cooldown_of`.** The auto slot is detected by `data == ability_auto` and divides by `auto_speed`
+  (floored at 0.01); every other ability multiplies by the `cooldown` key. A character whose Q/E/R is the same resource as its
+  auto would be treated as auto; none is.
+- **E3. `RunProgress.restore` needed no change.** Attributes are written in `_apply_character` (before `restore`), and its
+  `health.setup`/`mana.configure(base_max, base_regen)` read the combined `Stats`; checked by the test (Toughness 7 plus the
+  Vitality upgrade gives 176 HP at full health).
+- **E4. Greed.** `SpawnDirector.coin_bonus` (default 0) is added to `stage.coin_chance()` and clamped 0..1 at the drop;
+  `main.gd` sets it from `GameSession.attribute_levels` right after `apply_stage`. `hub.gd` sets `player.attribute_levels` in
+  `_enter_walk` only (infinite mana and no damage are untouched).
+- Tests: the in-play half of `tests/camp/camp_attributes.gd`. The camp screen's Player rebuild is the camp-screen builder's.
+## v0.7 camp, build step 5 (the camp in the hub)
+- **Q1. `CampSite` is added in code** (`hub._build_camp`, a child of `World`, `z_index = -1`), not in `hub.tscn`, to keep the shared scene untouched.
+- **Q2. Seam for the camp screen:** `hub.camp_screen: Control` (null) and `hub._open_camp()` calling `camp_screen.open()` if set.
+  `hub._interact_target()` returns `&"pedestal"`, `&"camp"` or `&""`; `_process` sets the prompt text ("F: Camp" / "F: Change character").
+- **Q3. Drawing was kept inside the reserved rect** (x 120..220, y 255..335) by placing parts at small offsets from `CAMP_POS`; the sign is a
+  small post sign above the tent. Rendered the hub and looked: the camp reads clearly and is clear of the dummies, pedestals and sign.
+- **Q4. `hub_walk.gd` unchanged:** the camp cases are all in `tests/camp/camp_site.gd` (it already passes with no camp screen).
+## v0.7 camp, build step 6 (camp screen and gold counter)
+- **S1. `closed(changed)` compares levels with a snapshot taken at `open()`**, not "any buy or undo happened": buying and then
+  undoing the same level reports `false`, so the hub does not rebuild the Player for nothing.
+- **S2. The hub block** is `_build_camp_screen()` (called from `_ready` before the last-character early return),
+  `_on_camp_closed` and `_rebuild_player()`, plus a `_spawn_player()` that `_enter_walk` now uses. `_spawn_player` passes
+  `GameSession.attribute_levels` to the Player only `if "attribute_levels" in player` (the effects step adds it). The
+  `var camp_screen: Control` declaration is duplicated by the camp-site step: dedupe when merging. A rebuild only happens in
+  walk mode (in browse mode there is no Player).
+- **S3. Input.** `_input` handles `pause`/`ui_cancel` (close) and Up from Reset/Close (back to the last row, because rows are not
+  focus targets and the default focus navigation has nowhere to go). `_unhandled_input` has the row keys (Up/Down/Enter/Left/
+  Backspace) and Down from the last row focuses Reset all. Both return at once unless open. Reset/Close navigate with the
+  default focus neighbours (same HBox). The minus button is `disabled` at level 0 (the spec only says dimmed).
+- **S4. Reset all** does nothing when nothing is bought, and plays no sound of its own (it is a `UiKit.button`, so `menu_click`).
+- **S5. `last_sound`** on `CampScreen` records the last sound requested so the test can check feedback (Audio has no hook and
+  the wav files are not loaded headless).
+- **S6. Test gap:** the hub Player's `stats.value("damage")` change cannot be asserted until the effects step lands; the test
+  asserts a new Player instance at the same position and, if `Player.attribute_levels` exists, that it equals
+  `GameSession.attribute_levels`. The save-related lines of the spec's `camp_screen.gd` list belong to the save step.
+- Rendered at 0, 120 and 530 gold: eight rows fit 640x360 (panel about 445x270). Layout checked by eye.
+
+## v0.7 camp, integration (step 7 wiring)
+- **I1. Merge:** the four builder branches were merged into `spec-0.7-camp`; `hub.gd` deduped (`camp_screen` declared once,
+  `_spawn_player` sets `attribute_levels` without the `in` guard).
+- **I2. Banner and counter:** `hub.gd._show_reward()` runs before the last-character early return: a top-right
+  `GoldCounter` at `GameSession.gold - reward` counting up to `gold`, and a "+N gold" label that fades after 2 s.
+  Test: `tests/camp/camp_banner.gd` (a test must await one frame before touching `GameSession`, whose `_ready`
+  loads the save and would overwrite `gold`).
+- **I3. Spec deviations from the build:** `AttributeData.describe` has its own number formatter (`HubInfoPanel` pulls in
+  `UiKit` and `Audio`); `display_values` of percent attributes are percent numbers; the camp screen's minus button is
+  disabled at level 0 and Reset all does nothing with nothing bought; `SaveGame` uses a `JSON` instance so a bad file
+  prints no engine error.

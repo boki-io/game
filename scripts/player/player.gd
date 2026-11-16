@@ -10,6 +10,9 @@ signal died
 var character: CharacterData
 ## Set before adding to the tree. The hub: infinite mana, no damage to take, no progression.
 var hub_mode := false
+## Set before adding to the tree: camp attribute levels (id -> level). Written to `stats` once, in
+## `_apply_character`, before max HP and mana are read. Empty means no bonuses.
+var attribute_levels: Dictionary = {}
 
 var facing := Vector2.RIGHT
 var dead := false
@@ -70,6 +73,7 @@ func _ready() -> void:
 
 func _apply_character() -> void:
 	max_hp = character.max_hp
+	CampAttributes.apply(stats, attribute_levels)
 	mana.configure(character.max_mana, character.mana_regen)
 	mana.infinite = hub_mode
 	move_speed = character.move_speed
@@ -101,6 +105,9 @@ func _physics_process(delta: float) -> void:
 	if move != Vector2.ZERO:
 		facing = move.normalized()
 	_tick_phase(delta)
+	var regen := stats.value(&"hp_regen", 0.0)
+	if regen > 0.0 and health.current < health.max_health:
+		health.heal(regen * delta)
 	_update_grace_blink()
 	_face_time -= delta
 	var look := _face_dir if _face_time > 0.0 else facing
