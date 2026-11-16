@@ -45,6 +45,15 @@ func _process(delta: float) -> void:
 	_glow.queue_redraw()  # only the flames move; the rock is drawn once
 
 
+## The torch halo (additive) and flame colours: the theme's `glow_color` and `torch_color`, or today's oranges.
+func halo_color() -> Color:
+	return Color(1.0, 0.55, 0.2) if theme == null else theme.glow_color
+
+
+func flame_color() -> Color:
+	return Color(1.0, 0.65, 0.2) if theme == null else theme.torch_color
+
+
 ## Flicker for torch `i`: about 0.85 .. 1.15.
 func flicker(i: int) -> float:
 	return 1.0 + 0.1 * sin(_time * 9.0 + i * 2.3) + 0.05 * sin(_time * 23.0 + i * 5.1)
@@ -95,8 +104,8 @@ class TorchGlow extends Node2D:
 	var cave: CaveWalls
 
 	func _draw() -> void:
-		var halo := Color(1.0, 0.55, 0.2) if cave.theme == null else cave.theme.glow_color
-		var flame := Color(1.0, 0.65, 0.2) if cave.theme == null else cave.theme.torch_color
+		var halo := cave.halo_color()
+		var flame := cave.flame_color()
 		for i in cave.torches.size():
 			var p := cave.torches[i] + Vector2(0, -2)
 			var f := cave.flicker(i)

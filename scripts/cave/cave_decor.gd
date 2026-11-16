@@ -100,7 +100,7 @@ func _draw() -> void:
 
 ## The v0.6 kinds. Flat ones (moss, frost, puddle, crack) have no shadow; the others reuse the small one drawn above.
 func _draw_new() -> void:
-	var glow := GLOW if theme == null else theme.glow_color
+	var glow := glow_color()
 	match kind:
 		Kind.MOSS:
 			var moss := Color("4f6b3a")
@@ -153,6 +153,11 @@ func _draw_new() -> void:
 				pts.append(Vector2(-12.0 + i * 24.0 / (n - 1), (-2.0 if i % 2 == 0 else 2.0) + (i % 3) - 1.0))
 			draw_polyline(pts, Color(glow, 0.25), 5.0)
 			draw_polyline(pts, glow.lerp(Color.WHITE, 0.3), 1.5)
+
+
+## The colour of the glowing kinds: the theme's `glow_color`, or today's cyan.
+func glow_color() -> Color:
+	return GLOW if theme == null else theme.glow_color
 
 
 ## A flat ellipse with a slightly uneven edge, for patches on the floor.
