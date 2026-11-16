@@ -110,7 +110,8 @@ func _init() -> void:
 	await _wait(5)
 	_check(_fader.busy, "walking into the door starts the fade")
 	await _wait(120)
-	_check(current_scene.name == "Main" and _session.last_character == chars[0], "a run as the Knight started")
+	_check(current_scene.name == "Select" and _session.last_character == chars[0], "the door opens the select screen")
+	_check(_session.path != null and _session.current_column == 0, "a new path starts at column 1")
 
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)

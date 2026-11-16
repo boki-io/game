@@ -1,6 +1,6 @@
 extends SceneTree
-## Scene changes: hub -> run -> hub -> run, the Arena size in each, the game unpaused after every change,
-## input blocked while fading, and the hub pause menu opening on the first Esc.
+## Scene changes: hub -> select -> run -> hub -> select, the Arena size in each, the game unpaused after every
+## change, input blocked while fading, and the hub pause menu opening on the first Esc.
 ## Run: godot --headless --path . --script tests/scene_flow.gd
 
 var _failed := false
@@ -62,6 +62,11 @@ func _init() -> void:
 	_check(_fader.busy, "fade starts at once")
 	paused = true  # a fade that starts while paused must still unpause at the scene change
 	await _wait_idle()
+	_check(_scene_name() == "Select", "the door opens the select screen")
+	_check(Arena.world_size == Vector2i(640, 360), "the select screen has its own arena size")
+	_check(not paused, "unpaused on the select screen")
+	_session.select_stage(_session.available_stages()[0])
+	await _wait_idle()
 	_check(_scene_name() == "Main", "run scene loaded")
 	_check(Arena.world_size == Vector2i(1600, 896), "run uses the default arena size")
 	_check(not paused, "unpaused in the run")
@@ -80,9 +85,13 @@ func _init() -> void:
 		await physics_frame
 	_check(_scene_name() == "Hub", "the return does not re-enter the run")
 
-	_session.restart_run()
+	# A new door entry makes a new path and opens the select screen again.
+	_session.start_run(knight)
 	await _wait_idle()
-	_check(_scene_name() == "Main" and Arena.world_size == Vector2i(1600, 896), "restart loads a run at full size")
+	_check(_scene_name() == "Select" and _session.current_column == 0, "the next entry opens a fresh select screen")
+	_session.select_stage(_session.available_stages()[1])
+	await _wait_idle()
+	_check(_scene_name() == "Main" and Arena.world_size == Vector2i(1600, 896), "a stage loads the arena at full size")
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 

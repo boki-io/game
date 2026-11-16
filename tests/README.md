@@ -5,7 +5,7 @@ Headless regression scripts. Each one starts the real game scenes, drives them w
 
 ```
 godot --headless --path . --script tests/<name>.gd
-tests/run_all.sh            # every test, one line each
+tests/run_all.sh            # every test, one line each (120 s limit per test)
 ```
 
 | Script | Checks |
@@ -23,7 +23,13 @@ tests/run_all.sh            # every test, one line each
 | `hub_walk.gd` | Walk mode: one Player, infinite mana, interact and `clear()`, confirm/interact lockout, the door |
 | `hub_dummies.gd` | Every ability of both characters hurts the dummies; they never die, move, tint or stun; the readout |
 | `cave.gd` | Cave walls are solid, the door still triggers, decor stays clear of reserved areas, floor and decor are seeded |
-| `scene_flow.gd` | Hub to run to hub to run: Arena size, unpausing, the hub pause menu |
+| `scene_flow.gd` | Hub to select to run to hub to select: Arena size, unpausing, the hub pause menu |
+| `stage_modifiers.gd` | Additive percentage maths, the 300 alive cap ceiling, XP scaling, the SpawnDirector applying a stage |
+| `gold.gd` | Coin drop chance (25% + gold, clamped), drops, pickup through the XPCollector, gold persistence |
+| `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, seed reproducibility (30 seeds) |
+| `run_progress.gd` | GameSession path state; level, XP and upgrades carried between stages; cleared on death, abandon, victory |
+| `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
+| `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
 
 ## Writing one
 
@@ -36,3 +42,8 @@ tests/run_all.sh            # every test, one line each
 - `fixture.gd` starts a run with the spawner off, spawns (optionally frozen) enemies, applies upgrades and casts.
 - The enemy grid is rebuilt once per physics frame, so wait a frame or two after spawning before casting.
 - Rendering-dependent checks (anything that reads pixels) are not covered: headless uses a dummy renderer.
+- A script error inside a test leaves its SceneTree running, so a broken test hangs rather than failing. Run one by
+  hand with a time limit when in doubt.
+- After adding a `class_name` script, run `godot --headless --path . --import` once so the global class cache knows it.
+- `GameSession.scene_hook` (a Callable) replaces the fade to a new scene, so a test can see which scene a flow
+  would load without leaving the scene it is testing.

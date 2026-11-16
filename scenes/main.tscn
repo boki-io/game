@@ -26,6 +26,8 @@
 [ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="25"]
 
 [ext_resource type="Script" path="res://scripts/cave/cave_walls.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/ui/stage_banner.gd" id="32"]
+[ext_resource type="PackedScene" path="res://scenes/coin.tscn" id="31"]
 
 [sub_resource type="Gradient" id="vignette_gradient"]
 offsets = PackedFloat32Array(0.5, 1.0)
@@ -48,6 +50,7 @@ wall_band = 16
 z_index = -5
 script = ExtResource("11")
 gem_scene = ExtResource("12")
+coin_scene = ExtResource("31")
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -153,3 +156,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("17")
+
+[node name="StageBanner" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("32")

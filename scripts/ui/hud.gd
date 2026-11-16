@@ -18,6 +18,7 @@ const SLOTS := [
 var player: Player
 var run_manager: RunManager
 
+var _stage_text := ""
 var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
 var _mana_flash := 0.0
 
@@ -25,6 +26,10 @@ var _mana_flash := 0.0
 func bind(p: Player, rm: RunManager = null) -> void:
 	player = p
 	run_manager = rm
+	_stage_text = ""
+	var stage := GameSession.current_stage
+	if rm != null and stage != null and GameSession.path != null:
+		_stage_text = "Stage %d/%d - %s" % [GameSession.current_column + 1, GameSession.path.column_count(), stage.name]
 	player.caster.cast_failed.connect(_on_cast_failed)
 	player.tree_exiting.connect(_on_player_exiting.bind(p))
 
@@ -70,10 +75,24 @@ func _draw() -> void:
 	var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
 	var view := get_viewport_rect().size
 	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
+	if _stage_text != "":
+		_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 200.0)
 	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	_draw_gold(font, view)
 
 	_draw_xp(font)
 	_draw_icons(font)
+
+
+## A drawn coin and the gold number, right-aligned under the kills counter.
+func _draw_gold(font: Font, view: Vector2) -> void:
+	var text := str(GameSession.gold)
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	var right := view.x - 6.0
+	_text(font, Vector2(right, 24), text, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	var centre := Vector2(right - width - 7.0, 21.5)
+	draw_circle(centre, 3.5, Color("c89a1c"))
+	draw_circle(centre, 2.5, Color("ffd23f"))
 
 
 func _draw_bar(pos: Vector2, value: float, maximum: float, color: Color, label: String, font: Font,
@@ -199,8 +218,8 @@ func _text(font: Font, pos: Vector2, text: String, size: int, align: HorizontalA
 	var w := width if width > 0.0 else -1.0
 	var origin := pos
 	if align == HORIZONTAL_ALIGNMENT_CENTER:
-		origin.x -= 40.0
-		w = 80.0
+		w = width if width > 0.0 else 80.0
+		origin.x -= w / 2.0
 	elif align == HORIZONTAL_ALIGNMENT_RIGHT:
 		origin.x -= 80.0
 		w = 80.0
