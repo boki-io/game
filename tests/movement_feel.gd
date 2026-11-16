@@ -116,8 +116,86 @@ func _init() -> void:
 	await _F.frames(self, 2)
 	_check(p.dead and p.velocity == Vector2.ZERO and p._move_vel == Vector2.ZERO, "a dead Player stands still")
 
-	# Agility 7 (108.9 px/s) reaches its own top speed.
 	main.queue_free()
 	await process_frame
+	await _dust_tests()
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+# The bits the Player added over `frames` physics frames (expiry is ignored: bits live 0.3 s, so a short window is clean).
+func _new_bits(fx, frames: int) -> int:
+	var added := 0
+	for i in frames:
+		var before: int = fx._bits.size()
+		await physics_frame
+		added += maxi(fx._bits.size() - before, 0)
+	return added
+
+
+func _dust_tests() -> void:
+	var main: Node = _F.start_run(self, &"knight")
+	await _F.frames(self, 5)
+	var p = _F.player()
+	var fx = get_nodes_in_group(&"effects")[0]
+	var top := 90.0
+
+	# Standing: nothing. A 400 px teleport: nothing.
+	fx.clear()
+	_check(await _new_bits(fx, 20) == 0, "standing still makes no dust")
+	p.global_position += Vector2(400, 0)
+	_check(await _new_bits(fx, 5) == 0, "a teleport makes no dust")
+
+	# Walking 100 px: about one puff of 2 bits per 14 px, so about 14 bits.
+	_hold(p, Vector2.RIGHT)
+	await _F.seconds(self, 0.25)  # past the ramp
+	var start_x: float = p.global_position.x
+	var added := 0
+	while p.global_position.x - start_x < 100.0:
+		added += await _new_bits(fx, 1)
+	_check(added >= 10 and added <= 18, "100 px of walking adds about 14 bits, got %d" % added)
+
+	# Stopping from top speed: a skid of 3 bits (plus at most one stride puff).
+	_hold(p, Vector2.ZERO)
+	added = await _new_bits(fx, 3)
+	_check(added >= 3 and added <= 5, "stopping from speed skids, got %d bits" % added)
+	await _F.seconds(self, 0.5)
+
+	# Stopping from a crawl: no skid.
+	_hold(p, Vector2.RIGHT)
+	await _F.frames(self, 2)
+	_hold(p, Vector2.ZERO)
+	fx.clear()
+	added = await _new_bits(fx, 4)
+	_check(added == 0, "stopping from a crawl has no skid, got %d bits" % added)
+	await _F.seconds(self, 0.3)
+
+	# Spin or Slam slowing the Player (speed_scale not 1) suppresses the skid.
+	_hold(p, Vector2.RIGHT)
+	await _F.seconds(self, 0.4)
+	p.speed_scale = 0.4
+	_hold(p, Vector2.ZERO)
+	fx.clear()
+	added = await _new_bits(fx, 3)
+	_check(added <= 2, "no skid while speed_scale is not 1, got %d bits" % added)
+	p.speed_scale = 1.0
+	await _F.seconds(self, 0.5)
+
+	# Dashing: no dust.
+	fx.clear()
+	p.override_active = true
+	p.velocity_override = Vector2.RIGHT * 200.0
+	_check(await _new_bits(fx, 10) == 0, "a dash makes no dust")
+	p.override_active = false
+	await _F.seconds(self, 0.3)
+
+	# Phase Shift: no dust (it has its own trail).
+	p.start_phase(1.0, 1.5, 0.0, 0.0)
+	_hold(p, Vector2.RIGHT)
+	await _F.seconds(self, 0.2)
+	fx.clear()
+	_check(await _new_bits(fx, 15) == 0, "phasing makes no dust")
+	p.end_phase(false)
+	main.queue_free()
+	await process_frame
+

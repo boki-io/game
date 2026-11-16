@@ -27,6 +27,13 @@ var speed_scale := 1.0
 
 var _face_dir := Vector2.RIGHT
 var _move_vel := Vector2.ZERO  # the walking velocity the ramp moves; velocity keeps what move_and_slide leaves
+var _last_pos := Vector2.ZERO
+var _stride := 0.0  # distance walked since the last dust puff
+var _was_moving := false
+
+## Footstep dust: one puff per stride of walking, and a skid puff on stopping from speed.
+const DUST_STRIDE := 14.0
+const SKID_SPEED_FRACTION := 0.7
 var _was_blinking := false
 
 # Phase Shift: a timed ghost state (invulnerable, faster, optional touch damage).
@@ -74,6 +81,7 @@ func _ready() -> void:
 	if character:
 		_apply_character()
 	PlayerRegistry.register(self)
+	_last_pos = global_position
 	if character and character.sprite_frames:
 		_setup_animation()
 	caster.cast_started.connect(_on_cast_started)
@@ -111,6 +119,7 @@ func _physics_process(delta: float) -> void:
 		return
 	var move := player_input.move_vector
 	var top := stats.value(&"move_speed", move_speed) * speed_scale
+	var prev_vel := _move_vel
 	if override_active:
 		velocity = velocity_override
 		move_and_slide()
@@ -120,6 +129,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		# Floating mode does not slide `velocity` into a wall, so the speed that is left is the distance really moved.
 		_move_vel = get_real_velocity()
+	_tick_dust(move, prev_vel, delta)
 	if move != Vector2.ZERO:
 		facing = move.normalized()
 	_tick_phase(delta)
@@ -132,6 +142,31 @@ func _physics_process(delta: float) -> void:
 	sprite.facing = look
 	_update_animation(look, move)
 	sprite.aim = player_input.aim_vector
+
+
+## Dust at the feet: a puff every DUST_STRIDE px walked (not while dashing or phased: Phase Shift has its own trail), and
+## three on stopping from speed (not under Spin or Slam, which slow the Player on purpose). A step much longer than a
+## walking one is a teleport (the hub, tests) and counts for nothing.
+func _tick_dust(move: Vector2, prev_vel: Vector2, delta: float) -> void:
+	var step := global_position - _last_pos
+	_last_pos = global_position
+	var moving := move != Vector2.ZERO
+	var base := stats.value(&"move_speed", move_speed)
+	var fx := Effects.get_for(self)
+	if fx != null and not override_active and phase_left <= 0.0:
+		var dist := step.length()
+		if dist > 3.0 * base * delta:
+			_stride = 0.0
+		else:
+			_stride += dist
+			if _stride >= DUST_STRIDE:
+				_stride -= DUST_STRIDE
+				fx.dust(global_position, step.normalized())
+		if _was_moving and not moving and speed_scale == 1.0 and prev_vel.length() >= SKID_SPEED_FRACTION * base:
+			fx.dust(global_position, prev_vel.normalized(), 3)
+	else:
+		_stride = 0.0
+	_was_moving = moving
 
 
 ## One frame of the walking ramp: `_move_vel` moves toward `move * top` at the rate that takes `accel_time` from
