@@ -34,6 +34,14 @@ The base size is set in `project.godot` (`display/window/size`); the HUD, menus,
 
 Slash is automatic. Level-up cards: click, keys 1/2/3, or D-pad and confirm.
 
+## Relics (v1.0)
+Four relic slots sit on the right of the screen in a run. A level-up can offer a **relic card** (tag RELIC): a new relic, or a level for one
+you own (3 levels each). Relics work by themselves and are the same for every character: **Tidal Wave** (a wave along your aim, Lv3 returns),
+**Frost Comet** (comets that freeze, Lv3 two comets and frozen enemies take 1.5x), **Thorn Nova** (a ring of thorns and a slowing bramble, Lv3 a damaging
+one), **Storm Orbs** (orbs circle you, Lv3 they zap) and **Fire Trail** (flames behind you, Lv3 they set enemies burning). With all four slots full only
+upgrades for the relics you own are offered. Relic damage scales with your damage stat. Their numbers are in `data/relics/*.tres`; enemy slow,
+freeze, vulnerable and burn live in `EnemyStatus`. See `docs/spec-1.0.md`.
+
 ## Feel
 Walking eases up to speed and coasts to a stop (`accel_time` and `friction_time` in `data/characters/*.tres`; 0 is instant), with
 a puff of dust every few steps. Hits throw sparks and recoil the enemy's body a hair, a kill throws a burst in the enemy's colour

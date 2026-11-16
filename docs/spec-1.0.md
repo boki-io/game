@@ -1,6 +1,6 @@
 # Spec v1.0: Relics
 
-Builds on spec v0.9 and on everything in `main` at `3b9a2db` (PR #9, the stone-tablet level-up cards). Status: draft, rev 2 (rev 2 applies an independent review: the wave's wall test uses a ray, the bramble ticks once per 0.5 s, `RelicData` names its behavior script, Fire Trail damages each enemy once per tick, burn ticks are quiet, relic nodes are `top_level`, Storm Orbs owns its own belt, the roller takes an untyped player, and a Compatibility section was added).
+Builds on spec v0.9 and on everything in `main` at `3b9a2db` (PR #9, the stone-tablet level-up cards). Status: built (rev 3 records the build's deviations in section 13); rev 2 (rev 2 applies an independent review: the wave's wall test uses a ray, the bramble ticks once per 0.5 s, `RelicData` names its behavior script, Fire Trail damages each enemy once per tick, burn ticks are quiet, relic nodes are `top_level`, Storm Orbs owns its own belt, the roller takes an untyped player, and a Compatibility section was added).
 
 Terms: a **relic** is an automatic power the player carries in one of **4 relic slots** shown on the right of the screen. It has 3 levels and
 works by itself (a timer, an orbit or a trail), with no key and no mana. A **relic card** is a level-up card that gives a new relic or raises
@@ -215,7 +215,7 @@ One commit per step, tests with the step, the suite after each.
 | `enemy_status.gd` | slow x factor through `chase` and `settle`, strongest wins, expires; freeze stops movement and contact hits and gives vulnerable, ends; vulnerable multiplies `take_damage`; burn ticks every 0.5 s for the right total and refreshes; a pooled enemy comes back clean; dummies ignore all four; a slowed Dasher's dash length is unchanged; tint priority; 300 enemies with statuses inside the crowd budget |
 | `relic_progress.gd` | add, raise to 3, no raise past 3, no 5th slot; free slots; capture and restore keep ids, levels and order; an old snapshot without `relics` loads |
 | `relic_cards.gd` | 30 seeds: three distinct cards; no new relic with 4 full; upgrade cards only for owned and below 3; a new relic is always among the three while none is owned; weights (over 3000 rolls the relic share is within 5 points of the one the weights give); all maxed falls back to stat cards; a card applied changes the level and, for a new relic, takes the first free slot |
-| `relic_behaviors.gd` | per relic and level: fires at the cooldown, the numbers of section 4 (counts, radius, damage within the `damage` stat scaling, 1.25x while Arcane Focus is on), no cast without a target; wave direction follows `aim_vector`; the wave stops at a wall and Lv3 returns; comets: the target count, freeze and 1.5x; nova: thorn count and bramble slow, Lv3 ticks; orbs: count, per-enemy hit cooldown, Lv3 zaps; trail: flame spacing, life, cap of 80, burn at Lv3; nothing runs while dead |
+| `relic_orbs_trail.gd` and `relic_wave_comet_nova.gd` (the one `relic_behaviors.gd` of rev 2, split in two so two steps could be built in parallel) | per relic and level: fires at the cooldown, the numbers of section 4 (counts, radius, damage within the `damage` stat scaling, 1.25x while Arcane Focus is on), no cast without a target; wave direction follows `aim_vector`; the wave stops at a wall and Lv3 returns; comets: the target count, freeze and 1.5x; nova: thorn count and bramble slow, Lv3 ticks; orbs: count, per-enemy hit cooldown, Lv3 zaps; trail: flame spacing, life, cap of 80, burn at Lv3; nothing runs while dead |
 | `crowd_performance.gd` (added case) | 300 enemies with four relics at level 3 stay inside the physics budget; the player **walks in a circle** during the measurement so Fire Trail drops flames; a separate case calls the flame-drop function directly to reach the cap of 80 |
 
 Randomised cases use `SEED_COUNT` (30) seeds and reproduce from their seed. Tests do not name `Player`, `Enemy` or `AbilityCaster` in typed variables (use `tests/fixture.gd`).
@@ -252,3 +252,13 @@ Randomised cases use `SEED_COUNT` (30) seeds and reproduce from their seed. Test
 - Four new sounds in the three places; `git status` clean of unrelated files.
 - Existing tests pass (`phase_belt.gd`, `run_progress.gd` updated where listed); `tests/run_all.sh` passes on a fresh clone; the crowd tests stay inside budget with four level-3 relics.
 - README and `tests/README.md` list the new files and tests. Nothing in v1.0 stops or slows time.
+
+## 13. Build notes (deviations from rev 2)
+
+- **Tests**: `relic_behaviors.gd` became `relic_orbs_trail.gd` and `relic_wave_comet_nova.gd`; `relic_hud.gd` was added (slot rects and the flash timer).
+- **`freeze_left` lives in `EnemyStatus`**, and `Enemy.is_stunned()` combines it with `_stun_left`. `apply_vulnerable` ignores a multiplier of 1.0 or less.
+- **`LevelUpChoice` has `weight` and `is_relic`**; the `NEW` text is only for relics (a stat upgrade at level 0 still reads `Lv 0 -> 1`). When `GameSession.path_seed` is 0 the roller's seed also mixes in `Time`.
+- **Storm Orbs' belt is hidden and its processing disabled while the player is dead** (not `stop()`), so cooldowns are kept. `OrbBelt`'s cooldown sweep no longer crashes when an enemy in it was freed (an existing bug an always-on belt would hit constantly).
+- **Hit radii**: Tidal Wave hits within `width / 2 + 6` and `DamageZones._fire` queries `radius + 6`, so a comet or wave reaches 6 px further than the table's number.
+- **Warm-up cost**: in the crowd test the first seconds after the first relic starts hitting a never-hit crowd of 300 cost more (mean 24 to 29 ms, worst 55 ms) before settling near 10 ms; the test measures after a warm-up. Cause not yet found (suspect first-hit setup per enemy); to look at in a play-through.
+- Not verified by hand: how the orbs, flames, wave, comets and nova look; the slot flash in pixels; a full run with relics (PR box left unchecked).
