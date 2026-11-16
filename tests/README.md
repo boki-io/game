@@ -16,6 +16,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `wizard_abilities.gd` | Arcane Bolt, Arcane Focus, Phase Shift, Chain Lightning, Meteor Strike |
 | `wizard_animations.gd` | The Wizard's SpriteFrames (nine animations, drawn timings, loops) and the Player playing them: bolt alternates attack1/attack2, lightning and meteor their own, phase loops while phased, hurt, and death surviving a killing hit |
 | `phase_belt.gd` | Phase Shift's orb belt: appears, hurts, follows, ends, Orbital Ring |
+| `relic_orbs_trail.gd` | Storm Orbs (own belt, counts, radius, damage scaling, shared hit cooldown, Lv3 zaps, Phase Shift's belt unaffected) and Fire Trail (flame spacing, life, once-per-tick damage, Lv3 burn, cap of 80, nothing while dead) |
 | `chain_lightning.gd` | Jump count, damage falloff, Extra Jumps, an enemy standing on the Wizard |
 | `enemy_status.gd` | Enemy statuses: slow x factor through `chase` and `settle` (strongest wins, longest time, expires), freeze stops movement and contact hits and gives vulnerable, vulnerable multiplies `take_damage`, burn ticks every 0.5 s for dps x seconds (quiet: no flash or recoil) and refreshes, 30 seeds of stacking and burn totals, a pooled enemy comes back clean, dummies ignore all four, a slowed Dasher's dash length is unchanged, tint priority, the `DamageZones` slow / ignite / freeze extras and damage-0 fields, 300 enemies with statuses inside the crowd budget |
 | `crowd_performance.gd` | 300 unkillable enemies on a stationary Player stay inside the physics budget |
