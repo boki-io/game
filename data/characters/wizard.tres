@@ -26,6 +26,7 @@
 [ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="u16"]
 [ext_resource type="Resource" path="res://data/upgrades/pickup_radius.tres" id="u17"]
 [ext_resource type="Resource" path="res://data/upgrades/damage.tres" id="u18"]
+[ext_resource type="SpriteFrames" path="res://data/characters/wizard_frames.tres" id="sf"]
 
 [resource]
 script = ExtResource("1")
@@ -33,6 +34,9 @@ id = &"wizard"
 display_name = "Wizard"
 description = "Ranged spellcaster. Strikes from afar and phases out of trouble."
 body_color = Color(0.95, 0.8, 0.25, 1)
+sprite_frames = ExtResource("sf")
+sprite_scale = 0.5
+sprite_offset = Vector2(2, -14)
 max_hp = 90.0
 move_speed = 85.0
 max_mana = 140.0
