@@ -338,3 +338,12 @@ sealed-area check now builds an `ObstacleMap` with `MapBuilder.playable_rect` an
 unchanged (100% reach on all maps and seeds). `crowd_bone_warren.gd` uses `MapLayout.generate(bone_warren, 12345)`; its gate is a
 timing mean on a loaded machine: with other agents running it failed once in four runs (the run without obstacles was just as
 slow, 13 and 21 ms), so a single FAIL there under load should be rerun before it is believed.
+
+## W8. Rendered review (real frames, stage flow: `GameSession.new_run`, the stage picked from the path, `main.tscn`)
+Looked at Ember Depths, Mossy Hollow, Crystal Vault, Bone Warren and Spore Cavern, close up (normal camera) and with the
+camera zoomed to 0.4 to see the whole arena. Each map has its own floor, rock and glow, torches along the band (trimmed to
+`torch_count`), its signature decor (ember cracks, moss, cyan crystals, bones, violet fungi), walls and pillars in the theme's
+stone, and enemies in the map's colours (orange, yellow, pink). The ambient tint does not hide anything. Nothing was changed
+after the look. Seen but not changed: at the full-arena zoom the walls of Ember Depths and Crystal Vault are thin dark lines
+close to the floor's value (at the normal zoom they read); worth a pass in the per-map tuning (spec build step 10). The scratch
+scene was deleted.
