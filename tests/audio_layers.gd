@@ -68,5 +68,67 @@ func _init() -> void:
 		_audio.play_stream(stream, -30.0, 0.0)
 	_check(_audio.recent.size() == _audio.RECENT_MAX, "the voice log keeps %d, got %d" % [_audio.RECENT_MAX, _audio.recent.size()])
 
+	await _layer_tests()
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## How many voices an impact starts (the throttle record is cleared so layers that share a name are not skipped).
+func _voices(kind: StringName, strength: float) -> int:
+	_audio.recent.clear()
+	_audio._last_ms.clear()
+	_audio.impact(kind, strength)
+	return _audio.recent.size()
+
+
+func _layer_tests() -> void:
+	# Every sound in the list has its file and a line in the generator (CLAUDE.md: three places).
+	var generator := FileAccess.get_file_as_string("res://tools/gen_sfx.py")
+	var missing: Array[String] = []
+	for sound in _audio.SOUNDS:
+		if not FileAccess.file_exists("res://assets/audio/%s.wav" % sound) or not generator.contains('save("%s"' % sound):
+			missing.append(str(sound))
+	_check(missing.is_empty(), "sounds without a file or a generator line: %s" % [missing])
+	_check(_audio.POOL_SIZE == 16, "the pool is 16 voices")
+
+	# A hit that does not kill: the hit sound and a crack, plus a thud once it is thick. A kill: the death sound and a pop, plus a thud under a big body.
+	_check(_voices(&"hit", 0.1) == 2, "a light hit starts 2 voices")
+	_check(_voices(&"hit", 0.5) == 3, "a heavy hit starts 3 voices")
+	_check(_voices(&"hit", 0.39) == 2 and _voices(&"hit", 0.4) == 3, "the hit thud starts at strength 0.4")
+	_check(_voices(&"kill", 0.3) == 2, "a small kill starts 2 voices")
+	_check(_voices(&"kill", 1.0) == 3, "a big kill starts 3 voices")
+	_check(_voices(&"kill", 0.49) == 2 and _voices(&"kill", 0.5) == 3, "the kill thud starts at strength 0.5")
+	_check(_voices(&"hit", 5.0) == 3, "a strength over 1 is clamped")
+	# The layers do not vary in pitch; the hit and death sounds do.
+	_audio.recent.clear()
+	_audio._last_ms.clear()
+	_audio.impact(&"hit", 1.0)
+	var layers_exact := true
+	for e in _audio.recent:
+		if e.name in [&"impact_crack", &"impact_thud"]:
+			layers_exact = layers_exact and e.pitch == 1.0
+	_check(layers_exact, "the crack and the thud play at exactly 1.0")
+
+	# A layer whose file is missing is skipped without an error.
+	var saved = _audio._streams[&"impact_crack"]
+	_audio._streams.erase(&"impact_crack")
+	_check(_voices(&"hit", 0.5) == 2, "a missing layer file is skipped")
+	_audio._streams[&"impact_crack"] = saved
+
+	# An ability with a layer starts 2 voices (Slam: slam and the boom), one without starts 1 (Slash).
+	var F: GDScript = load("res://tests/fixture.gd")
+	var main: Node = F.start_run(self, &"knight")
+	await F.frames(self, 3)
+	var p = F.player()
+	var slam = load("res://data/abilities/slam.tres")
+	var slash = load("res://data/abilities/slash.tres")
+	_check(slam.sfx_layer != null and slash.sfx_layer == null, "only Slam has a layer")
+	_audio.recent.clear()
+	p.caster.play_sfx(slam)
+	_check(_audio.recent.size() == 2, "Slam starts 2 voices, got %d" % _audio.recent.size())
+	_check(absf(_audio.recent[0].pitch - 1.0) <= 0.04 and _audio.recent[1].pitch == 1.0, "the ability stream varies by 0.04 and its layer does not")
+	_audio.recent.clear()
+	p.caster.play_sfx(slash)
+	_check(_audio.recent.size() == 1, "Slash starts 1 voice, got %d" % _audio.recent.size())
+	main.queue_free()
+	await process_frame

@@ -20,6 +20,8 @@ extends Resource
 @export var knockback: float = 0.0  # px/s shove on nearby enemies when the cast ends
 @export var behavior: Script  # e.g. DashSlashBehavior
 @export var sfx: AudioStream
+## Optional second sound played together with `sfx` (Slam's boom), unvaried.
+@export var sfx_layer: AudioStream
 
 @export_group("Cast effect")
 ## Optional animation played when the ability lands. Draw it facing right; it is rotated to the aim.

@@ -11,6 +11,8 @@ const SEPARATION_WEIGHT := 0.8
 const SEPARATION_MAX_NEIGHBORS := 6  # bounds the cost of a dense crowd
 const ARENA_PADDING := 6.0
 const FLASH_TIME := 0.09
+const HEAVY_HIT := 30.0  # damage that counts as a full-strength hit for the layered hit sound
+const BIG_BODY := 720.0  # body area (px^2) that counts as a full-strength kill for the layered kill sound
 const RECOIL_TIME := 0.1  # a visual shove of the body away from the player after a hit; the enemy itself does not move
 const RECOIL_DISTANCE := 2.0
 const SPARK_COUNT := 3
@@ -166,11 +168,11 @@ func take_damage(amount: float) -> void:
 	if not active or health.current <= 0.0:
 		return
 	health.take_damage(amount)
-	Audio.play(&"enemy_hit", -6.0)
 	var fx := Effects.get_for(self)
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -data.body_size.y - 6.0), amount)
 	if health.current > 0.0:
+		Audio.impact(&"hit", amount / HEAVY_HIT)  # a killing blow plays the death sound instead (_on_died)
 		var near := PlayerRegistry.nearest(global_position)
 		var away := (global_position - near.global_position).normalized() if near else Vector2.ZERO
 		if fx:
@@ -340,7 +342,7 @@ func _flips(dir: Vector2) -> bool:
 
 
 func _on_died() -> void:
-	Audio.play(&"enemy_death", -4.0)
+	Audio.impact(&"kill", data.body_size.x * data.body_size.y / BIG_BODY)
 	var fx := Effects.get_for(self)
 	if fx:
 		if _anim and _anim.sprite_frames.has_animation(&"death"):
