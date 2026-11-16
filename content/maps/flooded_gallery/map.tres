@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="MapTheme" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map_theme.gd" id="1_theme"]
+[ext_resource type="Script" path="res://scripts/maps/monster_variant.gd" id="2_variant"]
+[ext_resource type="Resource" path="res://content/maps/flooded_gallery/monsters/grunt.tres" id="3_grunt"]
+[ext_resource type="Resource" path="res://content/maps/flooded_gallery/monsters/ranged.tres" id="4_ranged"]
+[ext_resource type="Resource" path="res://content/maps/flooded_gallery/monsters/dasher.tres" id="5_dasher"]
+[ext_resource type="Texture2D" path="res://content/maps/flooded_gallery/thumbnail.png" id="6_thumb"]
+
+[resource]
+script = ExtResource("1_theme")
+id = &"flooded_gallery"
+display_name = "Flooded Gallery"
+thumbnail = ExtResource("6_thumb")
+monsters = Array[ExtResource("2_variant")]([ExtResource("3_grunt"), ExtResource("4_ranged"), ExtResource("5_dasher")])
+floor_plain = Array[Color]([Color(0.157, 0.282, 0.431, 1), Color(0.163, 0.294, 0.449, 1), Color(0.152, 0.274, 0.418, 1), Color(0.16, 0.288, 0.44, 1)])
+floor_dark = Color(0.129, 0.232, 0.354, 1)
+floor_light = Color(0.18, 0.325, 0.496, 1)
+floor_flecks = 0.12
+rock = Color(0.133, 0.173, 0.227, 1)
+rock_dark = Color(0.073, 0.095, 0.125, 1)
+rock_light = Color(0.18, 0.233, 0.307, 1)
+wall_top = Color(0.364, 0.446, 0.561, 1)
+wall_top_light = Color(0.446, 0.539, 0.67, 1)
+wall_side = Color(0.107, 0.138, 0.182, 1)
+wall_outline = Color(0.067, 0.086, 0.114, 1)
+pillar = Color(0.398, 0.492, 0.626, 1)
+torch_color = Color(0.612, 0.656, 0.72, 1)
+glow_color = Color(0.353, 0.627, 1, 1)
+torch_count = 8
+ambient = Color(0.92, 0.97, 1, 1)
+vignette = 0.64
+legacy_layout = false
+style = 0
+wall_count = 3
+wall_lengths = Array[float]([208.0, 256.0, 320.0])
+horizontal_bias = 0.5
+pillar_count = 3
+decor_count = 90
+decor_weights = {0: 2.0, 1: 4.0, 2: 4.0, 3: 1.0, 4: 1.0, 10: 10.0}

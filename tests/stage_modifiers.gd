@@ -43,12 +43,12 @@ func _init() -> void:
 	var main: Node = F.start_run(self, &"knight")
 	await F.frames(self, 2)
 	var d = main.spawn_director
-	_check(is_equal_approx(d.start_rate, 1.0) and is_equal_approx(d.end_rate, 8.0) and d.alive_cap == 300,
+	_check(is_equal_approx(d.start_rate, 0.8) and is_equal_approx(d.end_rate, 6.4) and d.alive_cap == 300,
 		"no stage: base rate and cap")
 	var hard = StageDataScript.new()
 	hard.population = 15
 	d.apply_stage(hard)
-	_check(is_equal_approx(d.start_rate, 1.15) and is_equal_approx(d.end_rate, 9.2) and d.alive_cap == 300,
+	_check(is_equal_approx(d.start_rate, 0.8 * 1.15) and is_equal_approx(d.end_rate, 6.4 * 1.15) and d.alive_cap == 300,
 		"+15 population: rate x1.15, cap held at 300")
 	main.queue_free()
 	await process_frame

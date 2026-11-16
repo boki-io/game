@@ -2,7 +2,8 @@ class_name PathGenerator
 extends RefCounted
 ## Builds a run's path (3 + 3 + 1 stages) from a seed. Everything random (the middle stage's extra neighbour, tier
 ## order, rolled values, names and thumbnails) comes from ONE seeded RandomNumberGenerator, so a seed reproduces the
-## whole path. Pure logic: no scene or autoload is touched.
+## whole path. A stage's name, thumbnail and look come from a MapTheme of the MapRegistry. Pure logic: no scene or
+## autoload is touched.
 
 const COLUMN_SIZES := [3, 3, 1]
 const STEP := 5
@@ -13,14 +14,6 @@ const RANGES := {
 	StageData.Tier.NORMAL: {population = [-5, 5], difficulty = [-5, 5], experience = [0, 10], currency = [0, 5]},
 	StageData.Tier.HARD: {population = [10, 20], difficulty = [5, 10], experience = [15, 30], currency = [10, 20]},
 }
-
-## Name i goes with thumbnail i (assets/stages/stage_<i>.png, themed to match; see tools/gen_stage_thumbs.py).
-const NAMES := [
-	"Mossy Hollow", "Crystal Vault", "Ember Depths", "Frostbite Grotto", "Spore Cavern",
-	"Bone Warren", "Flooded Gallery", "Sulfur Pits",
-]
-const THUMBNAIL_COUNT := 8
-const THUMBNAIL_PATH := "res://assets/stages/stage_%d.png"
 
 
 static func generate(path_seed: int) -> StagePath:
@@ -36,7 +29,8 @@ static func generate(path_seed: int) -> StagePath:
 		[[0], [0], [0]],
 	]
 
-	var order := _shuffled(NAMES.size(), rng)  # which name (and so which thumbnail) each stage gets
+	var themes := MapRegistry.all()
+	var order := _shuffled(themes.size(), rng)  # which map each stage gets
 	var used := 0
 	for column in COLUMN_SIZES.size():
 		var tiers: Array = []
@@ -47,8 +41,10 @@ static func generate(path_seed: int) -> StagePath:
 		var stages: Array = []
 		for row in COLUMN_SIZES[column]:
 			var stage := _roll_stage(tiers[row], rng)
-			stage.name = NAMES[order[used]]
-			stage.thumbnail = load(THUMBNAIL_PATH % order[used])
+			var theme: MapTheme = themes[order[used]]
+			stage.theme = theme
+			stage.name = theme.display_name
+			stage.thumbnail = theme.thumbnail
 			used += 1
 			stages.append(stage)
 		path.columns.append(stages)

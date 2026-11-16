@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MonsterVariant" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/monster_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+enemy_id = &"grunt"
+body_color = Color(0.88, 0.32, 0.6, 1)
+outline_color = Color(0.4, 0.12, 0.28, 1)
+eye_color = Color(1, 1, 1, 1)
+mark = 2
+mark_color = Color(0.085, 0, 0.02, 1)

@@ -32,11 +32,14 @@ func think(delta: float, target: Player) -> Vector2:
 	_t += delta
 	match _state:
 		State.APPROACH:
-			if enemy.global_position.distance_to(target.global_position) <= _d.trigger_range:
+			# It needs a clear line to the target to wind up, so it never aims into a wall.
+			if (enemy.global_position.distance_to(target.global_position) <= _d.trigger_range
+					and enemy.has_line_of_sight(target, _d.hitbox_radius)):
 				_enter(State.AIM)
 			return enemy.chase(target, _d.speed)
 		State.AIM:
 			_dir = _direction_to(target)
+			_lane.length = _lane_length()  # shortened at the first obstacle on the aim
 			_update_lane()
 			if _t >= _d.aim_time:
 				_enter(State.LOCK)
@@ -57,6 +60,10 @@ func think(delta: float, target: Player) -> Vector2:
 			if _t >= _d.recovery_time:
 				_enter(State.APPROACH)
 			return Vector2.ZERO
+
+
+func asks_to_move() -> bool:
+	return _state == State.APPROACH
 
 
 func cancel() -> void:
@@ -102,7 +109,7 @@ func _enter(state: State) -> void:
 		State.DASH:
 			sprite.shake = 0.0
 			_lane.hide_lane()
-			_dash_left = _d.dash_distance
+			_dash_left = _lane_length()
 			_dash_hit = false
 			Audio.play(&"dasher_dash", -2.0)
 		State.RECOVER:
@@ -115,6 +122,14 @@ func _direction_to(target: Player) -> Vector2:
 	var dir := to.normalized() if to.length_squared() > 0.01 else _dir
 	enemy.facing = dir
 	return dir
+
+
+## The dash distance, cut short where an obstacle stands on the aim.
+func _lane_length() -> float:
+	var obstacles := enemy.obstacles
+	if obstacles == null:
+		return _d.dash_distance
+	return obstacles.ray_distance(enemy.global_position, _dir, _d.dash_distance, _d.hitbox_radius)
 
 
 func _update_lane() -> void:

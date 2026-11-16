@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="MapTheme" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map_theme.gd" id="1_theme"]
+[ext_resource type="Script" path="res://scripts/maps/monster_variant.gd" id="2_variant"]
+[ext_resource type="Resource" path="res://content/maps/bone_warren/monsters/grunt.tres" id="3_grunt"]
+[ext_resource type="Resource" path="res://content/maps/bone_warren/monsters/ranged.tres" id="4_ranged"]
+[ext_resource type="Resource" path="res://content/maps/bone_warren/monsters/dasher.tres" id="5_dasher"]
+[ext_resource type="Texture2D" path="res://content/maps/bone_warren/thumbnail.png" id="6_thumb"]
+
+[resource]
+script = ExtResource("1_theme")
+id = &"bone_warren"
+display_name = "Bone Warren"
+thumbnail = ExtResource("6_thumb")
+monsters = Array[ExtResource("2_variant")]([ExtResource("3_grunt"), ExtResource("4_ranged"), ExtResource("5_dasher")])
+floor_plain = Array[Color]([Color(0.471, 0.424, 0.345, 1), Color(0.486, 0.438, 0.356, 1), Color(0.458, 0.413, 0.337, 1), Color(0.479, 0.428, 0.343, 1)])
+floor_dark = Color(0.378, 0.338, 0.272, 1)
+floor_light = Color(0.552, 0.498, 0.404, 1)
+floor_flecks = 0.16
+rock = Color(0.259, 0.227, 0.188, 1)
+rock_dark = Color(0.135, 0.12, 0.1, 1)
+rock_light = Color(0.37, 0.325, 0.268, 1)
+wall_top = Color(0.69, 0.64, 0.54, 1)
+wall_top_light = Color(0.78, 0.73, 0.62, 1)
+wall_side = Color(0.42, 0.37, 0.3, 1)
+wall_outline = Color(0.15, 0.13, 0.105, 1)
+pillar = Color(0.8, 0.76, 0.66, 1)
+torch_color = Color(0.98, 0.78, 0.5, 1)
+glow_color = Color(0.922, 0.882, 0.784, 1)
+torch_count = 10
+ambient = Color(1, 0.97, 0.9, 1)
+vignette = 0.66
+legacy_layout = false
+style = 1
+wall_count = 10
+wall_lengths = Array[float]([96.0, 128.0, 160.0, 208.0])
+horizontal_bias = 0.8
+pillar_count = 2
+decor_count = 100
+decor_weights = {0: 1.0, 1: 2.0, 2: 3.0, 3: 12.0, 4: 0.3}
