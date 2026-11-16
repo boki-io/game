@@ -135,6 +135,11 @@ func _slow_through_chase_and_settle(F: GDScript, main: Node, p) -> void:
 	var a = F.spawn_enemy(main, "grunt", p.global_position + Vector2(200, 0), 100.0, true)
 	var b = F.spawn_enemy(main, "grunt", p.global_position + Vector2(205, 0), 100.0, true)
 	await F.frames(self, 3)  # the enemy grid is rebuilt once a frame
+	# _separation() recomputes only on frames where (physics frame + instance id) is even, so wait for one.
+	for i in 4:
+		if (Engine.get_physics_frames() + a.get_instance_id()) % 2 == 0:
+			break
+		await F.frames(self, 1)
 	var s1: Vector2 = a.settle(p, 100.0)
 	a.apply_slow(0.5, 5.0)
 	var s2: Vector2 = a.settle(p, 100.0)  # the same frame, so the same separation
