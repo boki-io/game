@@ -15,9 +15,18 @@ func level_of(data: UpgradeData) -> int:
 	return levels.get(data.id, 0)
 
 
+## Every upgrade in the pool that is not yet maxed.
+func open_upgrades() -> Array[UpgradeData]:
+	var open: Array[UpgradeData] = []
+	for u in pool:
+		if level_of(u) < u.max_level:
+			open.append(u)
+	return open
+
+
 ## Up to `count` distinct upgrades that are not yet maxed.
 func roll(count: int = 3) -> Array[UpgradeData]:
-	var open := pool.filter(func(u: UpgradeData) -> bool: return level_of(u) < u.max_level)
+	var open := open_upgrades()
 	open.shuffle()
 	var picks: Array[UpgradeData] = []
 	for u: UpgradeData in open.slice(0, count):
