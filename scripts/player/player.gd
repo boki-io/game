@@ -49,7 +49,9 @@ const DEATH_ANIM_TIME := 0.7
 const ABILITY_ANIMS: Array[StringName] = [&"lightning", &"meteor"]
 ## "phase" is not a one-shot: it loops as the movement animation while the Phase Shift ghost state lasts.
 const PHASE_ANIM := &"phase"
-const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death", &"lightning", &"meteor"]
+## Every animation that plays once and then hands back to idle/walk. The ability animations are added from ABILITY_ANIMS, so a
+## new cast animation cannot be left looping (a looping animation never finishes, so `_anim_busy` would stay true).
+const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death"] + ABILITY_ANIMS
 var _face_time := 0.0
 
 @onready var player_input: PlayerInput = $PlayerInput
