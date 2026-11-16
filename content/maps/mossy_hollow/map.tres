@@ -37,4 +37,4 @@ wall_lengths = Array[float]([48.0, 64.0, 96.0, 128.0, 160.0])
 horizontal_bias = 0.5
 pillar_count = 8
 decor_count = 110
-decor_weights = {0: 2.0, 1: 2.0, 2: 3.0, 3: 1.0, 4: 5.0}
+decor_weights = {0: 2.0, 1: 2.0, 2: 3.0, 3: 1.0, 4: 5.0, 5: 9.0}

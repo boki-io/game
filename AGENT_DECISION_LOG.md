@@ -322,3 +322,10 @@ floor with it; the layout takes it too.
 ## W5. Playable rect
 `MapBuilder.ENEMY_PADDING = 6.0` repeats `Enemy.ARENA_PADDING` so the builder compiles in a `--script` test before the
 autoloads exist; `map_build.gd` checks they are equal.
+
+## W6. Signature decor in `decor_weights`
+Added to each map (kind numbers of `CaveDecor.Kind`): Mossy Hollow moss 9 (+ mushroom 5), Crystal Vault crystal 10, Ember
+Depths crack 10 (rocks stay at 4 for "scorched rocks"), Frostbite icicle 7 and frost 6, Spore Cavern big fungus 9 and crystal 2
+(mushroom lowered 7 to 3), Bone Warren bones 9 to 12, Flooded Gallery puddle 10, Sulfur Pits vent 9. The signature kinds are
+40 to 70% of each map's total weight and the largest single weights. Layout, themes, content and look tests pass unchanged.
+`_template` keeps Mossy Hollow's old weights (it is a copy for `new_map.py`, not touched here).
