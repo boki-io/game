@@ -2,6 +2,7 @@ class_name Effects
 extends Node2D
 ## Transient visuals drawn from one canvas item: slash arcs, rings, telegraphs, puffs and
 ## floating numbers (damage in yellow, mana spend in blue). Numbers are capped and merged.
+## Bits are tiny square particles (dust, hit sparks, death bursts) kept in a list of their own, capped at MAX_BITS.
 
 const MAX_NUMBERS := 40
 const NUMBER_LIFE := 0.6
@@ -10,10 +11,19 @@ const MERGE_WINDOW := 0.15
 const MAX_CORPSES := 60  # play_once animations alive at once; further ones are skipped
 const DAMAGE_COLOR := Color(1, 1, 0.8)
 const MANA_COLOR := Color(0.4, 0.65, 1.0)
+const MAX_BITS := 256  # over this the oldest bits are dropped, so a crowd dying at once stays cheap
+const SPARK_BUDGET := 192  # low priority bursts (hit sparks) are skipped while this many bits are alive
+const DUST_COLOR := Color(0.8, 0.75, 0.65, 0.6)
+const DUST_SPEED := Vector2(6.0, 14.0)
+const DUST_LIFE := 0.3
+const DUST_SIZE := 2.0
+const DUST_SPREAD := deg_to_rad(60.0)
+const DUST_DRIFT := Vector2(0.0, -14.0)
 
 var _numbers: Array[Dictionary] = []
 var _sprite_pool: Array[AnimatedSprite2D] = []
 var _fx: Array[Dictionary] = []
+var _bits: Array[Dictionary] = []
 var _corpses := 0
 
 
@@ -30,12 +40,35 @@ func _ready() -> void:
 func clear() -> void:
 	_numbers.clear()
 	_fx.clear()
+	_bits.clear()
 	for child in get_children():
 		var sprite := child as AnimatedSprite2D
 		if sprite and sprite.visible:
 			sprite.stop()
 			_recycle_sprite(sprite)
 	queue_redraw()
+
+
+## `count` small squares thrown from `pos`: a speed in the `speed` (min, max) range, at an angle within `spread / 2` of `dir`
+## (the whole circle when `dir` is zero), plus a constant `drift`. They fade out over `life` seconds. A low priority burst
+## (hit sparks) is skipped while the list is nearly full, so deaths win in a crowd.
+func burst(pos: Vector2, color: Color, count: int, speed: Vector2, life: float, size: float,
+		dir := Vector2.ZERO, spread := TAU, drift := Vector2.ZERO, low_priority := false) -> void:
+	if low_priority and _bits.size() > SPARK_BUDGET:
+		return
+	var base := dir.angle() if dir != Vector2.ZERO else 0.0
+	var cone := spread if dir != Vector2.ZERO else TAU
+	for i in count:
+		var angle := base + randf_range(-cone / 2.0, cone / 2.0)
+		_bits.append({pos = pos, vel = Vector2.from_angle(angle) * randf_range(speed.x, speed.y) + drift,
+			age = 0.0, life = life, color = color, size = size})
+	if _bits.size() > MAX_BITS:
+		_bits = _bits.slice(_bits.size() - MAX_BITS)
+
+
+## Footstep or skid dust: thrown backwards from `dir`, drifting up.
+func dust(pos: Vector2, dir: Vector2, count: int = 2) -> void:
+	burst(pos, DUST_COLOR, count, DUST_SPEED, DUST_LIFE, DUST_SIZE, -dir, DUST_SPREAD, DUST_DRIFT)
 
 
 func damage_number(pos: Vector2, amount: float) -> void:
@@ -152,12 +185,16 @@ func puff(pos: Vector2, color: Color) -> void:
 
 
 func _process(delta: float) -> void:
-	if _numbers.is_empty() and _fx.is_empty():
+	if _numbers.is_empty() and _fx.is_empty() and _bits.is_empty():
 		return
 	for n in _numbers:
 		n.age += delta
 	for f in _fx:
 		f.age += delta
+	for b in _bits:
+		b.age += delta
+		b.pos += b.vel * delta
+	_bits = _bits.filter(func(b: Dictionary) -> bool: return b.age < b.life)
 	_numbers = _numbers.filter(func(n: Dictionary) -> bool: return n.age < NUMBER_LIFE)
 	_fx = _fx.filter(func(f: Dictionary) -> bool: return f.age < f.life)
 	queue_redraw()
@@ -186,6 +223,10 @@ func _draw() -> void:
 				draw_arc(f.pos, f.radius * (0.6 + 0.4 * t), 0.0, TAU, 40, Color(1, 1, 1, 1.0 - t), 2.0)
 			_:
 				draw_circle(f.pos, f.radius * (0.4 + t), Color(f.color, 0.6 * (1.0 - t)))
+	for b in _bits:
+		var half: float = b.size / 2.0
+		draw_rect(Rect2(b.pos.round() - Vector2(half, half), Vector2(b.size, b.size)),
+			Color(b.color, b.color.a * (1.0 - b.age / b.life)))
 	var font := ThemeDB.fallback_font
 	for n in _numbers:
 		var t: float = n.age / NUMBER_LIFE
