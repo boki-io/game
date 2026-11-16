@@ -7,6 +7,10 @@ character's Q / E / R abilities. Proof of concept.
 - **Knight** (close range): auto Slash, Q Dash & Slash, E Spin, R Slam.
 - **Wizard** (ranged): auto Arcane Bolt, Q Phase Shift (ghost form, then a ring of orbs), E Chain Lightning,
   R Meteor Strike. Trait: Arcane Focus (+25% damage after standing still for 1s).
+- **Archer** (ranged, no mana): auto Arrow, Q Dash Shot (dash, then a fan of arrows back along the way you came),
+  E Ricochet Volley (six arrows that bounce between enemies and off walls), R Arrow Rain (three damage circles
+  around the cursor). Trait: Steady Aim (up to +30% damage with arrows that have flown 160 px or more). It has no
+  MP bar and no mana upgrades.
 
 Each character has 18 to 19 upgrades. The game opens in the **hub**: look at each character on their pedestal
 (left / right or click), read their stats and abilities, and choose one. Then walk around the hub as them (infinite
