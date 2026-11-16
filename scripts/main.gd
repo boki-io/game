@@ -49,6 +49,7 @@ func _ready() -> void:
 ## covers it); then the last stage shows victory and any other stage shows "Stage cleared" and loads the next select.
 func _on_run_ended(won: bool) -> void:
 	if not won:
+		SceneFader.iris_hold(70.0, 0.7)  # the screen closes to a small hole around the body, behind the death screen
 		$UI/EndScreen.show_result(EndScreen.Mode.DEATH)
 		return
 	while $UI/LevelUpMenu.active:
@@ -59,6 +60,7 @@ func _on_run_ended(won: bool) -> void:
 		return
 	get_tree().paused = true
 	$UI/StageBanner.show_banner()
+	SceneFader.flash(Color(1.0, 0.92, 0.6, 0.4), 0.4)
 	# The tree is paused, so the timer must ignore pause or it would never fire.
 	await get_tree().create_timer(STAGE_CLEARED_TIME, true).timeout
 	GameSession.complete_stage()
@@ -76,6 +78,7 @@ func _build_map() -> void:
 	targets.props = props_root
 	targets.decor = $World/Decor
 	targets.ambient_parent = self
+	targets.ambience_parent = $World
 	targets.vignette = $UI/Vignette
 	targets.obstacles_parent = self
 	var layout := MapBuilder.build(theme, GameSession.map_seed(), Vector2(Arena.world_size), targets)

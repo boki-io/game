@@ -54,6 +54,11 @@ func _init() -> void:
 	await process_frame
 	var F: GDScript = load("res://tests/fixture.gd")
 	var session = root.get_node("GameSession")
+	# PlayerInput ignores input while the boot iris is still opening (SceneFader.busy), so the first map's walk would lose frames.
+	for i in 120:
+		if not root.get_node("SceneFader").busy:
+			break
+		await physics_frame
 	_check(Builder.ENEMY_PADDING == load("res://scripts/enemy/enemy.gd").ARENA_PADDING, "the builder's enemy padding equals Enemy.ARENA_PADDING")
 	var themes: Array = Registry.all()
 	themes.append(null)  # no stage: the default cave
@@ -73,6 +78,10 @@ func _init() -> void:
 		var expected = Layout.generate(map_theme, map_seed, SIZE)
 		var main: Node = F.start_run(self, &"knight")
 		await F.frames(self, 3)
+
+		# The drifting motes of the theme (the default cave for no theme), in the world node.
+		var ambience: Node = main.get_node_or_null("World/Ambience")
+		_check(ambience != null and ambience.kind == map_theme.ambience_kind and ambience.motes().size() == map_theme.ambience_count, tag + "the run has the theme's Ambience")
 
 		# The same layout as the generator, in the nodes.
 		var props: Node = main.get_node("World/Props")

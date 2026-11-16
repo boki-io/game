@@ -97,4 +97,10 @@ save("door_open", mix(tone(90, 180, 0.5, "saw", 0.7), noise(0.5, 0.05, 0.25, 0.8
 save("door_enter", mix(tone(500, 120, 0.3, "sine", 1.2), noise(0.25, 0.4, 0.05, 1.5, 0.05)), 0.5)
 save("stage_clear", seq(*[tone(f, f, 0.14, "triangle", 1.0) for f in (392, 523, 659)], tone(784, 784, 0.4, "triangle", 1.8)), 0.55)
 save("coin", seq(tone(1250, 1250, 0.05, "square", 1.0), tone(1670, 1670, 0.14, "square", 2.0)), 0.3)
+# v0.9 impact layers. Added after every older sound: the generator draws from one seeded random in call order,
+# so the files above stay exactly as they were.
+save("impact_crack", noise(0.05, 0.8, 0.3, 2.5, 0.0), 0.5)
+save("impact_thud", tone(120, 55, 0.14, "sine", 2.0), 0.7)
+save("kill_pop", mix(tone(600, 200, 0.1, "triangle", 2.0), noise(0.04, 0.6, 0.2, 2.0)), 0.45)
+save("impact_boom", mix(tone(70, 28, 0.4, "sine", 1.6), noise(0.25, 0.5, 0.05, 2.5, 0.0)), 0.8)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))

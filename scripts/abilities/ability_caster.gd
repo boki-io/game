@@ -86,7 +86,9 @@ func value(data: AbilityData, stat: StringName, base: float) -> float:
 
 
 func play_sfx(data: AbilityData) -> void:
-	Audio.play_stream(data.sfx)
+	Audio.play_stream(data.sfx, 0.0, 0.04)
+	if data.sfx_layer != null:
+		Audio.play_stream(data.sfx_layer)
 
 
 func damage_of(data: AbilityData) -> float:
