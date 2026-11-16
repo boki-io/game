@@ -31,7 +31,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `camp/camp_save.gd` | SaveGame: round trip, missing, zero-length and corrupt (`.bad`) files, clamping, unknown ids, tmp fallback, saving off when headless; GameSession saves on buy, undo, reset and banking |
 | `camp/camp_gold.gd` | The run purse: coins go to `run_gold`; death screen, abandon and victory bank once and set `last_reward`; `take_reward`; nothing banked on `complete_stage` |
 | `camp/camp_shop.gd` | Camp attribute costs (40 to 456, 1288 each), buy, undo, reset, gold plus spent conserved over 30 seeds, the GameSession attribute API |
-| `camp/camp_attributes.gd` | Attribute data: totals at levels 0, 1 and 7 through `CampAttributes.apply`, `display_values` and summary text against the data |
+| `camp/camp_attributes.gd` | Attribute data: totals at levels 0, 1 and 7 through `CampAttributes.apply`, `display_values` and summary text against the data; in play: Haste/Fury `cooldown_of`, Recovery, Agility, Might x Power, `RunProgress.restore`, the hub Player, Greed in the director |
 | `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
 | `maps/map_content.gd` | `content/maps/` on disk against `MapRegistry`, required files, 64x40 thumbnails, ids, unique names, a monster variant per enemy type, no stray files (also `_template`, `_default`) |
 | `maps/map_themes.gd` | Every `MapTheme` field in range, ambient near white, the eight maps differ, monsters readable on the floor, thumbnail colour close to the theme |
