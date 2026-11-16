@@ -11,7 +11,7 @@ var active := false
 
 var _queue: Array[Player] = []
 var _player: Player
-var _choices: Array[UpgradeData] = []
+var _choices: Array[LevelUpChoice] = []
 var _title: Label
 var _row: HBoxContainer
 
@@ -38,7 +38,9 @@ func queue_level_up(player: Player) -> void:
 func _show_next() -> void:
 	while not _queue.is_empty():
 		_player = _queue.pop_front()
-		_choices = _player.upgrades.roll(3)
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash([GameSession.path_seed, _player.xp.level, Time.get_ticks_usec() if GameSession.path_seed == 0 else 0])
+		_choices = LevelUpRoller.roll(_player, 3, rng)
 		if not _choices.is_empty():
 			_open()
 			return
@@ -55,9 +57,8 @@ func _open() -> void:
 	var first: Button
 	for i in _choices.size():
 		var u := _choices[i]
-		var lv := _player.upgrades.level_of(u)
-		var b := UiKit.button("[%d] %s\n%s\n\n%s\nLv %d -> %d" % [i + 1, u.display_name, u.tag.to_upper(),
-			u.description, lv, lv + 1], Vector2(120, 84))
+		var b := UiKit.button("[%d] %s\n%s\n\n%s\n%s" % [i + 1, u.title, u.tag,
+			u.description, u.level_text()], Vector2(120, 84))
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_style_tablet(b)
 		b.pressed.connect(_pick.bind(i))
@@ -104,7 +105,7 @@ func _input(event: InputEvent) -> void:
 func _pick(index: int) -> void:
 	if not active or index >= _choices.size():
 		return
-	_player.upgrades.apply(_choices[index])
+	_choices[index].apply.call()
 	_show_next()
 
 

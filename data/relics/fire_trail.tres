@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/relics/relic_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/relics/fire_trail.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"fire_trail"
+display_name = "Fire Trail"
+color = Color(1.0, 0.5, 0.15, 1)
+glyph = "F"
+behavior = ExtResource("2")
+levels = Array[Dictionary]([{
+"radius": 9,
+"life": 1.5,
+"tick": 5,
+"ignite_dps": 0,
+"ignite_seconds": 0.0,
+"description": "Walking leaves\nflames that burn\nenemies"
+}, {
+"radius": 12,
+"life": 2.5,
+"tick": 6,
+"ignite_dps": 0,
+"ignite_seconds": 0.0,
+"description": "Bigger flames\nthat last longer"
+}, {
+"radius": 12,
+"life": 2.5,
+"tick": 6,
+"ignite_dps": 4,
+"ignite_seconds": 3.0,
+"description": "Flames set\nenemies on fire\n4 dps for 3 s"
+}])
