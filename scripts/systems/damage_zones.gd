@@ -30,7 +30,8 @@ func add_line(a: Vector2, b: Vector2, width: float, damage: float, interval: flo
 
 ## Circle at pos that fires once after `delay`, with a ring effect and knockback.
 ## extras (all optional): sfx (AudioStream played at impact), shake (Vector2: strength, seconds),
-## visual (&"meteor"), stun (seconds applied to every enemy hit).
+## visual (&"meteor"), stun (seconds applied to every enemy hit), freeze ({seconds, vulnerable} applied to every
+## enemy hit, after the damage), slow ({factor, seconds}), ignite ({dps, seconds}).
 func add_burst(pos: Vector2, radius: float, damage: float, delay: float, knockback: float,
 		extras: Dictionary = {}) -> void:
 	_zones.append({kind = &"circle", a = pos, b = pos, radius = radius, damage = damage, interval = 0.0,
@@ -39,11 +40,13 @@ func add_burst(pos: Vector2, radius: float, damage: float, delay: float, knockba
 
 
 ## Circle that damages everything inside every `interval` seconds, `ticks` times. The first tick lands
-## after `delay` (0 = at once). Drawn as a faint ground circle that fades as ticks run out.
+## after `delay` (0 = at once). Drawn as a faint ground circle that fades as ticks run out. extras (optional):
+## slow ({factor, seconds}) and ignite ({dps, seconds}), applied to every enemy inside at each tick. With
+## `damage` 0 a tick only applies the extras (no damage number, spark or sound).
 func add_field(pos: Vector2, radius: float, damage: float, interval: float, ticks: int,
-		color: Color, delay: float = 0.0) -> void:
+		color: Color, delay: float = 0.0, extras: Dictionary = {}) -> void:
 	_zones.append({kind = &"field", a = pos, b = pos, radius = radius, damage = damage, interval = interval,
-		cd = delay, ticks = ticks, total = ticks, ring = false, knockback = 0.0, extras = {}, color = color})
+		cd = delay, ticks = ticks, total = ticks, ring = false, knockback = 0.0, extras = extras, color = color})
 
 
 func _physics_process(delta: float) -> void:
@@ -63,17 +66,27 @@ func _fire(z: Dictionary) -> void:
 	var mid: Vector2 = (z.a + z.b) / 2.0
 	var reach: float = z.radius + 6.0 + (z.a as Vector2).distance_to(z.b) / 2.0
 	var stun: float = z.extras.get("stun", 0.0)
+	var slow: Dictionary = z.extras.get("slow", {})
+	var ignite: Dictionary = z.extras.get("ignite", {})
+	var freeze: Dictionary = z.extras.get("freeze", {})
 	for e in EnemyGrid.query(mid, reach):
 		if z.kind == &"line":
 			var closest := Geometry2D.get_closest_point_to_segment(e.global_position, z.a, z.b)
 			if closest.distance_to(e.global_position) > z.radius + 6.0:
 				continue
-		e.take_damage(z.damage)
+		if z.damage > 0.0:
+			e.take_damage(z.damage)
 		if z.knockback > 0.0:
 			var away: Vector2 = e.global_position - z.a
 			e.apply_knockback(away.normalized() * z.knockback)
 		if stun > 0.0:
 			e.stun(stun)
+		if not freeze.is_empty():  # after the damage, so the hit itself does not get the vulnerable multiplier
+			e.freeze(freeze.seconds, freeze.get("vulnerable", 1.0))
+		if not slow.is_empty():
+			e.apply_slow(slow.factor, slow.seconds)
+		if not ignite.is_empty():
+			e.ignite(ignite.dps, ignite.seconds)
 	var fx := Effects.get_for(self)
 	if z.ring and fx:
 		fx.ring(z.a, z.radius)

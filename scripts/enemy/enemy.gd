@@ -57,6 +57,7 @@ var _flow_until := 0
 var _flow_dir := Vector2.ZERO
 var _stuck_anchor := Vector2.ZERO
 var _stuck_t := 0.0
+var status := EnemyStatus.new()  # slow, freeze, vulnerable, burn (spec 1.0 section 2)
 var _anim: AnimatedSprite2D  # only when the applied variant has sprite_frames
 
 @onready var health: Health = $Health
@@ -132,7 +133,8 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	sprite.position = Vector2.ZERO
 	_knockback = Vector2.ZERO
 	_stun_left = 0.0
-	sprite.modulate = Color.WHITE
+	status.reset()
+	_refresh_tint()
 	sprite.flash = false
 	sprite.warn = false
 	sprite.shake = 0.0
@@ -154,6 +156,7 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 
 func deactivate() -> void:
 	active = false
+	status.reset()
 	visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
 	hitbox.set_deferred("monitoring", false)
@@ -164,13 +167,19 @@ func _exit_tree() -> void:
 	EnemyGrid.unregister(self)
 
 
-func take_damage(amount: float) -> void:
+## `quiet` (burn ticks): the damage number and the health change only, no hit sound, spark, recoil or flash.
+## Vulnerable multiplies the amount first, so the number shown is the HP lost.
+func take_damage(amount: float, quiet := false) -> void:
 	if not active or health.current <= 0.0:
 		return
+	if status.any_active:
+		amount *= status.damage_multiplier()
 	health.take_damage(amount)
 	var fx := Effects.get_for(self)
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -data.body_size.y - 6.0), amount)
+	if quiet:
+		return
 	if health.current > 0.0:
 		Audio.impact(&"hit", amount / HEAVY_HIT)  # a killing blow plays the death sound instead (_on_died)
 		var near := PlayerRegistry.nearest(global_position)
@@ -193,8 +202,61 @@ func stun(seconds: float) -> void:
 	if not active or data.immovable:
 		return
 	_stun_left = maxf(_stun_left, seconds)
-	sprite.modulate = Color(1.0, 1.0, 0.45)
+	_refresh_tint()
 	brain.cancel()
+
+
+## Stunned or frozen: the brain does not run and contact hits are blocked.
+func is_stunned() -> bool:
+	return _stun_left > 0.0 or status.freeze_left > 0.0
+
+
+## Speed x `factor` for `seconds` (0.6 = 40% slower). The lowest factor wins, the time is the longest.
+## Dummies (immovable) ignore every status.
+func apply_slow(factor: float, seconds: float) -> void:
+	if not active or data.immovable:
+		return
+	status.apply_slow(factor, seconds)
+	_refresh_tint()
+
+
+## Like a stun (the brain is cancelled, no contact hits) with an ice tint; also makes the enemy vulnerable by
+## `vulnerable` for the same time.
+func freeze(seconds: float, vulnerable := 1.0) -> void:
+	if not active or data.immovable:
+		return
+	status.apply_freeze(seconds, vulnerable)
+	_refresh_tint()
+	brain.cancel()
+
+
+## `take_damage` multiplies the amount by `mult` for `seconds`.
+func apply_vulnerable(mult: float, seconds: float) -> void:
+	if not active or data.immovable:
+		return
+	status.apply_vulnerable(mult, seconds)
+
+
+## `dps` damage a second for `seconds`, in ticks of 0.5 s. The dps is final: read it already scaled.
+func ignite(dps: float, seconds: float) -> void:
+	if not active or data.immovable:
+		return
+	status.ignite(dps, seconds)
+	_refresh_tint()
+
+
+## The one place the body tint is set: stun, then freeze, then burn, then slow, else white.
+func _refresh_tint() -> void:
+	if _stun_left > 0.0:
+		sprite.modulate = Color(1.0, 1.0, 0.45)
+	elif status.freeze_left > 0.0:
+		sprite.modulate = Color(0.55, 0.8, 1.0)
+	elif status.burn_left > 0.0:
+		sprite.modulate = Color(1.0, 0.6, 0.35)
+	elif status.slow_left > 0.0:
+		sprite.modulate = Color(0.75, 0.95, 0.75)
+	else:
+		sprite.modulate = Color.WHITE
 
 
 func apply_knockback(impulse: Vector2) -> void:
@@ -210,7 +272,7 @@ func chase(target: Player, speed: float) -> Vector2:
 		dir = _steer(target, dir)
 	if dir != Vector2.ZERO:
 		facing = dir
-	return (dir + _separation() * SEPARATION_WEIGHT) * speed
+	return (dir + _separation() * SEPARATION_WEIGHT) * speed * status.slow_factor
 
 
 ## Whether the way to `target` is open for a circle of `radius` (always true without obstacles).
@@ -243,7 +305,7 @@ func settle(target: Player, speed: float) -> Vector2:
 	var to := target.global_position - global_position
 	if to.length_squared() > 0.01:
 		facing = to.normalized()
-	return _separation() * SEPARATION_WEIGHT * speed * 0.5
+	return _separation() * SEPARATION_WEIGHT * speed * status.slow_factor * 0.5
 
 
 func _physics_process(delta: float) -> void:
@@ -258,12 +320,19 @@ func _physics_process(delta: float) -> void:
 	if target == null:
 		return
 
+	if status.any_active:
+		var burn := status.advance(delta)
+		if burn > 0.0:
+			take_damage(burn, true)
+			if not active:
+				return  # the burn killed it
+		_refresh_tint()
 	var velocity := Vector2.ZERO
 	if _stun_left > 0.0:
 		_stun_left -= delta
 		if _stun_left <= 0.0:
-			sprite.modulate = Color.WHITE
-	else:
+			_refresh_tint()
+	elif status.freeze_left <= 0.0:
 		velocity = brain.think(delta, target)
 	var asked := velocity + _knockback
 	if obstacles == null:
@@ -288,7 +357,7 @@ func _physics_process(delta: float) -> void:
 			_anim.flip_h = flip
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
-	if _contact_cd <= 0.0 and _stun_left <= 0.0 and brain.can_contact():
+	if _contact_cd <= 0.0 and not is_stunned() and brain.can_contact():
 		_try_contact_hit()
 
 	var to_target := target.global_position - global_position
@@ -301,7 +370,8 @@ func _physics_process(delta: float) -> void:
 ## An enemy that asked to move (at least half its speed) but covered under 2 px in a 3 s window, far from its
 ## target, is recycled through the teleport-back. Covers whatever the flow field misses.
 func _check_stuck(delta: float, asked: Vector2, target: Player) -> void:
-	if (_stun_left > 0.0 or director == null or not brain.asks_to_move() or asked.length() < data.speed * 0.5
+	if (is_stunned() or director == null or not brain.asks_to_move()
+			or asked.length() < data.speed * status.slow_factor * 0.5
 			or global_position.distance_to(target.global_position) <= STUCK_MIN_TARGET):
 		_stuck_anchor = global_position
 		_stuck_t = 0.0
