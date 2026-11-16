@@ -33,6 +33,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `maps/map_themes.gd` | Every `MapTheme` field in range, ambient near white, the eight maps differ, monsters readable on the floor, thumbnail colour close to the theme |
 | `maps/map_layout.gd` | `MapLayout.generate`: the default theme equals today's arena; for the eight maps and 30 seeds the layout rules (clearing, rock band margin, wall gaps, pillar distances, 16-obstacle budget, 80% placed, lengths, no sealed area, a free cell across every gap, decor and torches) and that a seed reproduces |
 | `maps/theme_look.gd` | A theme's colours reach `Ground`, `CaveWalls` and torches, `CaveWall`, `Prop`, `CaveDecor` and `MapLook` (vignette, ambient); null theme equals today's values; decor kinds keep their numbers |
+| `maps/monster_variants.gd` | A variant per enemy type on every map, the same behaviour and `EnemyData` under every theme (and MonsterVariant has only the six appearance fields), the sprite, death puff and hub dummies |
 | `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
 
 ## Writing one

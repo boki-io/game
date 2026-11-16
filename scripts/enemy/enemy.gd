@@ -43,6 +43,18 @@ func _ready() -> void:
 	brain.setup(self)
 
 
+## Dresses the enemy in a map's look (spec 0.6 section 7): colours and a mark on the sprite only. `data`, the
+## hitbox, the brain and the health are not touched. Null keeps the type's own look. Call after the enemy is in the tree.
+func apply_variant(variant: MonsterVariant) -> void:
+	if variant == null:
+		return
+	sprite.body_color = variant.body_color
+	sprite.outline_color = variant.outline_color
+	sprite.eye_color = variant.eye_color
+	sprite.mark = int(variant.mark)
+	sprite.mark_color = variant.mark_color
+
+
 func activate(pos: Vector2, hp_multiplier: float) -> void:
 	global_position = pos
 	health.setup(data.max_health * hp_multiplier)
@@ -174,5 +186,5 @@ func _on_died() -> void:
 	Audio.play(&"enemy_death", -4.0)
 	var fx := Effects.get_for(self)
 	if fx:
-		fx.puff(global_position + Vector2(0, -8), data.body_color)
+		fx.puff(global_position + Vector2(0, -8), sprite.body_color)
 	died.emit(self)
