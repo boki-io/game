@@ -1,14 +1,20 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://5daih28woc7g"]
 
-[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/abilities/phase_behavior.gd" id="2"]
-[ext_resource type="AudioStream" path="res://assets/audio/phase.wav" id="3"]
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dhfrdir6naxsu" path="res://scripts/abilities/phase_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_y7rcm"]
+[ext_resource type="AudioStream" uid="uid://bqpu576ei5bjn" path="res://assets/audio/phase.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_44o2s"]
+atlas = ExtResource("2_y7rcm")
+region = Rect2(160, 2144, 32, 32)
 
 [resource]
 script = ExtResource("1")
 id = &"phase"
 display_name = "Phase Shift"
 description = "Become a ghost: untouchable and 50% faster. Afterward, a ring of orbs circles you for 2s."
+icon = SubResource("AtlasTexture_44o2s")
 cooldown = 1.8
 mana_cost = 12.0
 damage = 8.0
