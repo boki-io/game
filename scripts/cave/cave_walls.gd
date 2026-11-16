@@ -26,10 +26,7 @@ var _rock_light := ROCK_LIGHT
 
 func _ready() -> void:
 	z_index = -9
-	if theme != null:
-		_rock = theme.rock
-		_rock_dark = theme.rock_dark
-		_rock_light = theme.rock_light
+	_apply_theme()
 	_build_rock()
 	_glow = TorchGlow.new()
 	_glow.cave = self
@@ -38,6 +35,23 @@ func _ready() -> void:
 	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	_glow.material = mat
 	add_child(_glow)
+
+
+## Changes the theme of a node that is already ready (MapBuilder, since main.tscn's Cave has built the default rock).
+func set_theme(map_theme: MapTheme) -> void:
+	theme = map_theme
+	_apply_theme()
+	if is_node_ready():
+		_rock_edges.clear()
+		_flecks.clear()
+		_build_rock()
+		queue_redraw()
+
+
+func _apply_theme() -> void:
+	_rock = ROCK if theme == null else theme.rock
+	_rock_dark = ROCK_DARK if theme == null else theme.rock_dark
+	_rock_light = ROCK_LIGHT if theme == null else theme.rock_light
 
 
 func _process(delta: float) -> void:

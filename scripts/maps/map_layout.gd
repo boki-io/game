@@ -7,7 +7,7 @@ extends RefCounted
 const WallScript := preload("res://scripts/cave/cave_wall.gd")
 const DecorScript := preload("res://scripts/cave/cave_decor.gd")
 
-const BAND := 16.0  # the rock band's thickness (main.gd WALL_BAND)
+const BAND := 16.0  # the rock band's thickness (the Arena's wall_band in main.tscn)
 const START_CLEARING := 110.0  # half-size of the free square around the arena centre
 const WALL_CLEARING := 24.0  # walls stay this far outside the start square
 const MARGIN := 56.0  # wall to rock band, and wall to wall in SCATTER (CaveWall.MARGIN)
@@ -31,7 +31,7 @@ const DECOR_CLEARANCE := 24.0  # decor to the start square
 const DECOR_WALL_CLEARANCE := 8.0
 const DECOR_TRIES := 4000
 const TORCH_CORNER := 40.0
-const LEGACY_PILLAR_SEED := 1  # main.gd _spawn_props
+const LEGACY_PILLAR_SEED := 1  # the fixed pillar seed of v0.5's main.gd
 const LEGACY_PILLAR_MARGIN := 48.0
 
 
@@ -69,7 +69,8 @@ static func start_rect(size: Vector2) -> Rect2:
 	return Rect2(centre - Vector2(START_CLEARING, START_CLEARING), Vector2(START_CLEARING, START_CLEARING) * 2.0)
 
 
-## Today's arena: CaveWall.layout, main.gd's pillar loop, CaveDecor.layout and main.gd's hand-placed torches.
+## Today's arena: CaveWall.layout, the v0.5 pillar loop (here since MapBuilder replaced main.gd's copy), CaveDecor.layout
+## and the hand-placed torches.
 static func _legacy(theme: MapTheme, size: Vector2, start: Rect2, data: MapLayoutData) -> void:
 	data.walls = WallScript.layout(size, BAND, [start])
 	var rng := RandomNumberGenerator.new()

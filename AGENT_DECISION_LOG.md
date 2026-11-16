@@ -296,3 +296,29 @@ gives it to the director. Marked HOOK: MapBuilder (step 6) replaces it by callin
 - `tests/maps/crowd_bone_warren.gd` uses a HAND-MADE dense layout (10 walls in 5 rows, 2 pillars), marked in the file,
   because `MapLayout` is built elsewhere. Replace `_dense_layout()` with the generator's Bone Warren output later.
 - Spec's "20 grunts behind a lane wall" is implemented with a 400 px wall and the Player 120 px behind it.
+
+# v0.6 wiring (build step 6, `MapBuilder`)
+
+## W1. `MapBuilder.build(theme, seed, size, targets)` and `MapBuilder.Targets`
+The builder gets its nodes through a small `Targets` object (ground, cave, props, decor, ambient_parent, vignette,
+obstacles_parent; null skips a part) so `main.gd` and the preview scene can call it. It returns the `MapLayoutData`; the
+`ObstacleMap` it creates is put in `targets.obstacles`. Walls and pillars go into `props`, decor into `decor`.
+`main.gd` has one `_build_map()` and keeps `rock_walls` / `prop_positions` (for every theme, from the layout).
+
+## W2. Ground and CaveWalls are already built when `main._ready` runs
+Children run `_ready` before their parent, so main.tscn's Ground and Cave have built the default look by then. `Ground.setup()`
+now rebuilds the floor when the node is ready, and `CaveWalls.set_theme()` is new (recolours and rebuilds the rock). One extra
+floor build per run (a few ms); the editor run rebuilds it with the default theme, which is the same up to rounding (L6).
+
+## W3. Legacy duplicate removed
+main.gd's pillar loop, torch list and constants are gone; `MapLayout._legacy` is now the only copy and the layout test still
+pins it against the v0.5 loop (copied into the test). Default theme: floor seed `DIRT_SEED`, legacy layout, so the editor run
+and `arena_cave.gd`, `cave.gd`, `crowd_performance.gd` pass unedited.
+
+## W4. `GameSession.map_seed()`
+`hash("%d:%s" % [path_seed, theme.id])` of the current stage's theme, 0 with no stage or theme. Non-default themes seed the
+floor with it; the layout takes it too.
+
+## W5. Playable rect
+`MapBuilder.ENEMY_PADDING = 6.0` repeats `Enemy.ARENA_PADDING` so the builder compiles in a `--script` test before the
+autoloads exist; `map_build.gd` checks they are equal.

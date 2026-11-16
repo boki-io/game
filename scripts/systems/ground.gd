@@ -15,10 +15,14 @@ enum Look { GRASS, DIRT }
 var floor_seed := DIRT_SEED
 
 
-## Optional, call before the node enters the tree: the map's theme and the map seed for the floor.
+## Optional: the map's theme and the map seed for the floor. Called after the node is ready (MapBuilder does, since
+## main.tscn's Ground has already built the default floor) it rebuilds the floor.
 func setup(map_theme: MapTheme, seed_value: int = DIRT_SEED) -> void:
 	theme = map_theme
 	floor_seed = seed_value
+	if is_node_ready() and look == Look.DIRT:
+		clear()
+		_build_dirt()
 
 
 func _ready() -> void:
