@@ -43,6 +43,14 @@ func _ready() -> void:
 	character = CharacterRegistry.all()[0]
 
 
+## The seed of the map being played (spec 0.6, 6.1): a string hash of the path seed and the theme id, so each map
+## is stable for a given path and differs between runs. 0 with no stage or no theme (an editor run).
+func map_seed() -> int:
+	if current_stage == null or current_stage.theme == null:
+		return 0
+	return hash("%d:%s" % [path_seed, current_stage.theme.id])
+
+
 ## Door entry: a new path from a random seed, then the select screen.
 func start_run(selected: CharacterData) -> void:
 	new_run(selected, randi())
