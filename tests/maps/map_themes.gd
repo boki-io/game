@@ -18,6 +18,8 @@ const MIN_TYPE_DISTANCE := 0.08    # between the three monster types of one map
 ## Measured with the signature thumbnails (spec 14 step 9): 0.017 (frost) to 0.064 (bone warren, pale bones on a dark
 ## rock; the template is a copy of mossy_hollow's). 0.07 keeps the margin small, so a changed colour or a thumbnail that was not
 ## regenerated fails; the old 0.12 let a wrong-hued thumbnail pass.
+const MIN_WALL_DISTANCE := 0.10    # a wall's top and a pillar against the plain floor (they were nearly invisible at 0.02)
+const MIN_MARK_DISTANCE := 0.30    # a monster's mark against its own body
 const THUMB_TOLERANCE := 0.07      # OKLab, thumbnail average against the rock/floor blend
 
 var _failed := false
@@ -106,6 +108,11 @@ func _check_theme(theme, id: String, is_default: bool) -> void:
 		for fl in floors:
 			_check(_distance(variant.body_color, fl) >= MIN_FLOOR_DISTANCE,
 				tag + "%s body is too close to a floor colour (%.3f)" % [variant.enemy_id, _distance(variant.body_color, fl)])
+	for variant in theme.monsters:
+		_check(_distance(variant.mark_color, variant.body_color) >= MIN_MARK_DISTANCE or variant.mark == 0,
+			tag + "%s mark is too close to its body (%.3f)" % [variant.enemy_id, _distance(variant.mark_color, variant.body_color)])
+	_check(_distance(theme.wall_top, theme.floor_plain[0]) >= MIN_WALL_DISTANCE, tag + "wall top is too close to the floor (%.3f)" % _distance(theme.wall_top, theme.floor_plain[0]))
+	_check(_distance(theme.pillar, theme.floor_plain[0]) >= MIN_WALL_DISTANCE, tag + "pillar is too close to the floor (%.3f)" % _distance(theme.pillar, theme.floor_plain[0]))
 	for a in theme.monsters.size():
 		for b in range(a + 1, theme.monsters.size()):
 			var d := _distance(theme.monsters[a].body_color, theme.monsters[b].body_color)

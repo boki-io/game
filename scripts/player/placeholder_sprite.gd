@@ -122,9 +122,9 @@ func _draw_mark(rect: Rect2, dimmed: bool, blinking: bool) -> void:
 	var o := rect.position
 	match mark:
 		Mark.STRIPE:
-			draw_rect(Rect2(o.x + 1.0, o.y + h * 0.62, w - 2.0, maxf(2.0, round(h * 0.14))), c)
+			draw_rect(Rect2(o.x + 1.0, o.y + h * 0.62, w - 2.0, maxf(3.0, round(h * 0.16))), c)
 		Mark.SPOTS:
-			var s := maxf(2.0, round(w * 0.17))
+			var s := maxf(3.0, round(w * 0.22))
 			draw_rect(Rect2(o.x + 1.0, o.y + h * 0.62, s, s), c)
 			draw_rect(Rect2(o.x + w - 1.0 - s, o.y + h * 0.78 - s * 0.5, s, s), c)
 			draw_rect(Rect2(o.x + w * 0.5 - s * 0.5, o.y + h - 1.0 - s, s, s), c)

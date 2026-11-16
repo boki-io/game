@@ -9,4 +9,4 @@ body_color = Color(0.66, 0.74, 0.5, 1)
 outline_color = Color(0.33, 0.37, 0.25, 1)
 eye_color = Color(1, 1, 1, 1)
 mark = 1
-mark_color = Color(0.94, 0.9, 0.8, 1)
+mark_color = Color(0.008, 0.018, 0, 1)

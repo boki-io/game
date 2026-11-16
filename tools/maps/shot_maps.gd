@@ -7,13 +7,13 @@ extends SceneTree
 ##   contact_sheet.png all eight whole arenas in a 4x2 grid; monsters_sheet.png the eight monster rows
 ## Needs a real renderer, so do not pass --headless:
 ##   godot --path . --script tools/maps/shot_maps.gd -- <folder>
-## <folder> defaults to user://map_shots. Optional: --seed=N (default 7).
+## <folder> defaults to user://map_shots. Optional: --seed=N (default 7; map i uses N + i).
 
 const PREVIEW := "res://scenes/dev/map_preview.tscn"  # loaded at run time: the scene needs the autoloads, which exist from the first frame
 const NORMAL := Vector2i(640, 360)
 const FULL := Vector2i(1600, 896)
 const SHEET_CELL := Vector2i(480, 269)
-const MONSTER_CROP := Vector2i(160, 48)
+const MONSTER_CROP := Vector2i(160, 64)
 const MONSTER_SCALE := 4
 
 var _folder := "user://map_shots"
@@ -31,6 +31,10 @@ func _init() -> void:
 
 func _run() -> void:
 	await process_frame
+	# Rendering has stalled once on a busy machine; do not hang a script that is waiting on frames.
+	create_timer(90.0).timeout.connect(func() -> void:
+		push_error("shot_maps: timed out")
+		quit(1))
 	DirAccess.make_dir_recursive_absolute(_folder)
 	var viewport := SubViewport.new()
 	viewport.size = FULL
@@ -44,8 +48,9 @@ func _run() -> void:
 	var maps := MapRegistry.all()
 	var fulls: Array[Image] = []
 	var rows: Array[Image] = []
-	for theme in maps:
-		preview.show_map(theme, _seed)
+	for i in maps.size():
+		var theme: MapTheme = maps[i]
+		preview.show_map(theme, _seed + i)  # a different seed per map, so the floors differ too
 		viewport.size = NORMAL
 		preview.zoomed_out = false
 		preview._update_camera()
@@ -54,7 +59,7 @@ func _run() -> void:
 		var centre: Vector2 = preview.monster_centre()
 		preview._camera.position = centre
 		await _frames(3)
-		var row := _crop(viewport, Rect2i((Vector2i(NORMAL) - MONSTER_CROP) / 2, MONSTER_CROP), MONSTER_SCALE)
+		var row := _crop(viewport, Rect2i((Vector2i(NORMAL) - MONSTER_CROP) / 2 - Vector2i(0, 18), MONSTER_CROP), MONSTER_SCALE)
 		_write(row, "%s_monsters.png" % theme.id)
 		rows.append(row)
 		viewport.size = FULL
@@ -73,7 +78,7 @@ func _run() -> void:
 func _frames(n: int) -> void:
 	for i in n:
 		await process_frame
-	await RenderingServer.frame_post_draw
+	RenderingServer.force_draw(false)  # not `await frame_post_draw`: that never fires while the window is hidden
 
 
 func _save(viewport: SubViewport, file: String) -> void:
