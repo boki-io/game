@@ -14,6 +14,8 @@ extends Resource
 @export var brain: Script  # an EnemyBrain subclass
 ## Training dummies: knockback and stun do nothing (so slams, meteors and Static Shock neither move nor tint them).
 @export var immovable := false
+## Camera shake strength when this enemy dies (0 = none). Tough enemies kick the camera; a crowd of grunts must not.
+@export var kill_shake: float = 0.0
 
 @export_group("Spawning")
 @export var spawn_weight: float = 70.0  # relative weight once fully phased in

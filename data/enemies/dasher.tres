@@ -11,6 +11,7 @@ speed = 30.0
 contact_damage = 5.0
 contact_interval = 0.5
 xp_drop = 3
+kill_shake = 1.2
 body_color = Color(0.62, 0.36, 0.86, 1)
 body_size = Vector2(20, 36)
 hitbox_radius = 7.0

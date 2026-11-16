@@ -34,6 +34,12 @@ The base size is set in `project.godot` (`display/window/size`); the HUD, menus,
 
 Slash is automatic. Level-up cards: click, keys 1/2/3, or D-pad and confirm.
 
+## Feel
+Walking eases up to speed and coasts to a stop (`accel_time` and `friction_time` in `data/characters/*.tres`; 0 is instant), with
+a puff of dust every few steps. Hits throw sparks and recoil the enemy's body a hair, a kill throws a burst in the enemy's colour
+(`EnemyData.kill_shake` kicks the camera for tough ones), XP gems and coins hop out before they are pulled in, and the screen edges
+pulse red when the player is hit. Particles are tiny squares in `Effects` (capped at 256). Nothing ever stops or slows time.
+
 ## Project layout
 - `scenes/`: the hub (`hub.tscn`, the main scene), the run (`main.tscn`), player, enemy, pickups, projectile.
 - `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).

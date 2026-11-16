@@ -38,7 +38,7 @@ func _init() -> void:
 	var main: Node = F.start_run(self, &"knight")
 	await F.frames(self, 2)
 	var coin: Node = main.get_node("Pickups").spawn_coin(F.player().global_position)
-	await F.frames(self, 4)
+	await F.seconds(self, 0.5)  # the coin hops out first (about 0.17 s) and is then pulled in
 	_check(_gs.run_gold == 1 and _gs.gold == 100, "a coin raises run_gold, not gold (run %d, gold %d)" % [_gs.run_gold, _gs.gold])
 
 	# The HUD draws run_gold (text source), and the victory summary uses it.
