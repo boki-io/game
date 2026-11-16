@@ -6,8 +6,8 @@ extends Node
 
 @export var enemy_scene: PackedScene
 @export var enemy_types: Array[EnemyData] = []
-@export var start_rate: float = 0.85  # spawns/s at 0:00 (v0.6: 15% below the original 1.0)
-@export var end_rate: float = 6.8  # spawns/s at the end of the run (v0.6: 15% below the original 8.0)
+@export var start_rate: float = 0.8  # spawns/s at 0:00 (v0.6: 20% below the original 1.0)
+@export var end_rate: float = 6.4  # spawns/s at the end of the run (v0.6: 20% below the original 8.0)
 @export var alive_cap: int = 300
 @export var hp_scale_per_minute: float = 0.15
 @export var ring_margin: float = 24.0  # px beyond the screen corner
