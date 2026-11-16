@@ -54,6 +54,11 @@ func _init() -> void:
 	await process_frame
 	var F: GDScript = load("res://tests/fixture.gd")
 	var session = root.get_node("GameSession")
+	# PlayerInput ignores input while the boot iris is still opening (SceneFader.busy), so the first map's walk would lose frames.
+	for i in 120:
+		if not root.get_node("SceneFader").busy:
+			break
+		await physics_frame
 	_check(Builder.ENEMY_PADDING == load("res://scripts/enemy/enemy.gd").ARENA_PADDING, "the builder's enemy padding equals Enemy.ARENA_PADDING")
 	var themes: Array = Registry.all()
 	themes.append(null)  # no stage: the default cave

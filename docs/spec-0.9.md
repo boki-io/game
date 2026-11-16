@@ -270,6 +270,7 @@ One step, one commit, tests with the step.
 ## 9. Compatibility
 
 - Gameplay numbers, abilities, enemy stats, spawn rules and the level-up pool are unchanged. The only thing the player can notice in play is the look and the sound.
+- The first boot's opening is about 0.4 s instead of 0.3 s (it waits a physics and a process frame for the camera), and `PlayerInput` ignores input while `busy`, so a test that moves the Player in its first frames waits for `busy` to end (`map_build.gd` now does; found at build).
 - A scene change takes 0.7 s end to end instead of 0.6 s; `busy` is true for the same span, so input is ignored a little longer.
 - Everything new is additive and optional: a `MapTheme` without the new fields defaults to `NONE` (no ambience); a character with `glow_radius 0` has no glow; a sound whose file is missing is skipped;
   a null theme keeps today's cave and gets the dust.
