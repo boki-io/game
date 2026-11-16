@@ -13,6 +13,11 @@ const HURT_PULSE_TIME := 0.35
 const HURT_BANDS := 8
 const HURT_BAND_WIDTH := 6.0
 const HURT_ALPHA := 0.3
+## Relic slots (spec 1.0): a column on the right edge under Kills and gold.
+const RELIC_SLOT_SIZE := 22.0
+const RELIC_SLOT_GAP := 4.0
+const RELIC_COLUMN_TOP := 36.0
+const RELIC_MARGIN := 28.0
 const SLOTS := [
 	{slot = &"auto", key = "", color = Color("e8e8e8")},
 	{slot = &"q", key = "Q", color = Color("6cb4ff")},
@@ -27,6 +32,7 @@ var _stage_text := ""
 var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
 var _mana_flash := 0.0
 var _hurt_pulse := 0.0  # seconds of the red edge pulse left
+var _relic_flash: Dictionary = {}  # relic slot index -> seconds left (gained or raised)
 
 
 func bind(p: Player, rm: RunManager = null) -> void:
@@ -39,12 +45,18 @@ func bind(p: Player, rm: RunManager = null) -> void:
 	_hurt_pulse = 0.0
 	player.caster.cast_failed.connect(_on_cast_failed)
 	player.hurtbox.hit_taken.connect(_on_hit_taken)
+	_relic_flash.clear()
+	player.relics.flashed.connect(_on_relic_flashed)
 	player.tree_exiting.connect(_on_player_exiting.bind(p))
 
 
 func _on_player_exiting(p: Player) -> void:
 	if player == p:
 		player = null
+
+
+func _on_relic_flashed(slot: int) -> void:
+	_relic_flash[slot] = FLASH_TIME
 
 
 func _on_hit_taken(_amount: float) -> void:
@@ -65,6 +77,10 @@ func _process(delta: float) -> void:
 		_flash[slot] -= delta
 		if _flash[slot] <= 0.0:
 			_flash.erase(slot)
+	for slot: int in _relic_flash.keys():
+		_relic_flash[slot] -= delta
+		if _relic_flash[slot] <= 0.0:
+			_relic_flash.erase(slot)
 	_mana_flash = maxf(_mana_flash - delta, 0.0)
 	_hurt_pulse = maxf(_hurt_pulse - delta, 0.0)
 	queue_redraw()
@@ -97,6 +113,7 @@ func _draw() -> void:
 
 	_draw_xp(font)
 	_draw_icons(font)
+	_draw_relics(font, view)
 
 
 ## Red bands along the four screen edges, strongest at the edge and fading inward and over time.
@@ -121,6 +138,47 @@ func _draw_gold(font: Font, view: Vector2) -> void:
 	var centre := Vector2(right - width - 7.0, 21.5)
 	draw_circle(centre, 3.5, Color("c89a1c"))
 	draw_circle(centre, 2.5, Color("ffd23f"))
+
+
+## The rect of relic slot `i` (0 to 3) for a viewport of size `view`.
+static func relic_slot_rect(i: int, view: Vector2) -> Rect2:
+	return Rect2(view.x - RELIC_MARGIN, RELIC_COLUMN_TOP + i * (RELIC_SLOT_SIZE + RELIC_SLOT_GAP),
+		RELIC_SLOT_SIZE, RELIC_SLOT_SIZE)
+
+
+## Seconds of flash left on relic slot `i` (0 when not flashing).
+func relic_flash_left(i: int) -> float:
+	return _relic_flash.get(i, 0.0)
+
+
+## Four relic slots: a dim outline when empty; owned = tinted square, glyph, level pips and, for timed
+## relics, a cooldown sweep (cooldown_fraction() is 0 for always-on ones, so nothing is drawn for them).
+func _draw_relics(font: Font, view: Vector2) -> void:
+	var relics: PlayerRelics = player.relics
+	var ids := relics.levels.keys()
+	for i in PlayerRelics.MAX_SLOTS:
+		var rect := relic_slot_rect(i, view)
+		draw_rect(rect, Color(0, 0, 0, 0.6))
+		if i >= ids.size():
+			draw_rect(rect, Color(1, 1, 1, 0.2), false, 1.0)
+			continue
+		var data := RelicRegistry.find(ids[i])
+		var color: Color = data.color
+		draw_rect(rect, Color(color, 0.35))
+		var behavior := relics.behavior_of(ids[i])
+		var cd := behavior.cooldown_fraction() if behavior != null else 0.0
+		if cd > 0.0:
+			_draw_square_sweep(rect.get_center(), rect.size / 2.0, cd)
+		_text(font, rect.get_center() + Vector2(0, 1), data.glyph, 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
+		var level: int = relics.levels[ids[i]]
+		for k in PlayerRelics.MAX_LEVEL:
+			var pip := Rect2(rect.position.x + 5.0 + k * 5.0, rect.end.y - 5.0, 3.0, 2.0)
+			draw_rect(pip, Color.WHITE if k < level else Color(1, 1, 1, 0.25))
+		var ring := Color(color, 0.9)
+		if _relic_flash.has(i):
+			draw_rect(rect, Color(1, 1, 1, 0.6 * _relic_flash[i] / FLASH_TIME))
+			ring = Color.WHITE
+		draw_rect(rect, ring, false, 1.0)
 
 
 func _draw_bar(pos: Vector2, value: float, maximum: float, color: Color, label: String, font: Font,
