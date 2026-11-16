@@ -1,19 +1,25 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://dko4ybaswi3yl"]
 
-[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/abilities/bolt_behavior.gd" id="2"]
-[ext_resource type="AudioStream" path="res://assets/audio/bolt_fire.wav" id="3"]
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cdivuutto8vi5" path="res://scripts/abilities/bolt_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_elngl"]
+[ext_resource type="AudioStream" uid="uid://b1uhnfwr678v1" path="res://assets/audio/bolt_fire.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i8yx3"]
+atlas = ExtResource("2_elngl")
+region = Rect2(32, 2016, 32, 32)
 
 [resource]
 script = ExtResource("1")
 id = &"bolt"
 display_name = "Arcane Bolt"
 description = "Automatically fires a bolt at the nearest enemy."
-target_range = 150.0
+icon = SubResource("AtlasTexture_i8yx3")
 cooldown = 0.65
 mana_cost = 0.0
 damage = 10.0
 range = 200.0
 radius = 4.0
+target_range = 150.0
 behavior = ExtResource("2")
 sfx = ExtResource("3")

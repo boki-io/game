@@ -1,11 +1,19 @@
 class_name CameraFollow
 extends Camera2D
 ## Follows the nearest player (to its own position), stays inside the arena, and can shake.
+## The player can move inside a small dead zone around the screen centre without the camera moving; past it the
+## camera follows with a little smoothing.
 ## With no player it glides to `browse_target` (the hub's browse mode) and, when a player appears,
 ## blends from where it is to following them.
 
 const BROWSE_TIME := 0.25
 const BLEND_TIME := 0.3
+
+## Half-size of the dead zone as a fraction of half the screen (0 = hard lock, 1 = the screen edge).
+@export_range(0.0, 0.5) var dead_zone_x := 0.08
+@export_range(0.0, 0.5) var dead_zone_y := 0.06
+## How fast the camera catches up once the player leaves the dead zone (higher = tighter, 0 = no smoothing).
+@export_range(0.0, 30.0) var smoothing_speed := 6.0
 
 ## Added to `offset` every frame (shake comes on top). The hub uses it to put the focused pedestal left of center.
 var base_offset := Vector2.ZERO
@@ -14,6 +22,7 @@ var _browse_tween: Tween
 var _offset_tween: Tween
 var _blend := 1.0  # 0..1 while blending from a browse position to following the player
 var _blend_from := Vector2.ZERO
+var _cam_pos := Vector2.ZERO  # the camera's unrounded follow position (dead zone and smoothing applied)
 var _had_target := false
 
 var _shake_strength := 0.0
@@ -64,7 +73,12 @@ func _physics_process(delta: float) -> void:
 	if target:
 		if _browse_tween:
 			_browse_tween.kill()
-		var follow := (target.global_position - Vector2(0, 12)).round()
+		var goal := target.global_position - Vector2(0, 12)
+		if not _had_target:
+			_cam_pos = _clamp_to_limits(goal)
+		else:
+			_cam_pos = _follow_step(_cam_pos, goal, delta)
+		var follow := _cam_pos.round()
 		if not _had_target and _blend_from != Vector2.ZERO:
 			_blend = 0.0
 		if _blend < 1.0:
@@ -81,6 +95,25 @@ func _physics_process(delta: float) -> void:
 		offset = base_offset + Vector2(randf_range(-1, 1), randf_range(-1, 1)).round() * _shake_strength * k
 	else:
 		offset = base_offset
+
+
+## One frame of following `goal`: no movement while it is inside the dead zone, otherwise ease toward the point
+## that puts it back on the dead zone's edge. Kept inside the arena limits so the dead zone does not go stale at a wall.
+func _follow_step(from: Vector2, goal: Vector2, delta: float) -> Vector2:
+	var zone := get_viewport_rect().size * 0.5 * Vector2(dead_zone_x, dead_zone_y)
+	var d := goal - from
+	var excess := d - d.clamp(-zone, zone)
+	var step := excess
+	if smoothing_speed > 0.0:
+		step *= 1.0 - exp(-smoothing_speed * delta)
+	return _clamp_to_limits(from + step)
+
+
+func _clamp_to_limits(pos: Vector2) -> Vector2:
+	var half := get_viewport_rect().size * 0.5 / zoom
+	var lo := Vector2(limit_left, limit_top) + half
+	var hi := Vector2(limit_right, limit_bottom) - half
+	return Vector2(clampf(pos.x, lo.x, maxf(lo.x, hi.x)), clampf(pos.y, lo.y, maxf(lo.y, hi.y)))
 
 
 func _start_shake(strength: float, duration: float) -> void:

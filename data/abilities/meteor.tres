@@ -1,14 +1,20 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://bd51hdy2i3g7d"]
 
-[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/abilities/meteor_behavior.gd" id="2"]
-[ext_resource type="AudioStream" path="res://assets/audio/meteor_fall.wav" id="3"]
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://d2vajbe4wwcsw" path="res://scripts/abilities/meteor_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_bm4iv"]
+[ext_resource type="AudioStream" uid="uid://dbro1ww6f767b" path="res://assets/audio/meteor_fall.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oyvf1"]
+atlas = ExtResource("2_bm4iv")
+region = Rect2(0, 2752, 32, 32)
 
 [resource]
 script = ExtResource("1")
 id = &"meteor"
 display_name = "Meteor Strike"
 description = "Mark the ground. A meteor crashes down moments later."
+icon = SubResource("AtlasTexture_oyvf1")
 cooldown = 5.0
 mana_cost = 29.0
 damage = 90.0
