@@ -42,5 +42,5 @@ func _initialize() -> void:
 	hub.queue_free()
 	await process_frame
 
-	print("camp_banner: ", "OK" if failures == 0 else "%d failures" % failures)
+	print("PASS" if failures == 0 else "FAIL")
 	quit(failures)

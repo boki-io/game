@@ -42,13 +42,14 @@ static func layout(size: Vector2, band: float, reserved: Array[Rect2], count: in
 			k = [Kind.PEBBLES, Kind.PEBBLES, Kind.BONES, Kind.MUSHROOM, Kind.ROCK][rng.randi_range(0, 4)]
 			pos = Vector2(rng.randf_range(band + WALL_MARGIN, size.x - band - WALL_MARGIN),
 				rng.randf_range(band + WALL_MARGIN + 12.0, size.y - band - WALL_MARGIN))
+		pos = pos.round()  # check the position that is stored: 431.6 clears a rect starting at 432, its rounded 432 does not
 		var blocked := false
 		for r in keep_out:
 			if r.has_point(pos):
 				blocked = true
 				break
 		if not blocked:
-			out.append({kind = k, pos = pos.round(), variant = rng.randi_range(0, 2)})
+			out.append({kind = k, pos = pos, variant = rng.randi_range(0, 2)})
 	return out
 
 
