@@ -229,6 +229,7 @@ New `tests/impact_feedback.gd`:
 Existing tests touched:
 - `tests/camp/camp_attributes.gd` lines 120 to 122 and 146 to 148 read `velocity` one frame after setting `move_vector`; they call
   `p.player_input.set_physics_process(false)`, set `move_vector`, and wait `accel_time + 0.1` s (`F.seconds`) first, then restore the input.
+- `tests/camp/camp_gold.gd` waited 4 frames for a coin to be collected; the hop makes that about 0.17 s longer, so it waits 0.5 s (found at build).
 - `tests/crowd_performance.gd` and `tests/maps/crowd_bone_warren.gd` must stay under their 12 ms budget. They measure physics time only (the
   recoil and spark code is in it; drawing the bits is not), so a manual check in a real window with a meteor on a crowd is also needed (DoD). `crowd_bone_warren` failed once on a loaded machine at 13.4 ms and passed when re-run, so a
   failure there is re-run before it is blamed on this change.

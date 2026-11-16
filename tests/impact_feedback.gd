@@ -72,6 +72,8 @@ func _init() -> void:
 	_check(fx._bits.is_empty(), "bits are gone after their life, %d left" % fx._bits.size())
 
 	await _hit_tests(main, fx)
+	await _death_tests(main, fx)
+	await _pickup_tests(main)
 
 	main.queue_free()
 	await process_frame
@@ -124,3 +126,92 @@ func _hit_tests(main, fx) -> void:
 	_check(d.sprite.position == Vector2.ZERO and d.global_position == start, "a dummy does not recoil or move")
 	_check(d.sprite.modulate == Color.WHITE, "a dummy is not tinted")
 	d.deactivate()
+
+
+func _puffs(fx) -> int:
+	var n := 0
+	for f in fx._fx:
+		if f.kind == &"puff":
+			n += 1
+	return n
+
+
+func _death_tests(main, fx) -> void:
+	var p = _F.player()
+	var cam = main.get_node("Camera")
+	# The burst has one bit per 30 px^2 of body, 5 to 14: Grunt 6, Ranged 7, Dasher 14. A kill gets no hit sparks.
+	for row in [["grunt", 6], ["ranged", 7], ["dasher", 14]]:
+		var e = _F.spawn_enemy(main, row[0], p.global_position + Vector2(80, 0), 1.0, true)
+		await _F.frames(self, 3)
+		fx.clear()
+		cam._shake_time = 0.0
+		e.take_damage(1e9)
+		_check(fx._bits.size() == row[1], "%s death: %d bits, got %d" % [row[0], row[1], fx._bits.size()])
+		if row[0] != "grunt":  # the grunt dies as a drawn slime; the others leave the colour puff, exactly one
+			_check(_puffs(fx) == 1, "%s death: exactly one puff, got %d" % [row[0], _puffs(fx)])
+		_check(e.sprite.body_color == fx._bits[0].color, "%s death: the burst is the body colour" % row[0])
+		# Only the Dasher (kill_shake 1.2) kicks the camera.
+		_check((cam._shake_time > 0.0) == (row[0] == "dasher"), "%s death: camera shake %s" % [row[0], cam._shake_time])
+	fx.clear()
+
+
+func _pickup_tests(main) -> void:
+	var p = _F.player()
+	var pickups = main.get_node("Pickups")
+	var far: Vector2 = p.global_position + Vector2(220, 0)  # outside the 48 px pickup radius
+
+	# 20 gems and 20 coins hop 10 to 17 px from where they spawned and then lie still.
+	var items: Array = []
+	for i in 20:
+		pickups.spawn_gem(far + Vector2(0, i * 3), 1)
+		pickups.spawn_coin(far + Vector2(40, i * 3))
+	for c in pickups.get_children():
+		if c.visible:
+			items.append([c, c.global_position])
+	_check(items.size() >= 40, "40 pickups are out, got %d" % items.size())
+	await _F.seconds(self, 0.4)
+	var bad := 0
+	for it in items:
+		var d: float = it[0].global_position.distance_to(it[1])
+		if d < 10.0 or d > 17.0 or it[0]._pop_vel != Vector2.ZERO:
+			bad += 1
+	_check(bad == 0, "%d of %d pickups did not hop 10 to 17 px and rest" % [bad, items.size()])
+	# They stay put until the Player comes: then they are pulled in and collected.
+	var session = root.get_node("GameSession")
+	var gold: int = session.run_gold
+	# Only the coins are collected here: eight gems would level the Player up and the level-up menu pauses the game.
+	var coins: Array = []
+	for it in items:
+		if it[0].scene_file_path.ends_with("coin.tscn"):
+			coins.append(it[0])
+			it[0].attract(p)  # the Player's collector would do this for the ones inside its radius
+	await _F.seconds(self, 4.0)
+	var left := 0
+	for c in coins:
+		if c.visible:
+			left += 1
+	_check(coins.size() == 20 and left == 0, "%d of %d coins were not collected" % [left, coins.size()])
+	_check(session.run_gold == gold + 20, "the 20 coins reached the purse, got %d" % (session.run_gold - gold))
+
+	# Inside the pickup radius attract() sets the target at once, but the pull-in waits for the hop to end.
+	p.global_position = Vector2(Arena.world_size) / 2.0
+	pickups.spawn_coin(p.global_position + Vector2(20, 0))
+	var gem = null
+	for c in pickups.get_children():
+		if c.visible and c.scene_file_path.ends_with("coin.tscn") and c.global_position.distance_to(p.global_position + Vector2(20, 0)) < 1.0:
+			gem = c
+	await _F.frames(self, 4)
+	_check(gem != null and gem.target != null and gem._pop_vel != Vector2.ZERO, "attracted mid-hop: target set, still hopping")
+	await _F.seconds(self, 1.5)
+	_check(not gem.visible, "then it is collected as before")
+
+	# Near the arena edge a pickup stays inside the arena.
+	var edge := Vector2(1, 1)
+	for i in 10:
+		pickups.spawn_gem(edge, 1)
+	await _F.seconds(self, 0.4)
+	var inside := true
+	for c in pickups.get_children():
+		if c.visible and c.global_position.distance_to(edge) < 40.0:
+			inside = inside and c.global_position.x >= 6.0 + Arena.wall_margin - 0.01 and c.global_position.y >= 6.0 + Arena.wall_margin - 0.01
+	_check(inside, "a pickup near the edge stays inside the arena")

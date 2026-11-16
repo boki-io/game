@@ -17,6 +17,9 @@ const SPARK_COUNT := 3
 const SPARK_SPEED := Vector2(60.0, 110.0)
 const SPARK_LIFE := 0.18
 const SPARK_SPREAD := deg_to_rad(100.0)
+const DEATH_BURST_SPEED := Vector2(50.0, 100.0)
+const DEATH_BURST_LIFE := 0.35
+const KILL_SHAKE_TIME := 0.1
 const KNOCKBACK_DECAY := 640.0  # px/s^2
 const LOS_MARGIN := 6.0  # extra clearance around the body when deciding to walk straight (obstacles)
 const FLOW_HOLD := 0.5  # seconds an enemy that switched to the flow field stays on it
@@ -345,4 +348,10 @@ func _on_died() -> void:
 			fx.play_once(_anim.sprite_frames, &"death", global_position, ART_OFFSET, _anim.flip_h)
 		else:
 			fx.puff(global_position + Vector2(0, -8), sprite.body_color)
+		# A burst in the enemy's own colour, more bits for a bigger body (Grunt 6, Ranged 7, Dasher 14).
+		var count := clampi(roundi(data.body_size.x * data.body_size.y / 30.0), 5, 14)
+		fx.burst(global_position + Vector2(0, -data.body_size.y / 2.0), sprite.body_color, count,
+			DEATH_BURST_SPEED, DEATH_BURST_LIFE, 2.0)
+	if data.kill_shake > 0.0:
+		CameraFollow.shake(self, data.kill_shake, KILL_SHAKE_TIME)
 	died.emit(self)
