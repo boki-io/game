@@ -208,6 +208,7 @@ func _enter_walk(index: int, pos: Vector2, instant: bool) -> void:
 	player = PLAYER_SCENE.instantiate()
 	player.character = characters[index]
 	player.hub_mode = true
+	player.attribute_levels = GameSession.attribute_levels
 	player.position = pos
 	players_root.add_child(player)
 	hud.bind(player)

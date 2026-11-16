@@ -433,3 +433,17 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
 - **Q5. `CampAttributes.apply` clamps levels** to `0..max_level` and ignores unknown ids.
 - Tests: `tests/camp/camp_shop.gd`, and the data part of `tests/camp/camp_attributes.gd` (the in-play checks come in step 4).
   `run_all.sh` now also globs `tests/camp/*.gd`; the per-test save file is left to the saving step.
+
+## v0.7 camp, build step 4 (effects in play)
+- **E1. Recovery check order.** `Player._physics_process` heals after `move_and_slide` and `_tick_phase`, only when
+  `hp_regen > 0` and `health.current < health.max_health`; `Health.heal` already ignores a dead Player, and `dead` returns early.
+- **E2. Fury/Haste in `cooldown_of`.** The auto slot is detected by `data == ability_auto` and divides by `auto_speed`
+  (floored at 0.01); every other ability multiplies by the `cooldown` key. A character whose Q/E/R is the same resource as its
+  auto would be treated as auto; none is.
+- **E3. `RunProgress.restore` needed no change.** Attributes are written in `_apply_character` (before `restore`), and its
+  `health.setup`/`mana.configure(base_max, base_regen)` read the combined `Stats`; checked by the test (Toughness 7 plus the
+  Vitality upgrade gives 176 HP at full health).
+- **E4. Greed.** `SpawnDirector.coin_bonus` (default 0) is added to `stage.coin_chance()` and clamped 0..1 at the drop;
+  `main.gd` sets it from `GameSession.attribute_levels` right after `apply_stage`. `hub.gd` sets `player.attribute_levels` in
+  `_enter_walk` only (infinite mana and no damage are untouched).
+- Tests: the in-play half of `tests/camp/camp_attributes.gd`. The camp screen's Player rebuild is the camp-screen builder's.
