@@ -14,6 +14,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `dash_immunity.gd` | Unhittable while dashing and for `immunity_after` seconds afterwards |
 | `dasher_lane.gd` | A Dasher's locked lane hurts a player standing in it and misses one who stepped out |
 | `archer_plumbing.gd` | Spec 1.1 plumbing: `uses_mana = false` (no MP bar, no MP flash, panel text without Mana/Regen, free casts at 0 mana), `AbilityData.animation`/`param()`, `dash` as a one-shot, `AbilityBehavior.clamp_to_arena` |
+| `archer_arrow_dash.gd` | Spec 1.1 Arrow and Dash Shot on a Wizard fixture with the abilities set by hand: Arrow targets the nearest enemy within 180 px, cooldown, `arrow.extra` (2 and the cap of 4), Steady Aim and damage-stat scaling, `steady.full`, no mana; Dash Shot: 80 px dash towards the aim, immune while dashing and in the grace after, no path damage, 7 arrows in a 60 degree fan centred on the opposite of the aim from the landing point, `dashshot.arrows`, `dashshot.range`, `dashshot.chain`, `dash` animation data |
 | `wizard_abilities.gd` | Arcane Bolt, Arcane Focus, Phase Shift, Chain Lightning, Meteor Strike |
 | `wizard_animations.gd` | The Wizard's SpriteFrames (nine animations, drawn timings, loops) and the Player playing them: bolt alternates attack1/attack2, lightning and meteor their own, phase loops while phased, hurt, and death surviving a killing hit |
 | `phase_belt.gd` | Phase Shift's orb belt: appears, hurts, follows, ends, Orbital Ring |

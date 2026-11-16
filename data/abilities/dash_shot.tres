@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/abilities/dash_shot_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_atlas"]
+[ext_resource type="AudioStream" uid="uid://8nipcp0x8pc0" path="res://assets/audio/dash.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dashshot"]
+atlas = ExtResource("2_atlas")
+region = Rect2(160, 1568, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"dashshot"
+display_name = "Dash Shot"
+description = "Dash forward, then spray arrows back the way you came. You can't be hurt while dashing."
+icon = SubResource("AtlasTexture_dashshot")
+animation = &"dash"
+cooldown = 4.0
+mana_cost = 0.0
+damage = 12.0
+range = 80.0
+arc_degrees = 60.0
+duration = 0.15
+immunity_after = 0.2
+params = {
+&"arrows": 7.0,
+&"speed": 300.0
+}
+behavior = ExtResource("2")
+sfx = ExtResource("3")
