@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://kdpvlvajqxmd" path="res://scripts/abilities/ricochet_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ricochet"]
+atlas = ExtResource("3")
+region = Rect2(352, 1568, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"ricochet"
+display_name = "Ricochet Volley"
+description = "Six arrows in quick succession along your aim. Each hits up to three enemies, bouncing from one to the next and off walls."
+icon = SubResource("AtlasTexture_ricochet")
+cooldown = 7.0
+mana_cost = 0.0
+damage = 12.0
+range = 420.0
+params = {
+&"arrows": 6,
+&"bounce_reach": 140,
+&"bounces": 3,
+&"hits": 3,
+&"interval": 0.1,
+&"speed": 360
+}
+behavior = ExtResource("2")
