@@ -296,3 +296,26 @@ gives it to the director. Marked HOOK: MapBuilder (step 6) replaces it by callin
 - `tests/maps/crowd_bone_warren.gd` uses a HAND-MADE dense layout (10 walls in 5 rows, 2 pillars), marked in the file,
   because `MapLayout` is built elsewhere. Replace `_dense_layout()` with the generator's Bone Warren output later.
 - Spec's "20 grunts behind a lane wall" is implemented with a 400 px wall and the Player 120 px behind it.
+
+## v0.6 tools
+
+### T1. `new_map.py`
+- Copies `_template` without its `.import` and `.uid` files (a copied `.import` would share the template's uid); Godot makes
+  the new one on the next `--import`, which the README says to run. Also replaces the `res://content/maps/_template/` paths
+  in every copied `.tres`. Refuses: ids that are not lowercase snake_case (so no `_` prefix), an existing folder, an id
+  already in `IDS`, and a display name another map already uses (map_content.gd needs unique names).
+- Tried with a scratch map: `map_content.gd` and `map_themes.gd` fail for any ninth map, for two reasons the spec's "no
+  test changes" did not foresee: both hard-code "eight maps" (`IDS.size() == 8`, `all().size() == 8`), and the template has
+  mossy_hollow's palette, so a fresh copy is not 0.05 away from it. The second is right (the map must be given its own look);
+  the first is noted in the README (the count checks need updating). Not changed here: `map_content.gd` belongs to another
+  track. The scratch map was removed.
+
+### T2. Signature thumbnails (step 9)
+- `gen_thumbnails.py` keeps the rock, floor and glow table and the base scene (ceiling, rocks, halo) and replaces the generic
+  crystals by one drawing function per map: moss patches and vines, faceted crystal clusters, lava cracks and embers,
+  icicles and frost sparkle, glowing mushrooms and spores, a ribcage with a skull, a water pool with drips and ripples, sulfur
+  vents with steam. All colours derive from the table's glow/rock/floor. Same 64x40, same seeds (`100 + index`).
+- It also writes `_template/thumbnail.png` as a copy of mossy_hollow's, since the template's map.tres has that palette.
+- Thumbnail average against the rock/floor blend, measured: 0.017 (frost) to 0.064 (bone warren); the old thumbnails were
+  0.047 to 0.091. `THUMB_TOLERANCE` is tightened from 0.12 to 0.07. The 0.05 theme-difference rule is unchanged.
+
