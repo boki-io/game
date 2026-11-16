@@ -36,7 +36,7 @@ Slash is automatic. Level-up cards: click, keys 1/2/3, or D-pad and confirm.
 
 ## Project layout
 - `scenes/`: the hub (`hub.tscn`, the main scene), the run (`main.tscn`), player, enemy, pickups, projectile.
-- `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`; map code only, no content).
+- `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
 - `data/`: tuning as resources: `abilities/`, `enemies/`, `upgrades/`, `characters/`.
 - `content/maps/<id>/`: everything about one map: `map.tres` (a `MapTheme`), `thumbnail.png` and `monsters/*.tres`
   (a `MonsterVariant` per enemy type). `_default` is today's cave (used with no stage set), `_template` is a complete map to copy;

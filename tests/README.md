@@ -31,11 +31,12 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
 | `maps/map_content.gd` | `content/maps/` on disk against `MapRegistry`, required files, 64x40 thumbnails, ids, unique names, a monster variant per enemy type, no stray files (also `_template`, `_default`) |
 | `maps/map_themes.gd` | Every `MapTheme` field in range, ambient near white, the eight maps differ, monsters readable on the floor, thumbnail colour close to the theme |
-| `maps/map_layout.gd` | `MapLayout.generate`: the default theme equals today's arena; for the eight maps and 30 seeds the layout rules (clearing, rock band margin, wall gaps, pillar distances, 16-obstacle budget, 80% placed, lengths, no sealed area, a free cell across every gap, decor and torches) and that a seed reproduces |
+| `maps/map_layout.gd` | `MapLayout.generate`: the default theme equals today's arena; for the eight maps and 30 seeds the layout rules (clearing, rock band margin, wall gaps, pillar distances, 16-obstacle budget, 80% placed, lengths, no sealed area, a free cell across every gap, decor and torches; the flood fill uses `FlowField.cell_blocked`) and that a seed reproduces |
 | `maps/theme_look.gd` | A theme's colours reach `Ground`, `CaveWalls` and torches, `CaveWall`, `Prop`, `CaveDecor` and `MapLook` (vignette, ambient); null theme equals today's values; decor kinds keep their numbers |
 | `maps/monster_variants.gd` | A variant per enemy type on every map, the same behaviour and `EnemyData` under every theme (and MonsterVariant has only the six appearance fields), the sprite, death puff and hub dummies |
 | `maps/obstacle_blocking.gd` | Walls and pillars block enemies: push-out and sliding, knockback, going round a wall, the director's spawn rule, flow-field budget and rebuild rules, Ranged and Dasher line of sight, the stuck failsafe, corner hysteresis, the hub unchanged (about 60 s) |
-| `maps/crowd_bone_warren.gd` | 300 enemies on a dense hand-made Bone-Warren-like layout, stationary and moving Player, under the crowd frame limit (logs worst frame and the mean without obstacles) |
+| `maps/map_build.gd` | `MapBuilder` in the real run scene, for each of the eight maps and the default cave: wall, pillar, decor and torch counts equal the layout, theme colours reached the rock, floor, ambient and vignette, the Player and an enemy still collide with a wall, `MapBuilder` alone gives the run's layout |
+| `maps/crowd_bone_warren.gd` | 300 enemies on MapLayout's real Bone Warren layout (fixed seed), stationary and moving Player, under the crowd frame limit (logs worst frame and the mean without obstacles) |
 | `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
 
 ## Writing one

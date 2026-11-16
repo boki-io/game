@@ -3,32 +3,24 @@ extends SceneTree
 ## moving one (the flow field only rebuilds when the Player changes cell). Gate: mean physics time under the same
 ## limit as crowd_performance.gd. The worst frame and the mean without obstacles are logged only (headless timing is
 ## too noisy for a fixed gate).
-## NOTE: the layout is made by hand (10 horizontal walls in rows, 2 pillars: the shape of spec 5's Bone Warren) because
-## MapLayout is built by another step. Replace `_dense_layout()` with `MapLayout.generate(bone_warren, seed, size)`
-## when it exists.
+## The layout is MapLayout's real Bone Warren output (10 walls in rows, 2 pillars) for a fixed seed.
 ## Run: godot --headless --path . --script tests/maps/crowd_bone_warren.gd
 
 const ENEMIES := 300
 const FRAMES := 180
 const BUDGET_MS := 12.0  # the same mean limit as crowd_performance.gd
 const ObstacleMapT := preload("res://scripts/maps/obstacle_map.gd")
+const MapLayoutT := preload("res://scripts/maps/map_layout.gd")
+const MapBuilderT := preload("res://scripts/maps/map_builder.gd")
+const MapRegistryT := preload("res://scripts/maps/map_registry.gd")
 
 var _failed := false
 
 
-## Hand-made dense layout: [walls, pillars]. Rows 110 px apart, walls 96-208 long, gaps of 64 px or more.
+## MapLayout's real Bone Warren output for a fixed seed: [walls, pillars].
 func _dense_layout() -> Array:
-	var walls: Array[Rect2] = []
-	var rows := [150.0, 260.0, 370.0, 580.0, 690.0]  # the middle band stays free for the start
-	for r in rows.size():
-		var y: float = rows[r]
-		var x := 120.0 + (r % 2) * 90.0
-		for k in 2:
-			var length := 208.0 if k == 0 else 160.0
-			walls.append(Rect2(x, y, length, 16))
-			x += length + 400.0
-	var pillars: Array[Vector2] = [Vector2(400, 470), Vector2(1200, 470)]
-	return [walls, pillars]
+	var layout = MapLayoutT.generate(MapRegistryT.by_id(&"bone_warren"), 12345, Vector2(1600, 896))
+	return [layout.walls, layout.pillars]
 
 
 func _run(F: GDScript, with_obstacles: bool, moving: bool) -> Array:
@@ -49,8 +41,7 @@ func _run(F: GDScript, with_obstacles: bool, moving: bool) -> Array:
 		main.get_node("World/Props").add_child(w)
 		w.setup(r)
 	var map := ObstacleMapT.new()
-	var pad := Vector2(22, 22)
-	map.setup(walls, pillars, Vector2(1600, 896), Rect2(pad, Vector2(1600, 896) - pad * 2.0))
+	map.setup(walls, pillars, Vector2(1600, 896), MapBuilderT.playable_rect(Vector2(1600, 896), 16.0))
 	main.add_child(map)
 	main.spawn_director.obstacles = map
 	var p = F.player()

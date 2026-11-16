@@ -9,13 +9,15 @@ const Layout := preload("res://scripts/maps/map_layout.gd")
 const WallScript := preload("res://scripts/cave/cave_wall.gd")
 const DecorScript := preload("res://scripts/cave/cave_decor.gd")
 const ThemeScript := preload("res://scripts/maps/map_theme.gd")
+const ObstacleMapScript := preload("res://scripts/maps/obstacle_map.gd")
+const FlowFieldScript := preload("res://scripts/maps/flow_field.gd")
+const Builder := preload("res://scripts/maps/map_builder.gd")
 
 const SEED_COUNT := 30
 const SIZE := Vector2(1600, 896)
 const BAND := 16.0
 const PLACED_FLOOR := 0.8  # share of wall_count that must be placed
 const CELL := 16.0  # the flow field's grid
-const GROW := 8.0
 const REACH := 0.99
 const PILLAR_OFFSET := Vector2(0, -6)  # prop.gd: the collider is centred 6 px above the base
 const PILLAR_RADIUS := 6.0
@@ -39,44 +41,21 @@ func _map_seed(theme, i: int) -> int:
 
 
 # --- Blocking, the FlowField rule -------------------------------------------------------------------------------------
-# TODO: switch to FlowField.cell_blocked once it is merged (spec 6.6). Same rule written locally: a 16 px grid cell is
-# blocked when its centre lies inside an obstacle grown by 8 px. The rock band is treated as blocked here too.
+# An ObstacleMap with the same playable rect as main.gd (MapBuilder.playable_rect), and FlowField.cell_blocked on every
+# cell of the 16 px grid: 0 is free, 1 is blocked (an obstacle grown by 8 px, or outside the playable area).
 
 func _blocked_cells(layout) -> PackedByteArray:
 	var cols := int(SIZE.x / CELL)
 	var rows := int(SIZE.y / CELL)
+	var map = ObstacleMapScript.new()
+	map.setup(layout.walls, layout.pillars, SIZE, Builder.playable_rect(SIZE, BAND))
 	var blocked := PackedByteArray()
 	blocked.resize(cols * rows)
 	for r in rows:
 		for c in cols:
-			var centre := Vector2((c + 0.5) * CELL, (r + 0.5) * CELL)
-			if centre.x < BAND or centre.y < BAND or centre.x > SIZE.x - BAND or centre.y > SIZE.y - BAND:
-				blocked[r * cols + c] = 2  # rock band: not a free cell, not an obstacle
-	for rect: Rect2 in layout.walls:
-		_mark_rect(blocked, rect.grow(GROW), cols, rows)
-	for base: Vector2 in layout.pillars:
-		var circle_c := base + PILLAR_OFFSET
-		var reach := PILLAR_RADIUS + GROW
-		var c0 := maxi(int((circle_c.x - reach) / CELL), 0)
-		var c1 := mini(int((circle_c.x + reach) / CELL), cols - 1)
-		var r0 := maxi(int((circle_c.y - reach) / CELL), 0)
-		var r1 := mini(int((circle_c.y + reach) / CELL), rows - 1)
-		for r in range(r0, r1 + 1):
-			for c in range(c0, c1 + 1):
-				if Vector2((c + 0.5) * CELL, (r + 0.5) * CELL).distance_to(circle_c) <= reach:
-					blocked[r * cols + c] = 1
+			blocked[r * cols + c] = 1 if FlowFieldScript.cell_blocked(map, Vector2i(c, r)) else 0
+	map.free()
 	return blocked
-
-
-func _mark_rect(blocked: PackedByteArray, rect: Rect2, cols: int, rows: int) -> void:
-	var c0 := maxi(int(rect.position.x / CELL), 0)
-	var c1 := mini(int(rect.end.x / CELL), cols - 1)
-	var r0 := maxi(int(rect.position.y / CELL), 0)
-	var r1 := mini(int(rect.end.y / CELL), rows - 1)
-	for r in range(r0, r1 + 1):
-		for c in range(c0, c1 + 1):
-			if rect.has_point(Vector2((c + 0.5) * CELL, (r + 0.5) * CELL)):
-				blocked[r * cols + c] = 1
 
 
 ## Share of free cells reachable (4-connected) from the arena centre's cell.

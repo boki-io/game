@@ -329,3 +329,12 @@ Depths crack 10 (rocks stay at 4 for "scorched rocks"), Frostbite icicle 7 and f
 (mushroom lowered 7 to 3), Bone Warren bones 9 to 12, Flooded Gallery puddle 10, Sulfur Pits vent 9. The signature kinds are
 40 to 70% of each map's total weight and the largest single weights. Layout, themes, content and look tests pass unchanged.
 `_template` keeps Mossy Hollow's old weights (it is a copy for `new_map.py`, not touched here).
+
+## W7. `map_build.gd` and the two test changes
+`map_build.gd` runs main.tscn for each theme with `path_seed = 1000 + i` (so the map seed comes from `GameSession.map_seed()`)
+and once with no stage. The wall check walks the Player into wall 0 and drops a grunt on the far side (it must move and not
+end inside the wall); the floor check counts the theme's `floor_dark` pixels in the dark tile (8-bit tolerance). The layout test's
+sealed-area check now builds an `ObstacleMap` with `MapBuilder.playable_rect` and calls `FlowField.cell_blocked`; the result is
+unchanged (100% reach on all maps and seeds). `crowd_bone_warren.gd` uses `MapLayout.generate(bone_warren, 12345)`; its gate is a
+timing mean on a loaded machine: with other agents running it failed once in four runs (the run without obstacles was just as
+slow, 13 and 21 ms), so a single FAIL there under load should be rerun before it is believed.
