@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="MapTheme" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="MapTheme" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/map_theme.gd" id="1_theme"]
+[ext_resource type="Script" path="res://scripts/maps/monster_variant.gd" id="2_variant"]
+[ext_resource type="Resource" path="res://content/maps/_default/monsters/grunt.tres" id="3_grunt"]
 
 [resource]
 script = ExtResource("1_theme")
 id = &"_default"
 display_name = "Cave"
+monsters = Array[ExtResource("2_variant")]([ExtResource("3_grunt")])
 floor_plain = Array[Color]([Color(0.35686275, 0.2745098, 0.19607843, 1), Color(0.37647059, 0.29019608, 0.20784314, 1), Color(0.34117647, 0.2627451, 0.18823529, 1), Color(0.36862745, 0.28627451, 0.20392157, 1)])
 floor_dark = Color(0.29019608, 0.21960784, 0.15686275, 1)
 floor_light = Color(0.42745098, 0.3372549, 0.25098039, 1)

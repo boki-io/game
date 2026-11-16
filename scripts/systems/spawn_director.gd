@@ -132,8 +132,9 @@ func _acquire(type: EnemyData) -> Enemy:
 	enemy.obstacles = obstacles
 	enemy.died.connect(_on_enemy_died)
 	enemies_root.add_child(enemy)
-	if stage.theme != null:
-		enemy.apply_variant(stage.theme.variant_for(type.id))
+	# With no map set (editor runs, most tests) the default cave dresses the enemy: only its grunt slime, same colours.
+	var theme: MapTheme = stage.theme if stage.theme != null else MapRegistry.default()
+	enemy.apply_variant(theme.variant_for(type.id))
 	return enemy
 
 

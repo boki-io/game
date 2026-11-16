@@ -7,12 +7,14 @@ const MAX_NUMBERS := 40
 const NUMBER_LIFE := 0.6
 const MERGE_DIST := 10.0
 const MERGE_WINDOW := 0.15
+const MAX_CORPSES := 60  # play_once animations alive at once; further ones are skipped
 const DAMAGE_COLOR := Color(1, 1, 0.8)
 const MANA_COLOR := Color(0.4, 0.65, 1.0)
 
 var _numbers: Array[Dictionary] = []
 var _sprite_pool: Array[AnimatedSprite2D] = []
 var _fx: Array[Dictionary] = []
+var _corpses := 0
 
 
 static func get_for(node: Node) -> Effects:
@@ -61,6 +63,33 @@ func play_frames(frames: SpriteFrames, pos: Vector2, angle: float = 0.0, scale_f
 		return
 	var anim: StringName = &"default" if frames.has_animation(&"default") else frames.get_animation_names()[0]
 	frames.set_animation_loop(anim, false)  # one-shot: it is recycled when it finishes
+	var sprite := _take_sprite()
+	sprite.sprite_frames = frames
+	sprite.position = pos
+	sprite.rotation = angle
+	sprite.scale = Vector2(scale_factor, scale_factor)
+	sprite.play(anim)
+
+
+## Plays animation `anim` of `frames` once at pos, independent of whoever asked (a dead enemy's pooled node is
+## already back in the pool). `offset` and `flip_h` are the AnimatedSprite2D's own, `centered` is off: pos is where
+## the frame's top left plus offset lands, as for a sprite whose origin is the feet. Skipped past MAX_CORPSES.
+func play_once(frames: SpriteFrames, anim: StringName, pos: Vector2, offset: Vector2, flip_h: bool) -> void:
+	if frames == null or not frames.has_animation(anim) or _corpses >= MAX_CORPSES:
+		return
+	var sprite := _take_sprite()
+	_corpses += 1
+	sprite.set_meta(&"corpse", true)
+	sprite.sprite_frames = frames
+	sprite.position = pos
+	sprite.centered = false
+	sprite.offset = offset
+	sprite.flip_h = flip_h
+	sprite.play(anim)
+
+
+## A hidden-then-shown pooled sprite in its default state (centred, unrotated, unscaled, unflipped).
+func _take_sprite() -> AnimatedSprite2D:
 	var sprite: AnimatedSprite2D
 	if _sprite_pool.is_empty():
 		sprite = AnimatedSprite2D.new()
@@ -68,15 +97,19 @@ func play_frames(frames: SpriteFrames, pos: Vector2, angle: float = 0.0, scale_f
 		add_child(sprite)
 	else:
 		sprite = _sprite_pool.pop_back()
-	sprite.sprite_frames = frames
-	sprite.position = pos
-	sprite.rotation = angle
-	sprite.scale = Vector2(scale_factor, scale_factor)
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.flip_h = false
+	sprite.rotation = 0.0
+	sprite.scale = Vector2.ONE
 	sprite.visible = true
-	sprite.play(anim)
+	return sprite
 
 
 func _recycle_sprite(sprite: AnimatedSprite2D) -> void:
+	if sprite.has_meta(&"corpse"):
+		sprite.remove_meta(&"corpse")
+		_corpses -= 1
 	sprite.visible = false
 	_sprite_pool.append(sprite)
 
