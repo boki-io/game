@@ -19,6 +19,10 @@ const MAX_STEP := 5.0  # px an enemy moves between two push-outs
 const STUCK_TIME := 3.0  # asked to move but moved under STUCK_MOVE for this long: recycled
 const STUCK_MOVE := 2.0
 const STUCK_MIN_TARGET := 60.0
+## Drawn art (MonsterVariant.sprite_frames): 32x32 frames with the feet on row 29, so the bottom centre sits at the
+## origin. The slimes look a little to their left, so a target on the right flips them.
+const ART_OFFSET := Vector2(-16.0, -30.0)
+const ART_FACES_LEFT := true
 
 ## Set by the SpawnDirector before the enemy is added to the tree.
 var data: EnemyData
@@ -40,6 +44,7 @@ var _flow_until := 0
 var _flow_dir := Vector2.ZERO
 var _stuck_anchor := Vector2.ZERO
 var _stuck_t := 0.0
+var _anim: AnimatedSprite2D  # only when the applied variant has sprite_frames
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -60,8 +65,9 @@ func _ready() -> void:
 		obstacles = ObstacleMap.get_for(self)
 
 
-## Dresses the enemy in a map's look (spec 0.6 section 7): colours and a mark on the sprite only. `data`, the
-## hitbox, the brain and the health are not touched. Null keeps the type's own look. Call after the enemy is in the tree.
+## Dresses the enemy in a map's look (spec 0.6 section 7): colours and a mark on the sprite only, and drawn art
+## when the variant has sprite_frames. `data`, the hitbox, the brain and the health are not touched. Null keeps the
+## type's own look. Call after the enemy is in the tree.
 func apply_variant(variant: MonsterVariant) -> void:
 	if variant == null:
 		return
@@ -70,6 +76,38 @@ func apply_variant(variant: MonsterVariant) -> void:
 	sprite.eye_color = variant.eye_color
 	sprite.mark = int(variant.mark)
 	sprite.mark_color = variant.mark_color
+	_set_art(variant.sprite_frames)
+
+
+## Swaps the drawn body for an AnimatedSprite2D showing `frames` (a child of the placeholder, so the stun tint
+## applies to it and its shadow stays), or back to the placeholder body when null.
+func _set_art(frames: SpriteFrames) -> void:
+	if frames == null or not frames.has_animation(&"bounce"):
+		if _anim:
+			_anim.queue_free()
+			_anim = null
+		sprite.body_visible = true
+		return
+	if _anim == null:
+		_anim = AnimatedSprite2D.new()
+		_anim.centered = false
+		_anim.offset = ART_OFFSET
+		_anim.animation_finished.connect(_on_anim_finished)
+		sprite.add_child(_anim)
+	_anim.sprite_frames = frames
+	sprite.body_visible = false
+	_play_bounce()
+
+
+## Back to the loop, starting on a frame that depends on the enemy so a crowd does not bounce in step.
+func _play_bounce() -> void:
+	_anim.play(&"bounce")
+	_anim.set_frame_and_progress((get_instance_id() + Engine.get_physics_frames()) % _anim.sprite_frames.get_frame_count(&"bounce"), 0.0)
+
+
+func _on_anim_finished() -> void:
+	if active and _anim.animation == &"hit":
+		_play_bounce()
 
 
 func activate(pos: Vector2, hp_multiplier: float) -> void:
@@ -84,6 +122,9 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	sprite.warn = false
 	sprite.shake = 0.0
 	sprite.dim = false
+	if _anim:
+		_anim.flip_h = _flips(facing)
+		_play_bounce()
 	brain.reset()
 	_los_clear = true
 	_on_flow = false
@@ -117,8 +158,11 @@ func take_damage(amount: float) -> void:
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -data.body_size.y - 6.0), amount)
 	if health.current > 0.0:
-		_flash_left = FLASH_TIME
-		sprite.flash = true
+		if _anim and _anim.sprite_frames.has_animation(&"hit"):
+			_anim.play(&"hit")  # the art flashes itself
+		else:
+			_flash_left = FLASH_TIME
+			sprite.flash = true
 
 
 func stun(seconds: float) -> void:
@@ -211,6 +255,10 @@ func _physics_process(delta: float) -> void:
 		global_position = obstacles.push_out(global_position, data.hitbox_radius)
 		_check_stuck(delta, asked, target)
 	sprite.facing = facing
+	if _anim:
+		var flip := _flips(facing)
+		if _anim.flip_h != flip:
+			_anim.flip_h = flip
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
 	if _contact_cd <= 0.0 and _stun_left <= 0.0 and brain.can_contact():
@@ -262,9 +310,17 @@ func _separation() -> Vector2:
 	return _separation_cache
 
 
+func _flips(dir: Vector2) -> bool:
+	return dir.x > 0.0 if ART_FACES_LEFT else dir.x < 0.0
+
+
 func _on_died() -> void:
 	Audio.play(&"enemy_death", -4.0)
 	var fx := Effects.get_for(self)
 	if fx:
-		fx.puff(global_position + Vector2(0, -8), sprite.body_color)
+		if _anim and _anim.sprite_frames.has_animation(&"death"):
+			# This node is pooled and hidden at once, so the puddle is an effect of its own, not a state of this sprite.
+			fx.play_once(_anim.sprite_frames, &"death", global_position, ART_OFFSET, _anim.flip_h)
+		else:
+			fx.puff(global_position + Vector2(0, -8), sprite.body_color)
 	died.emit(self)

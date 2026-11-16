@@ -10,8 +10,9 @@ const VariantScript := preload("res://scripts/maps/monster_variant.gd")
 const SpriteScript := preload("res://scripts/player/placeholder_sprite.gd")
 const ROOT := "res://content/maps/"
 const ENEMY_DIR := "res://data/enemies/"
-## The six appearance fields of 7.2. A new field here needs its own rule in the spec (7.7) and this list updated.
-const APPEARANCE_FIELDS := ["enemy_id", "body_color", "outline_color", "eye_color", "mark", "mark_color"]
+## The appearance fields of 7.2 (and sprite_frames: art, not gameplay). A new field here needs its own rule in the spec (7.7) and this list updated.
+const APPEARANCE_FIELDS := ["enemy_id", "body_color", "outline_color", "eye_color", "mark", "mark_color",
+	"sprite_frames"]
 ## EnemyData fields that make up an enemy's behaviour.
 const BEHAVIOUR_FIELDS := ["max_health", "speed", "contact_damage", "contact_interval", "xp_drop", "hitbox_radius",
 	"body_size", "immovable"]
@@ -78,7 +79,7 @@ func _init() -> void:
 	for theme in themes:
 		var on_disk: Array = []
 		for file in DirAccess.get_files_at(ROOT + String(theme.id) + "/monsters/"):
-			if file.ends_with(".tres"):
+			if file.ends_with(".tres") and not file.ends_with("_frames.tres"):  # <type>_frames.tres is art, see slime_sprites.gd
 				on_disk.append(file.get_basename())
 		on_disk.sort()
 		_check(on_disk == ids, "%s: monster files %s, expected %s" % [theme.id, on_disk, ids])
@@ -143,7 +144,10 @@ func _init() -> void:
 			fx._fx.clear()
 			e.health.take_damage(1.0e9)
 			var puffs: Array = fx._fx.filter(func(f: Dictionary) -> bool: return f.kind == &"puff")
-			_check(puffs.size() == 1 and puffs[0].color == v.body_color, "%s %s: death puff uses the variant body colour" % [theme.id, type.id])
+			if v.sprite_frames == null:
+				_check(puffs.size() == 1 and puffs[0].color == v.body_color, "%s %s: death puff uses the variant body colour" % [theme.id, type.id])
+			else:  # drawn art dies as its own animation instead of a puff (slime_sprites.gd)
+				_check(puffs.is_empty(), "%s %s: a variant with frames has no puff" % [theme.id, type.id])
 		await _end_run(main)
 
 	# A theme without a variant for a type (and a null variant) leaves the enemy as it is.

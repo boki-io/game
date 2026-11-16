@@ -9,6 +9,7 @@ const VariantScript := preload("res://scripts/maps/monster_variant.gd")
 const ROOT := "res://content/maps/"
 const ENEMY_DIR := "res://data/enemies/"
 const THUMB_SIZE := Vector2i(64, 40)
+const SPRITE_SUFFIXES := ["_sheet.png", "_frames.tres"]
 
 var _failed := false
 var _fails_logged := 0
@@ -78,7 +79,7 @@ func _init() -> void:
 			var allowed: bool = file == "map.tres" or (file == "thumbnail.png" and not is_default)
 			_check(allowed or _is_import_file(file), tag + "stray file %s" % file)
 		for sub in DirAccess.get_directories_at(folder):
-			_check(sub == "monsters" and not is_default, tag + "stray folder %s" % sub)
+			_check(sub == "monsters", tag + "stray folder %s" % sub)
 
 		var theme = load(folder + "map.tres")
 		_check(theme != null and theme.get_script() == ThemeScript, tag + "map.tres is a MapTheme")
@@ -92,7 +93,8 @@ func _init() -> void:
 		# Thumbnail
 		if is_default:
 			_check(theme.thumbnail == null, tag + "the default has no thumbnail")
-			_check(theme.monsters.is_empty(), tag + "the default has no monsters")
+			# Only the cave slime: the default dresses the grunt with art and leaves the other types as they are.
+			_check(theme.monsters.size() == 1 and theme.monsters[0].enemy_id == &"grunt", tag + "the default has only a grunt variant")
 			_check(theme.legacy_layout, tag + "the default uses the legacy layout")
 		else:
 			_check(theme.thumbnail != null, tag + "thumbnail loads")
@@ -102,12 +104,16 @@ func _init() -> void:
 			_check(not theme.legacy_layout, tag + "only the default uses the legacy layout")
 
 		# Monster variants: one per enemy type, file name = enemy_id, nothing unknown.
-		if not is_default:
+		if is_default:
+			var default_files := Array(DirAccess.get_files_at(folder + "monsters/")).filter(func(f: String) -> bool: return not _is_import_file(f))
+			default_files.sort()
+			_check(default_files == ["grunt.tres", "grunt_frames.tres", "grunt_sheet.png"], tag + "monsters/ holds the grunt variant, frames and sheet (has %s)" % [default_files])
+		else:
 			var variant_files := DirAccess.get_files_at(folder + "monsters/")
 			var on_disk: Array = []
 			for file in variant_files:
-				if _is_import_file(file):
-					continue
+				if _is_import_file(file) or file.ends_with(SPRITE_SUFFIXES[0]) or file.ends_with(SPRITE_SUFFIXES[1]):
+					continue  # a type's sprite sheet and SpriteFrames sit beside its variant (checked in slime_sprites.gd)
 				_check(file.ends_with(".tres"), tag + "stray monster file %s" % file)
 				on_disk.append(file.get_basename())
 			on_disk.sort()

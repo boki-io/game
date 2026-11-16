@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="MonsterVariant" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="MonsterVariant" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/monster_variant.gd" id="1_variant"]
+[ext_resource type="SpriteFrames" path="res://content/maps/sulfur_pits/monsters/grunt_frames.tres" id="2_frames"]
 
 [resource]
 script = ExtResource("1_variant")
@@ -10,3 +11,4 @@ outline_color = Color(0.40, 0.18, 0.07, 1)
 eye_color = Color(1, 0.96, 0.7, 1)
 mark = 2
 mark_color = Color(0.082, 0, 0, 1)
+sprite_frames = ExtResource("2_frames")

@@ -1,0 +1,114 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://content/maps/mossy_hollow/monsters/grunt_sheet.png" id="t0"]
+
+[sub_resource type="AtlasTexture" id="f0"]
+atlas = ExtResource("t0")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f1"]
+atlas = ExtResource("t0")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f2"]
+atlas = ExtResource("t0")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f3"]
+atlas = ExtResource("t0")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f4"]
+atlas = ExtResource("t0")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f5"]
+atlas = ExtResource("t0")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f6"]
+atlas = ExtResource("t0")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f7"]
+atlas = ExtResource("t0")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f8"]
+atlas = ExtResource("t0")
+region = Rect2(256, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f9"]
+atlas = ExtResource("t0")
+region = Rect2(288, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f10"]
+atlas = ExtResource("t0")
+region = Rect2(320, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f11"]
+atlas = ExtResource("t0")
+region = Rect2(352, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="f12"]
+atlas = ExtResource("t0")
+region = Rect2(384, 0, 32, 32)
+
+[resource]
+animations = [
+{
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("f0")
+}, {
+"duration": 1.2,
+"texture": SubResource("f1")
+}, {
+"duration": 1.2,
+"texture": SubResource("f2")
+}, {
+"duration": 1.2,
+"texture": SubResource("f3")
+}],
+"loop": true,
+"name": &"bounce",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 0.7,
+"texture": SubResource("f4")
+}, {
+"duration": 0.9,
+"texture": SubResource("f5")
+}, {
+"duration": 1.1,
+"texture": SubResource("f6")
+}, {
+"duration": 2.0,
+"texture": SubResource("f7")
+}],
+"loop": false,
+"name": &"hit",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.2,
+"texture": SubResource("f8")
+}, {
+"duration": 1.2,
+"texture": SubResource("f9")
+}, {
+"duration": 1.4,
+"texture": SubResource("f10")
+}, {
+"duration": 1.6,
+"texture": SubResource("f11")
+}, {
+"duration": 6.0,
+"texture": SubResource("f12")
+}],
+"loop": false,
+"name": &"death",
+"speed": 10.0
+}
+]

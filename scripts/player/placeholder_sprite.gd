@@ -24,7 +24,10 @@ enum Mark { NONE, STRIPE, SPOTS, CREST }
 		mark_color = v
 		queue_redraw()
 ## Turn off to draw only the shadow (an AnimatedSprite2D child supplies the body).
-@export var body_visible := true
+@export var body_visible := true:
+	set(v):
+		body_visible = v
+		queue_redraw()
 ## Debug marker showing the aim vector.
 @export var show_aim := true
 @export var facing := Vector2.RIGHT:

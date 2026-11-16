@@ -417,3 +417,29 @@ The gate was NOT loosened; changing the statistic (for example best of three run
 Three more runs (one inside the full `run_all.sh`, two solo) with the user's game still running: FAIL moving 14.52; FAIL stationary
 25.08 (without obstacles 11.59); FAIL moving 12.73. So 6 of 11 runs failed under load; the full suite otherwise passed (28 of 29).
 The gate needs an idle machine to be meaningful; rerun it once the other `godot` process is gone before believing a FAIL.
+
+## G. Drawn grunt slimes (one per map)
+- **Base.** The local `main` was stale again (no maps). `slimes` was fast-forwarded to `origin/main` (which has spec 0.6, PR #3) before any work.
+- **Animations from frame ranges, not the file tags.** Every `.aseprite` has the tags bounce 0-12, hit 4-12, death 8-12 (overlapping, so not
+  usable). Frames and durations show the split: `bounce` 0-3 (loop), `hit` 4-7 (one shot: white, red, recover), `death` 8-12 (one shot, the last
+  frame holds 600 ms). Ranges and loop flags are constants in `tools/slimes/build_slimes.py`. The user should fix the tags in Aseprite.
+- **Durations.** fps 10 with frame `duration` multipliers ms / 100 (1.2, 0.7, 6.0 ...), so real times equal the drawn ones exactly (the test checks).
+- **Where things live.** Sources `art/source/slimes/` (no earlier convention; the knight keeps only PNGs). Per map `monsters/grunt_sheet.png` and
+  `monsters/grunt_frames.tres`, named by type so another type can get art later; `grunt.tres` names the frames in the new optional
+  `MonsterVariant.sprite_frames`. `_default` (the cave) got a `monsters/` folder with a grunt variant whose colours equal today's grunt (the
+  template's own grunt has no frames: a new map keeps the drawn placeholder until it gets art). `map_content.gd` and `monster_variants.gd` now
+  accept `*_sheet.png` and `*_frames.tres` in `monsters/`, and the default has one variant.
+- **The cave slime needs the director to use the default map.** `SpawnDirector._acquire` dressed enemies only when the stage had a theme, and
+  the `_default` map is never a stage's theme (no stage means the cave). It now falls back to `MapRegistry.default()`, so editor runs and
+  tests with no stage show the cave slime. Colours are unchanged for those runs, but tests that build an enemy through the director get an
+  AnimatedSprite2D for grunts. Fixture-built enemies (`fixture.spawn_enemy`) are not dressed and are unchanged.
+- **Enemy.** `apply_variant` makes one AnimatedSprite2D (a child of the placeholder, so the stun tint applies, the shadow stays, `body_visible`
+  false), `centered` off and offset (-16, -30): the frame's bottom centre (feet on row 29 in every frame except the leap, frame 2) is the origin.
+  `activate()` plays `bounce` from an enemy-dependent frame (a crowd does not bounce in step). `take_damage` plays `hit` instead of the white
+  flash; on finish it returns to `bounce`. Facing: the slime looks slightly to its left, so `flip_h` when the target is on the right (this also
+  mirrors its light, drawn top left; the difference is small).
+- **Death.** `Effects.play_once` (new, pooled with `play_frames`'s sprites, capped at 60 at once) plays `death` at the death position with the
+  enemy's flip. It replaces the colour puff when the variant has frames. It draws in Effects (z 10), so a puddle is above other enemies for 1.1 s.
+- **Size.** The slime at rest is 18 x 16 px and 24 px tall at the top of the leap; the grunt's body_size is 12 x 16 and its hitbox is 14 px
+  across (radius 7) centred 6 px up. So it is about 4 px wider than the hitbox and the same height at rest. Nothing was rescaled.
+- **Not verified:** a play-through by hand; the cave slime in the real run flow (only through tests and scratch renders).
