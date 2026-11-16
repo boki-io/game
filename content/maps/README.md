@@ -15,7 +15,15 @@ One folder per map: `content/maps/<id>/` holds `map.tres` (a `MapTheme`), `thumb
 4. Add the map's colours to `tools/maps/gen_thumbnails.py` and run it to make `thumbnail.png`.
 5. Run `tests/run_all.sh`. `map_content.gd`, `map_themes.gd`, `map_layout.gd` and `monster_variants.gd` cover the new
    folder with no test changes, except that the checks that count "eight maps" (`map_content.gd`) must be updated.
-6. `godot --headless --path . --script tools/maps/shot_maps.gd -- <folder>` to review all maps side by side.
+6. Review all maps side by side (needs a real renderer, so no `--headless`; a window opens for a few seconds):
+   `godot --path . --script tools/maps/shot_maps.gd -- <folder>` writes `<id>.png` (normal zoom), `<id>_full.png`
+   (the whole arena), `<id>_monsters.png`, `contact_sheet.png` and `monsters_sheet.png` into `<folder>`
+   (`--seed=N` after the folder changes the seed, default 7). Look at the PNGs; pixels are not tested.
 
-`scenes/dev/map_preview.tscn` and `tools/maps/shot_maps.gd` come from the same version (v0.6) as this README and
-`new_map.py`, but are added in later build steps; until they exist, steps 2 and 6 are not available.
+## The workbench and the screenshot tool
+
+- `scenes/dev/map_preview.tscn` (F6 in the editor, or `godot --path . scenes/dev/map_preview.tscn`): the map picked in
+  the `map` export, built by `MapBuilder` like a run, with the three monsters in a row near the centre. Keys: `Tab`
+  next map, `R` new seed, `L` reload the map files from disk, `O` overlay of obstacle footprints and the flow field,
+  `Z` whole-arena zoom, arrows pan. Tick `walk` to put a Player in. It reads and writes nothing in `GameSession`.
+- `tools/maps/shot_maps.gd` works in `--script` mode: a windowed run does render, into off-screen SubViewports.

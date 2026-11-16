@@ -35,6 +35,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `maps/theme_look.gd` | A theme's colours reach `Ground`, `CaveWalls` and torches, `CaveWall`, `Prop`, `CaveDecor` and `MapLook` (vignette, ambient); null theme equals today's values; decor kinds keep their numbers |
 | `maps/monster_variants.gd` | A variant per enemy type on every map, the same behaviour and `EnemyData` under every theme (and MonsterVariant has only the six appearance fields), the sprite, death puff and hub dummies |
 | `maps/obstacle_blocking.gd` | Walls and pillars block enemies: push-out and sliding, knockback, going round a wall, the director's spawn rule, flow-field budget and rebuild rules, Ranged and Dasher line of sight, the stuck failsafe, corner hysteresis, the hub unchanged (about 60 s) |
+| `maps/map_preview.gd` | The workbench scene `scenes/dev/map_preview.tscn` builds all eight maps (counts equal the layout, three monsters in the map's looks, an ObstacleMap), Tab / R / L / O / Z, `walk`, GameSession untouched |
 | `maps/map_build.gd` | `MapBuilder` in the real run scene, for each of the eight maps and the default cave: wall, pillar, decor and torch counts equal the layout, theme colours reached the rock, floor, ambient and vignette, the Player and an enemy still collide with a wall, `MapBuilder` alone gives the run's layout |
 | `maps/crowd_bone_warren.gd` | 300 enemies on MapLayout's real Bone Warren layout (fixed seed), stationary and moving Player, under the crowd frame limit (logs worst frame and the mean without obstacles) |
 | `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
@@ -49,7 +50,9 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
   loaded at runtime: `var F: GDScript = load("res://tests/fixture.gd")`.
 - `fixture.gd` starts a run with the spawner off, spawns (optionally frozen) enemies, applies upgrades and casts.
 - The enemy grid is rebuilt once per physics frame, so wait a frame or two after spawning before casting.
-- Rendering-dependent checks (anything that reads pixels) are not covered: headless uses a dummy renderer.
+- Rendering-dependent checks (anything that reads pixels) are not covered: headless uses a dummy renderer. To look at
+  the maps, run `godot --path . --script tools/maps/shot_maps.gd -- <folder>` (not headless; `--script` mode does render)
+  and read the PNGs it writes (see `content/maps/README.md`).
 - A script error inside a test leaves its SceneTree running, so a broken test hangs rather than failing. Run one by
   hand with a time limit when in doubt.
 - After adding a `class_name` script, run `godot --headless --path . --import` once so the global class cache knows it.
