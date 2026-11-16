@@ -8,7 +8,10 @@ godot --headless --path . --import > /dev/null 2>&1
 for t in tests/*.gd tests/maps/*.gd tests/camp/*.gd; do
 	[[ "$t" == tests/fixture.gd ]] && continue
 	# A script error in a test leaves its SceneTree running forever, so give each test a time limit.
-	out=$(perl -e 'alarm 120; exec @ARGV' godot --headless --path . --script "$t" 2>&1)
+	# Each test gets its own save file path (it does not exist yet) so banking coins never touches the player's save.
+	save=$(mktemp -u)
+	out=$(HERO_HORDE_SAVE="$save" perl -e 'alarm 120; exec @ARGV' godot --headless --path . --script "$t" 2>&1)
+	rm -f "$save" "$save.tmp" "$save.bad"
 	if echo "$out" | grep -q "^PASS$" && ! echo "$out" | grep -q "SCRIPT ERROR\|^FAIL"; then
 		printf "PASS  %s\n" "$t"
 	else

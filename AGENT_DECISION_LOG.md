@@ -433,3 +433,17 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
 - **Q5. `CampAttributes.apply` clamps levels** to `0..max_level` and ignores unknown ids.
 - Tests: `tests/camp/camp_shop.gd`, and the data part of `tests/camp/camp_attributes.gd` (the in-play checks come in step 4).
   `run_all.sh` now also globs `tests/camp/*.gd`; the per-test save file is left to the saving step.
+
+## v0.7 camp, build steps 2 and 3 (saving, run purse and banking)
+- **S1. `SaveGame` API:** `path()`, `save(gold, levels) -> bool`, `load_data() -> {gold, levels}` and the static `override_path`
+  (null = unset, "" = saving off). Parsing uses a `JSON` instance, not `parse_string`, so a bad file does not print an engine error.
+  A missing or non-numeric `gold`, or a non-numeric level, makes the file bad (moved to `.bad`). Values are clamped as floats
+  before `int()` so a huge number cannot overflow. A bad `.tmp` (used when `camp.json` is missing) is renamed to `camp.json.bad`.
+- **S2. `go_to_hub()` always banks** and `bank_run()` with an empty purse returns 0 and writes nothing (no pointless save).
+  `finish_run()` banks after computing the summary; `fail_run()` banks nothing itself (the death screen already did).
+- **S3. Death screen text** gains a "Gold earned N" line between time and level.
+- **S4. `run_all.sh`** sets `HERO_HORDE_SAVE=$(mktemp -u)` per test and removes the file, `.tmp` and `.bad` afterwards;
+  `CLAUDE.md` and `tests/README.md` carry the render-run note.
+- **S5. Tests changed:** `gold.gd`, `run_progress.gd`, `stage_flow.gd` (the no-op line removed). `select_screen.gd` and
+  `scene_flow.gd` needed no edit (empty purse, saving off headless). New: `tests/camp/camp_save.gd`, `tests/camp/camp_gold.gd`.
+  Neither new test touches the real save (`camp_save` uses a temp file under `$TMPDIR`).

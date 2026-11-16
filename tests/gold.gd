@@ -1,5 +1,5 @@
 extends SceneTree
-## Gold: coin drop chance (25% + the stage's gold, clamped), drops, collection through the XPCollector, persistence.
+## Gold: coin drop chance (25% + the stage's gold, clamped), drops, collection through the XPCollector, the run purse and banking.
 ## Run: godot --headless --path . --script tests/gold.gd
 
 const StageDataScript := preload("res://scripts/stages/stage_data.gd")
@@ -42,7 +42,10 @@ func _init() -> void:
 	var F: GDScript = load("res://tests/fixture.gd")
 	var main: Node = F.start_run(self, &"knight")
 	await F.frames(self, 2)
-	var gold_before: int = root.get_node("GameSession").gold
+	var gs: Node = root.get_node("GameSession")
+	gs.run_gold = 0
+	var gold_before: int = gs.run_gold
+	var banked_before: int = gs.gold
 
 	var always = StageDataScript.new()
 	always.currency = 100
@@ -66,13 +69,14 @@ func _init() -> void:
 	main.spawn_director._on_enemy_died(dummy)
 	_check(_coins(main) == 20, "a mob with xp_drop 0 drops no coin")
 
-	# The player's collector pulls coins in and they add to GameSession.gold.
+	# The player's collector pulls coins in and they add to GameSession.run_gold.
 	var p = F.player()
 	for c in main.get_node("Pickups").get_children():
 		if c.visible and c.get_script() == load("res://scripts/systems/coin.gd"):
 			c.global_position = p.global_position + Vector2(20, 0)
 	await F.seconds(self, 1.5)
-	_check(root.get_node("GameSession").gold - gold_before == 20, "20 coins collected add 20 gold (got %d)" % (root.get_node("GameSession").gold - gold_before))
+	_check(gs.run_gold - gold_before == 20, "20 coins collected add 20 run gold (got %d)" % (gs.run_gold - gold_before))
+	_check(gs.gold == banked_before, "collecting does not touch banked gold")
 	_check(_coins(main) == 0, "collected coins are released to the pool")
 	# Reuse: the pool hands the same Coin out again.
 	var count_nodes: int = main.get_node("Pickups").get_child_count()
@@ -81,6 +85,10 @@ func _init() -> void:
 
 	main.queue_free()
 	await process_frame
-	_check(root.get_node("GameSession").gold >= 20, "gold survives the run ending")
+	_check(gs.run_gold >= 20, "the purse survives the scene being freed")
+	var reward: int = gs.bank_run()
+	_check(reward >= 20 and gs.gold == banked_before + reward and gs.run_gold == 0, "banking moves the purse into gold")
+	gs.gold = banked_before
+	gs.last_reward = 0
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)

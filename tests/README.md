@@ -25,9 +25,11 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `cave.gd` | Cave walls are solid, the door still triggers, decor stays clear of reserved areas, floor and decor are seeded |
 | `scene_flow.gd` | Hub to select to run to hub to select: Arena size, unpausing, the hub pause menu |
 | `stage_modifiers.gd` | Additive percentage maths, the 300 alive cap ceiling, XP scaling, the SpawnDirector applying a stage |
-| `gold.gd` | Coin drop chance (25% + gold, clamped), drops, pickup through the XPCollector, gold persistence |
+| `gold.gd` | Coin drop chance (25% + gold, clamped), drops, pickup through the XPCollector, the run purse and banking |
 | `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, each stage's theme (7 different), seed reproducibility (30 seeds) |
 | `run_progress.gd` | GameSession path state; level, XP and upgrades carried between stages; cleared on death, abandon, victory |
+| `camp/camp_save.gd` | SaveGame: round trip, missing, zero-length and corrupt (`.bad`) files, clamping, unknown ids, tmp fallback, saving off when headless; GameSession saves on buy, undo, reset and banking |
+| `camp/camp_gold.gd` | The run purse: coins go to `run_gold`; death screen, abandon and victory bank once and set `last_reward`; `take_reward`; nothing banked on `complete_stage` |
 | `camp/camp_shop.gd` | Camp attribute costs (40 to 456, 1288 each), buy, undo, reset, gold plus spent conserved over 30 seeds, the GameSession attribute API |
 | `camp/camp_attributes.gd` | Attribute data: totals at levels 0, 1 and 7 through `CampAttributes.apply`, `display_values` and summary text against the data |
 | `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
@@ -55,6 +57,8 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 - Rendering-dependent checks (anything that reads pixels) are not covered: headless uses a dummy renderer. To look at
   the maps, run `godot --path . --script tools/maps/shot_maps.gd -- <folder>` (not headless; `--script` mode does render)
   and read the PNGs it writes (see `content/maps/README.md`).
+- Saves: `run_all.sh` gives each test its own `HERO_HORDE_SAVE` temp file, and headless with no path disables saving, so
+  tests never touch the player's save. Non-headless runs (renders, `shot_maps.gd`) must set `HERO_HORDE_SAVE` themselves.
 - A script error inside a test leaves its SceneTree running, so a broken test hangs rather than failing. Run one by
   hand with a time limit when in doubt.
 - After adding a `class_name` script, run `godot --headless --path . --import` once so the global class cache knows it.
