@@ -467,3 +467,22 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
 - **Q3. Drawing was kept inside the reserved rect** (x 120..220, y 255..335) by placing parts at small offsets from `CAMP_POS`; the sign is a
   small post sign above the tent. Rendered the hub and looked: the camp reads clearly and is clear of the dummies, pedestals and sign.
 - **Q4. `hub_walk.gd` unchanged:** the camp cases are all in `tests/camp/camp_site.gd` (it already passes with no camp screen).
+## v0.7 camp, build step 6 (camp screen and gold counter)
+- **S1. `closed(changed)` compares levels with a snapshot taken at `open()`**, not "any buy or undo happened": buying and then
+  undoing the same level reports `false`, so the hub does not rebuild the Player for nothing.
+- **S2. The hub block** is `_build_camp_screen()` (called from `_ready` before the last-character early return),
+  `_on_camp_closed` and `_rebuild_player()`, plus a `_spawn_player()` that `_enter_walk` now uses. `_spawn_player` passes
+  `GameSession.attribute_levels` to the Player only `if "attribute_levels" in player` (the effects step adds it). The
+  `var camp_screen: Control` declaration is duplicated by the camp-site step: dedupe when merging. A rebuild only happens in
+  walk mode (in browse mode there is no Player).
+- **S3. Input.** `_input` handles `pause`/`ui_cancel` (close) and Up from Reset/Close (back to the last row, because rows are not
+  focus targets and the default focus navigation has nowhere to go). `_unhandled_input` has the row keys (Up/Down/Enter/Left/
+  Backspace) and Down from the last row focuses Reset all. Both return at once unless open. Reset/Close navigate with the
+  default focus neighbours (same HBox). The minus button is `disabled` at level 0 (the spec only says dimmed).
+- **S4. Reset all** does nothing when nothing is bought, and plays no sound of its own (it is a `UiKit.button`, so `menu_click`).
+- **S5. `last_sound`** on `CampScreen` records the last sound requested so the test can check feedback (Audio has no hook and
+  the wav files are not loaded headless).
+- **S6. Test gap:** the hub Player's `stats.value("damage")` change cannot be asserted until the effects step lands; the test
+  asserts a new Player instance at the same position and, if `Player.attribute_levels` exists, that it equals
+  `GameSession.attribute_levels`. The save-related lines of the spec's `camp_screen.gd` list belong to the save step.
+- Rendered at 0, 120 and 530 gold: eight rows fit 640x360 (panel about 445x270). Layout checked by eye.
