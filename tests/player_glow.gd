@@ -37,8 +37,10 @@ func _init() -> void:
 		_check(glow.show_behind_parent, "%s: the glow draws behind the sprite" % id)
 		_check(glow.material is CanvasItemMaterial and glow.material.blend_mode == CanvasItemMaterial.BLEND_MODE_ADD, "%s: the glow is additive" % id)
 		var circles: Array = glow.circles()
-		_check(circles.size() == 3 and is_equal_approx(circles[0].x, c.glow_radius) and is_equal_approx(circles[1].x, c.glow_radius * 0.65)
-			and is_equal_approx(circles[2].x, c.glow_radius * 0.4) and is_equal_approx(circles[0].y, c.glow_alpha * 0.5), "%s: circles at r, 0.65r and 0.4r" % id)
+		var radii_ok := circles.size() == 5
+		for i in circles.size():
+			radii_ok = radii_ok and is_equal_approx(circles[i].x, c.glow_radius * (1.0 - 0.2 * i)) and is_equal_approx(circles[i].y, c.glow_alpha * 0.3)
+		_check(radii_ok, "%s: five circles at r, 0.8r, 0.6r, 0.4r and 0.2r" % id)
 		_check(p.get_children().filter(func(n): return n.name == &"Glow").size() == 1, "%s: one Glow" % id)
 		# It dims with the sprite (the post-dash blink and the Phase ghost) and is back at full strength with it.
 		p.sprite.modulate.a = 0.5

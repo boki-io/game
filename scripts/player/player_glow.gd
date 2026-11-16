@@ -1,8 +1,9 @@
 class_name PlayerGlow
 extends Node2D
-## A soft additive glow around a player, drawn like the torch halos (three nested circles, additive blend). It sits behind the
+## A soft additive glow around a player, drawn like the torch halos (nested circles, additive blend; five of them, so the edge is smooth). It sits behind the
 ## player's own sprite, breathes a little, and follows the sprite's alpha so the post-dash blink and the Phase ghost dim it too.
 
+const CIRCLES := 5
 const BREATH := 0.04  # radius wobble
 const BREATH_HZ := 0.6
 
@@ -23,10 +24,13 @@ func _ready() -> void:
 	material = mat
 
 
-## The three (radius, alpha) pairs of the circles at rest, outermost first.
+## The (radius, alpha) pairs of the circles at rest, outermost first: radii r, 0.8 r, 0.6 r, 0.4 r and 0.2 r, each with 0.3 of the glow's alpha
+## (so the centre is about 1.5 times the alpha, as it was with the three circles it replaces).
 func circles() -> Array[Vector2]:
-	var a := alpha * 0.5
-	return [Vector2(radius, a), Vector2(radius * 0.65, a), Vector2(radius * 0.4, a)]
+	var out: Array[Vector2] = []
+	for i in CIRCLES:
+		out.append(Vector2(radius * (1.0 - 0.2 * i), alpha * 0.3))
+	return out
 
 
 func _process(_delta: float) -> void:

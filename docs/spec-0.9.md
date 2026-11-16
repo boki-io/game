@@ -55,7 +55,7 @@ New `PlayerGlow` (`scripts/player/player_glow.gd`, `class_name PlayerGlow`, exte
 trait node, only when the character has `glow_radius > 0`) and named `Glow`. A `Player` built without a character has none.
 - `position = Vector2(0, -10)` (the body's middle), `show_behind_parent = true` so it draws under the player's own sprite, a
   `CanvasItemMaterial` with `BLEND_MODE_ADD`.
-- `_draw`: three circles at `r`, `0.65 r` and `0.4 r` with alpha `glow_alpha * 0.5` each, where `r = glow_radius * (1 + 0.04 * sin(t * TAU * 0.6))`
+- `_draw`: five circles at `r`, `0.8 r`, `0.6 r`, `0.4 r` and `0.2 r` with alpha `glow_alpha * 0.3` each (tuned in step 7: three circles looked like a bullseye; the centre strength is unchanged), where `r = glow_radius * (1 + 0.04 * sin(t * TAU * 0.6))`
   (a slow 4% breathing at 0.6 Hz, `t` from `Time.get_ticks_msec()`) and a helper `circles()` returns the three (radius, alpha) pairs for tests. `_process` calls `queue_redraw()`; one node per player.
 - The glow's alpha is multiplied by `$Sprite`'s `modulate.a` each frame, so the post-dash blink and the Phase Shift ghost (0.5) dim the light with the body and the blink stays readable.
 - `Player._on_died` hides it.
@@ -228,7 +228,7 @@ has a dummy renderer: tests check state (nodes, materials, uniform values, tween
 
 - **`tests/player_glow.gd`:** a Player with a character has one `Glow` with an ADD material, `show_behind_parent`, the character's radius and alpha and
   colour; `glow_radius 0` creates none; a Player without a character has none; it is hidden when the Player dies; the hub's Player has one; two circles' radii
-  are `r`, `0.65 r`, `0.4 r` (read from a helper that returns them).
+  are `r`, `0.8 r`, `0.6 r`, `0.4 r`, `0.2 r` (read from a helper that returns them).
 - **`tests/ambience.gd`:** `apply_ambience` creates `count` motes for each kind and removes the node for `NONE` and count 0; a null theme gives 40 dust motes;
   the same seed gives the same motes and a different seed a different set; after 600 frames of `_process` every mote is inside the grown visible rect and
   the count has not changed; every kind's motion matches its row (EMBERS rise, FROST falls, GLINT never moves, DUST drifts sideways); alpha is 0 at birth and
