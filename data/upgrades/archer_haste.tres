@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"archer_haste"
+display_name = "Fast Hands"
+description = "Q, E and R cooldowns -8%"
+tag = "Passive"
+max_level = 3
+adds = {}
+mults = {
+"cooldown": 0.92
+}

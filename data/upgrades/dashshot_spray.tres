@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"dashshot_spray"
+display_name = "Wide Spray"
+description = "+2 arrows in the spray"
+tag = "Dash Shot"
+max_level = 3
+adds = {
+"dashshot.arrows": 2.0
+}
+mults = {}
