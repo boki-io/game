@@ -14,7 +14,7 @@ One folder per map: `content/maps/<id>/` holds `map.tres` (a `MapTheme`), `thumb
 3. Edit `monsters/*.tres` for the three monster looks; the preview shows a sample of each.
 4. Add the map's colours to `tools/maps/gen_thumbnails.py` and run it to make `thumbnail.png`.
 5. Run `tests/run_all.sh`. `map_content.gd`, `map_themes.gd`, `map_layout.gd` and `monster_variants.gd` cover the new
-   folder with no test changes, except that the checks that count "eight maps" (`map_content.gd`) must be updated.
+   folder with no test changes (the count checks ask for at least eight maps and for a theme per registry id). `map_themes.gd` fails on a fresh copy until the map has its own palette and layout or decor (it must differ from every other map), which is meant.
 6. Review all maps side by side (needs a real renderer, so no `--headless`; a window opens for a few seconds):
    `godot --path . --script tools/maps/shot_maps.gd -- <folder>` writes `<id>.png` (normal zoom), `<id>_full.png`
    (the whole arena), `<id>_monsters.png`, `contact_sheet.png` and `monsters_sheet.png` into `<folder>`

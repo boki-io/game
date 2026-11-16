@@ -260,7 +260,7 @@ func _init() -> void:
 	await process_frame
 	_legacy_matches_today()
 	var themes: Array = Registry.all()
-	_check(themes.size() == 8, "eight maps")
+	_check(themes.size() >= 8, "at least eight maps")
 	var started := Time.get_ticks_msec()
 	for theme in themes:
 		var tag := "%s: " % theme.id

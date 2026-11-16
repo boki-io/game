@@ -59,7 +59,7 @@ func _init() -> void:
 			_check(Registry.IDS.has(folder), "folder %s is missing from MapRegistry.IDS" % folder)
 	for id: String in Registry.IDS:
 		_check(playable.has(id), "registry id %s has no folder" % id)
-	_check(Registry.IDS.size() == 8, "eight playable maps")
+	_check(Registry.IDS.size() >= 8, "at least the eight v0.6 maps")
 	_check(_folders().has("_default") and _folders().has("_template"), "_default and _template exist")
 
 	var names := {}
@@ -126,7 +126,7 @@ func _init() -> void:
 
 	# The registry itself.
 	var themes: Array = Registry.all()
-	_check(themes.size() == 8, "MapRegistry.all() has 8 themes")
+	_check(themes.size() == Registry.IDS.size() and themes.size() >= 8, "MapRegistry.all() has a theme per id (at least 8)")
 	for i in themes.size():
 		_check(String(themes[i].id) == Registry.IDS[i], "all() keeps the list order (%d)" % i)
 		_check(Registry.by_id(StringName(Registry.IDS[i])) != null, "by_id finds %s" % Registry.IDS[i])
