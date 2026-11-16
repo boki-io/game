@@ -38,7 +38,8 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, each stage's theme (7 different), seed reproducibility (30 seeds) |
 | `camp/camp_screen.gd` | The camp screen in the hub: Esc and Enter with it closed, buy/undo by key and mouse, unaffordable (no_mana), MAX, Reset all, row keys ignored on a focused button, Esc closes without the pause menu, the hub rebuilds its Player on a change |
 | `camp/camp_banner.gd` | The hub after a run: the "+N gold" banner shows once (also with the last-character early return), the counter counts up from the old total, no banner without a reward |
-| `run_progress.gd` | GameSession path state; level, XP and upgrades carried between stages; cleared on death, abandon, victory |
+| `run_progress.gd` | GameSession path state; level, XP, upgrades and relics carried between stages; cleared on death, abandon, victory |
+| `relic_progress.gd` | The five relics' data tables, RelicRegistry, PlayerRelics (add, raise to 3, no 5th slot, no relics in the hub, behaviors stop while dead), relics captured and restored in slot order, old snapshots without `relics` |
 | `camp/camp_save.gd` | SaveGame: round trip, missing, zero-length and corrupt (`.bad`) files, clamping, unknown ids, tmp fallback, saving off when headless; GameSession saves on buy, undo, reset and banking |
 | `camp/camp_gold.gd` | The run purse: coins go to `run_gold`; death screen, abandon and victory bank once and set `last_reward`; `take_reward`; nothing banked on `complete_stage` |
 | `camp/camp_shop.gd` | Camp attribute costs (40 to 456, 1288 each), buy, undo, reset, gold plus spent conserved over 30 seeds, the GameSession attribute API |

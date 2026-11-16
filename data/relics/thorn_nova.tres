@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/relics/relic_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/relics/thorn_nova.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"thorn_nova"
+display_name = "Thorn Nova"
+color = Color(0.4, 0.8, 0.3, 1)
+glyph = "T"
+behavior = ExtResource("2")
+levels = Array[Dictionary]([{
+"cooldown": 6.0,
+"thorns": 8,
+"range": 80,
+"damage": 8,
+"bramble_radius": 36,
+"bramble_life": 2.0,
+"slow_factor": 0.6,
+"bramble_tick": 0,
+"description": "8 thorns fly out\nand a bramble\nslows enemies"
+}, {
+"cooldown": 5.0,
+"thorns": 12,
+"range": 100,
+"damage": 10,
+"bramble_radius": 44,
+"bramble_life": 2.0,
+"slow_factor": 0.6,
+"bramble_tick": 0,
+"description": "12 thorns, wider\nbramble, shorter\ncooldown"
+}, {
+"cooldown": 5.0,
+"thorns": 12,
+"range": 100,
+"damage": 10,
+"bramble_radius": 44,
+"bramble_life": 4.0,
+"slow_factor": 0.6,
+"bramble_tick": 4,
+"description": "Bramble lasts 4 s\nand hurts what\nit slows"
+}])

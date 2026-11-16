@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/player/xp_collector.gd" id="14"]
 [ext_resource type="Script" path="res://scripts/upgrades/player_upgrades.gd" id="15"]
 [ext_resource type="Script" path="res://scripts/systems/mana.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/relics/player_relics.gd" id="16"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 5.0
@@ -65,6 +66,9 @@ script = ExtResource("13")
 
 [node name="Upgrades" type="Node" parent="."]
 script = ExtResource("15")
+
+[node name="Relics" type="Node" parent="."]
+script = ExtResource("16")
 
 [node name="XPCollector" type="Area2D" parent="."]
 collision_layer = 0

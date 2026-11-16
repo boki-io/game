@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/relics/relic_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/relics/frost_comet.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"frost_comet"
+display_name = "Frost Comet"
+color = Color(0.6, 0.9, 1.0, 1)
+glyph = "C"
+behavior = ExtResource("2")
+levels = Array[Dictionary]([{
+"cooldown": 5.0,
+"comets": 1,
+"radius": 40,
+"damage": 12,
+"freeze": 1.0,
+"vulnerable": 1.0,
+"description": "A comet freezes\nan enemy near\nyou for 1 s"
+}, {
+"cooldown": 4.2,
+"comets": 1,
+"radius": 52,
+"damage": 16,
+"freeze": 1.5,
+"vulnerable": 1.0,
+"description": "Faster, bigger\ncomet, freezes\nfor 1.5 s"
+}, {
+"cooldown": 4.2,
+"comets": 2,
+"radius": 52,
+"damage": 16,
+"freeze": 1.5,
+"vulnerable": 1.5,
+"description": "Two comets;\nfrozen enemies\ntake 1.5x damage"
+}])

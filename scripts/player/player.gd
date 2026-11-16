@@ -74,6 +74,7 @@ var _face_time := 0.0
 @onready var caster: AbilityCaster = $AbilityCaster
 @onready var xp: PlayerXP = $XP
 @onready var upgrades: PlayerUpgrades = $Upgrades
+@onready var relics: PlayerRelics = $Relics
 @onready var collector: XPCollector = $XPCollector
 
 

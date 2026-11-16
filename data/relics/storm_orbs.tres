@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/relics/relic_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/relics/storm_orbs.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"storm_orbs"
+display_name = "Storm Orbs"
+color = Color(0.7, 0.5, 1.0, 1)
+glyph = "S"
+behavior = ExtResource("2")
+levels = Array[Dictionary]([{
+"count": 3,
+"radius": 40,
+"turns": 0.6,
+"damage": 6,
+"zap": false,
+"zap_damage": 0,
+"zap_interval": 0.0,
+"zap_range": 0,
+"description": "3 orbs circle\nyou and burn\nwhat they touch"
+}, {
+"count": 4,
+"radius": 52,
+"turns": 0.8,
+"damage": 7,
+"zap": false,
+"zap_damage": 0,
+"zap_interval": 0.0,
+"zap_range": 0,
+"description": "4 orbs, wider\nand faster"
+}, {
+"count": 5,
+"radius": 52,
+"turns": 0.8,
+"damage": 7,
+"zap": true,
+"zap_damage": 8,
+"zap_interval": 2.0,
+"zap_range": 100,
+"description": "5 orbs; each\nzaps the nearest\nenemy every 2 s"
+}])

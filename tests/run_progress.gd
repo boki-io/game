@@ -52,6 +52,9 @@ func _init() -> void:
 	F.upgrade(p, "max_hp")
 	F.upgrade(p, "max_hp")
 	F.upgrade(p, "damage")
+	p.relics.add_or_raise(load("res://data/relics/storm_orbs.tres"))
+	p.relics.add_or_raise(load("res://data/relics/tidal_wave.tres"))
+	p.relics.add_or_raise(load("res://data/relics/tidal_wave.tres"))
 	var hp_max: float = p.health.max_health
 	_check(hp_max > base_hp, "max_hp upgrade raised the maximum")
 	main.run_manager.kills = 42
@@ -63,6 +66,7 @@ func _init() -> void:
 	_check(_gs.run_kills == 42, "the stage's kills are added to run_kills")
 	_check(_gs.run_progress != null and _gs.run_progress.level == level and _gs.run_progress.xp == xp, "progress saved")
 	_check(_gs.run_progress.upgrades.get(&"max_hp", 0) == 2, "upgrade levels saved")
+	_check(_gs.run_progress.relics == {&"storm_orbs": 1, &"tidal_wave": 2}, "relic levels saved")
 	main.free()
 	paused = false  # the real scene change unpauses; the stand-in hook does not
 	await process_frame
@@ -79,6 +83,7 @@ func _init() -> void:
 	p = F.player()
 	_check(p.xp.level == level and p.xp.xp == xp, "level %d and XP %d carried over (got %d / %d)" % [level, xp, p.xp.level, p.xp.xp])
 	_check(p.upgrades.levels.get(&"max_hp", 0) == 2 and p.upgrades.levels.get(&"damage", 0) == 1, "upgrade levels carried")
+	_check(p.relics.levels == {&"storm_orbs": 1, &"tidal_wave": 2} and p.relics.levels.keys() == [&"storm_orbs", &"tidal_wave"], "relics carried, in slot order")
 	_check(is_equal_approx(p.health.max_health, hp_max), "HP maximum includes the carried upgrades (%f vs %f)" % [p.health.max_health, hp_max])
 	_check(is_equal_approx(p.health.current, p.health.max_health), "HP starts full")
 	_check(is_equal_approx(p.mana.current, p.mana.max_mana()), "mana starts full")

@@ -47,8 +47,8 @@ sounds (`Audio.impact`, `AbilityData.sfx_layer`); the layers are generated place
 
 ## Project layout
 - `scenes/`: the hub (`hub.tscn`, the main scene), the run (`main.tscn`), player, enemy, pickups, projectile.
-- `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
-- `data/`: tuning as resources: `abilities/`, `enemies/`, `upgrades/`, `characters/`.
+- `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `relics/` (`RelicData`, `RelicRegistry`, `PlayerRelics`, `RelicBehavior` and one behavior per relic), `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
+- `data/`: tuning as resources: `abilities/`, `enemies/`, `upgrades/`, `relics/`, `characters/`.
 - `content/maps/<id>/`: everything about one map: `map.tres` (a `MapTheme`), `thumbnail.png` and `monsters/*.tres`
   (a `MonsterVariant` per enemy type). `_default` is today's cave (used with no stage set), `_template` is a complete map to copy;
   neither is offered on a card. A new map is a folder plus one id in `MapRegistry`.
