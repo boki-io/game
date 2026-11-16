@@ -523,3 +523,25 @@ The gate needs an idle machine to be meaningful; rerun it once the other `godot`
   `UiKit` and `Audio`); `display_values` of percent attributes are percent numbers; the camp screen's minus button is
   disabled at level 0 and Reset all does nothing with nothing bought; `SaveGame` uses a `JSON` instance so a bad file
   prints no engine error.
+
+## Drawn Wizard (branch wizard-animation)
+- **W1. Animations:** `data/characters/wizard_frames.tres` has nine, each a strip of 64x64 frames in
+  `assets/sprites/wizard/` at 10 fps with the per-frame durations drawn in Aseprite: `idle`, `walk`, `phase` loop;
+  `attack1`, `attack2`, `lightning`, `meteor`, `hurt`, `death` play once. `tests/wizard_animations.gd` checks frame
+  counts, durations and loop flags.
+- **W2. Which animation plays:** Arcane Bolt alternates `attack1` and `attack2`; Chain Lightning and Meteor Strike play
+  the animation named after their ability id (`Player.ABILITY_ANIMS`); any ability without its own animation falls back
+  to the alternating pair. Phase Shift plays nothing on the cast: `phase` loops as the movement animation while the ghost
+  state lasts and the Player is moving (standing still it stays on `idle`).
+- **W3. Timing:** one-shot animations are fitted to `ATTACK_ANIM_TIME` (0.25 s), `HURT_ANIM_TIME` (0.2 s) and
+  `DEATH_ANIM_TIME` (0.7 s) by speed scale. This also fits `meteor`, whose drawn length is about 0.53 s, to 0.25 s while the
+  ability's windup is 0.7 s, so the Wizard is back to idle before the strike lands. Left as is; give the meteor its own fit
+  time if the release frame should meet the strike.
+- **W4. Death beats hurt:** `Hurtbox.receive_hit` calls `Health.take_damage` (which emits `died`) before it emits
+  `hit_taken`, so `_on_hit_taken` runs after `_on_died`; it skips `hurt` when `dead`.
+- **W5. One list for one-shots (review fix):** `ONE_SHOT_ANIMS` is `[attack1, attack2, hurt, death] + ABILITY_ANIMS`. It used
+  to repeat `lightning` and `meteor`; an ability animation added to `ABILITY_ANIMS` only would have looped forever and left
+  `_anim_busy` stuck.
+- **W6. Open:** `sprite_scale = 0.65` on 64x64 pixel art with nearest filtering and integer viewport scaling draws some
+  source pixels wider than others (shimmer in motion). Not verified by eye; if it shows, export the art at the target size or
+  use an even scale such as 0.5. Facing (`sprite_faces_left` false) and the offset (3, -18) are also not verified by eye.

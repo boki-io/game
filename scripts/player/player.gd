@@ -44,7 +44,14 @@ var _attack_toggle := false
 const ATTACK_ANIM_TIME := 0.25  # attack and hurt animations are sped up to fit this
 const HURT_ANIM_TIME := 0.2
 const DEATH_ANIM_TIME := 0.7
-const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death"]
+## Abilities with a cast animation of their own, named after the ability id. Any other ability plays attack1
+## and attack2 in turn. A character's SpriteFrames only needs the ones it draws.
+const ABILITY_ANIMS: Array[StringName] = [&"lightning", &"meteor"]
+## "phase" is not a one-shot: it loops as the movement animation while the Phase Shift ghost state lasts.
+const PHASE_ANIM := &"phase"
+## Every animation that plays once and then hands back to idle/walk. The ability animations are added from ABILITY_ANIMS, so a
+## new cast animation cannot be left looping (a looping animation never finishes, so `_anim_busy` would stay true).
+const ONE_SHOT_ANIMS: Array[StringName] = [&"attack1", &"attack2", &"hurt", &"death"] + ABILITY_ANIMS
 var _face_time := 0.0
 
 @onready var player_input: PlayerInput = $PlayerInput
@@ -235,23 +242,33 @@ func _update_animation(look: Vector2, move: Vector2) -> void:
 		_anim.position.x = -character.sprite_offset.x if mirror else character.sprite_offset.x
 	if _anim_busy:
 		return
-	var want: StringName = &"walk" if (move != Vector2.ZERO or override_active) else &"idle"
+	var moving := move != Vector2.ZERO or override_active
+	var want: StringName = &"walk" if moving else &"idle"
+	if moving and phase_left > 0.0 and _anim.sprite_frames.has_animation(PHASE_ANIM):
+		want = PHASE_ANIM  # the ghost run, with its trail
 	if _anim.animation != want or not _anim.is_playing():
 		_play(want)
 
 
-func _on_cast_started(_slot: StringName, _data: AbilityData) -> void:
+func _on_cast_started(_slot: StringName, data: AbilityData) -> void:
 	if _anim == null:
 		return
-	_attack_toggle = not _attack_toggle
-	var anim: StringName = &"attack1" if _attack_toggle else &"attack2"
+	if data != null and data.id == PHASE_ANIM:
+		return  # Phase Shift is instant to cast; its look is the looping phase animation
+	var anim: StringName
+	if data != null and ABILITY_ANIMS.has(data.id) and _anim.sprite_frames.has_animation(data.id):
+		anim = data.id
+	else:
+		_attack_toggle = not _attack_toggle
+		anim = &"attack1" if _attack_toggle else &"attack2"
 	if _anim.sprite_frames.has_animation(anim):
 		_anim_busy = true
 		_play(anim, ATTACK_ANIM_TIME)
 
 
 func _on_hit_taken(_amount: float) -> void:
-	if _anim and _anim.sprite_frames.has_animation(&"hurt"):
+	# A killing hit reaches here after `died` (Health emits it first): hurt must not replace the death animation.
+	if _anim and not dead and _anim.sprite_frames.has_animation(&"hurt"):
 		_anim_busy = true
 		_play(&"hurt", HURT_ANIM_TIME)
 	Audio.play(&"player_hurt")

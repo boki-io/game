@@ -14,6 +14,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 | `dash_immunity.gd` | Unhittable while dashing and for `immunity_after` seconds afterwards |
 | `dasher_lane.gd` | A Dasher's locked lane hurts a player standing in it and misses one who stepped out |
 | `wizard_abilities.gd` | Arcane Bolt, Arcane Focus, Phase Shift, Chain Lightning, Meteor Strike |
+| `wizard_animations.gd` | The Wizard's SpriteFrames (nine animations, drawn timings, loops) and the Player playing them: bolt alternates attack1/attack2, lightning and meteor their own, phase loops while phased, hurt, and death surviving a killing hit |
 | `phase_belt.gd` | Phase Shift's orb belt: appears, hurts, follows, ends, Orbital Ring |
 | `chain_lightning.gd` | Jump count, damage falloff, Extra Jumps, an enemy standing on the Wizard |
 | `crowd_performance.gd` | 300 unkillable enemies on a stationary Player stay inside the physics budget |
