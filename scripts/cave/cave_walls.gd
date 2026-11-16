@@ -10,6 +10,8 @@ const STEP := 8.0
 const ROCK_SEED := 99
 
 @export var wall_band := 16.0
+## Optional (spec 0.6 section 8): the map's rock and torch colours; null keeps today's. Set before the node is ready.
+@export var theme: MapTheme
 ## Torches along the walls, in world coordinates.
 var torches: Array[Vector2] = []
 
@@ -17,10 +19,17 @@ var _rock_edges: Array[PackedVector2Array] = []  # one polygon per side
 var _flecks: Array[Rect2] = []
 var _time := 0.0
 var _glow: TorchGlow
+var _rock := ROCK
+var _rock_dark := ROCK_DARK
+var _rock_light := ROCK_LIGHT
 
 
 func _ready() -> void:
 	z_index = -9
+	if theme != null:
+		_rock = theme.rock
+		_rock_dark = theme.rock_dark
+		_rock_light = theme.rock_light
 	_build_rock()
 	_glow = TorchGlow.new()
 	_glow.cave = self
@@ -72,11 +81,11 @@ func _build_rock() -> void:
 
 func _draw() -> void:
 	for poly in _rock_edges:
-		draw_colored_polygon(poly, ROCK)
+		draw_colored_polygon(poly, _rock)
 		var outline := poly.slice(2)
-		draw_polyline(outline, ROCK_DARK, 1.0)
+		draw_polyline(outline, _rock_dark, 1.0)
 	for f in _flecks:
-		draw_rect(f, ROCK_LIGHT)
+		draw_rect(f, _rock_light)
 	for t in torches:  # the bracket and the flame's stem
 		draw_rect(Rect2(t + Vector2(-2, 0), Vector2(4, 6)), Color("2b2018"))
 
@@ -86,10 +95,12 @@ class TorchGlow extends Node2D:
 	var cave: CaveWalls
 
 	func _draw() -> void:
+		var halo := Color(1.0, 0.55, 0.2) if cave.theme == null else cave.theme.glow_color
+		var flame := Color(1.0, 0.65, 0.2) if cave.theme == null else cave.theme.torch_color
 		for i in cave.torches.size():
 			var p := cave.torches[i] + Vector2(0, -2)
 			var f := cave.flicker(i)
 			for r in [46.0, 30.0, 18.0]:
-				draw_circle(p, r * f, Color(1.0, 0.55, 0.2, 0.08))
-			draw_circle(p, 4.5 * f, Color(1.0, 0.65, 0.2, 0.9))
+				draw_circle(p, r * f, Color(halo, 0.08))
+			draw_circle(p, 4.5 * f, Color(flame, 0.9))
 			draw_circle(p + Vector2(0, -2), 2.0 * f, Color(1.0, 0.95, 0.6, 0.9))

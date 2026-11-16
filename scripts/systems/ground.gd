@@ -9,6 +9,16 @@ enum Look { GRASS, DIRT }
 @export var look := Look.GRASS
 ## DIRT only: floor that gets the lighter, worn-path tiles (the walk from the door to the pedestals).
 @export var path_rects: Array[Rect2] = []
+## DIRT only: the map's palette (spec 0.6 section 8); null keeps the DIRT_* constants, so the hub is unchanged.
+@export var theme: MapTheme
+## DIRT only: seeds the speckles, the tile mix and the patches. The default is the fixed DIRT_SEED.
+var floor_seed := DIRT_SEED
+
+
+## Optional, call before the node enters the tree: the map's theme and the map seed for the floor.
+func setup(map_theme: MapTheme, seed_value: int = DIRT_SEED) -> void:
+	theme = map_theme
+	floor_seed = seed_value
 
 
 func _ready() -> void:
@@ -45,15 +55,27 @@ const VARIANT_CRACKED := 7
 
 
 func _build_dirt() -> void:
+	var plain: Array = DIRT_PLAIN
+	var dark := DIRT_DARK
+	var light := DIRT_LIGHT
+	var cracked_from := 0.95  # a roll above this is cracked, above pebbled_from is pebbled
+	var pebbled_from := 0.88
+	if theme != null:
+		if theme.floor_plain.size() >= 4:
+			plain = theme.floor_plain
+		dark = theme.floor_dark
+		light = theme.floor_light
+		pebbled_from = 1.0 - theme.floor_flecks
+		cracked_from = 1.0 - theme.floor_flecks * 5.0 / 12.0
 	var rng := RandomNumberGenerator.new()
-	rng.seed = DIRT_SEED
+	rng.seed = floor_seed
 	var img := Image.create(TILE * 8, TILE, false, Image.FORMAT_RGBA8)
 	for v in 8:
-		var base: Color = DIRT_PLAIN[v % 4]
+		var base: Color = plain[v % 4]
 		if v == VARIANT_DARK:
-			base = DIRT_DARK
+			base = dark
 		elif v == VARIANT_LIGHT:
-			base = DIRT_LIGHT
+			base = light
 		img.fill_rect(Rect2i(v * TILE, 0, TILE, TILE), base)
 		for i in 7:  # speckles
 			var c := base.darkened(0.18) if rng.randf() < 0.6 else base.lightened(0.12)
@@ -78,7 +100,7 @@ func _build_dirt() -> void:
 	tile_set = ts
 
 	var noise := FastNoiseLite.new()
-	noise.seed = DIRT_SEED
+	noise.seed = floor_seed
 	noise.frequency = 0.06
 	for x in Arena.world_size.x / TILE:
 		for y in Arena.world_size.y / TILE:
@@ -90,9 +112,9 @@ func _build_dirt() -> void:
 				variant = VARIANT_LIGHT
 			elif noise.get_noise_2d(x, y) > 0.2 and roll < 0.7:
 				variant = VARIANT_DARK
-			elif roll > 0.95:
+			elif roll > cracked_from:
 				variant = VARIANT_CRACKED
-			elif roll > 0.88:
+			elif roll > pebbled_from:
 				variant = VARIANT_PEBBLED
 			set_cell(cell, 0, Vector2i(variant, 0))
 
