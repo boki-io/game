@@ -166,3 +166,35 @@ Assumptions where the spec left room (all in `scripts/maps/map_layout.gd` unless
 - **L9. Seeds in the test** are `hash("%d:%s" % [i, theme.id])` for i in 0..29, the spec's 6.1 form.
 - Results: all eight maps place 100% of walls, pillars and decor on all 30 seeds, and 100% of free cells are reachable;
   no theme's numbers in `map.tres` needed changing.
+# Agent decision log: spec v0.6, build step 5 ("v0.6 look")
+
+## L1. How the theme gets in
+`Ground`, `CaveWalls` and `Prop` take a plain `theme` property (set before `_ready`/drawing), `CaveWall.setup(rect, theme = null)`
+and `Ground.setup(theme, seed)`. `CaveDecor` has `theme` too. `Prop` got `class_name Prop` (it had none; `main.gd` still
+preloads the script). Null theme gives today's constants; the constants stay in the scripts as the fallback.
+
+## L2. Floor seed and flecks
+`Ground.setup(theme, seed_value)`; no `setup` means `DIRT_SEED`, so the hub floor is identical. `floor_flecks` f maps to
+pebbled when a roll is above `1 - f` and cracked above `1 - 5f/12`, which reproduces today's 0.88 / 0.95 at f = 0.12.
+With a theme the thresholds come from the theme, without one the old literals are used (exact).
+
+## L3. Decor drawing
+- Existing kinds are drawn exactly as before (the mushroom keeps its cyan on every map); only the 8 new kinds use `glow_color`.
+- Glowing kinds (CRYSTAL, BIG_FUNGUS, CRACK) use plain alpha circles, not an additive material: one material per decor
+  node is not worth it for 90 nodes, and it reads the same on dark floors.
+- Flat kinds (MOSS, FROST, PUDDLE, CRACK) draw no shadow. No animation, as the spec says.
+- `CaveDecor.layout` is untouched (the layout generator agent owns weights and placement).
+
+## L4. Torches
+`torch_color` and `glow_color` colour the flame and halo. `torch_count` is not applied here: `main.gd` owns the torch
+positions today, so `MapBuilder` must trim `CaveWalls.torches` to `torch_count`.
+
+## L5. Vignette and ambient: `scripts/maps/map_look.gd` (`MapLook`)
+`MapLook.apply_vignette(texture_rect, theme)` copies the scene's gradient texture and sets the outer alpha (the scene
+resource is shared, so it is not edited in place); `MapLook.apply_ambient(parent, theme)` adds or updates a
+`CanvasModulate` named "Ambient". `MapBuilder` should call it on the world's canvas (a child of `Main`/`World`, not of
+the `UI` CanvasLayer). `main.tscn` is not edited.
+
+## L6. Default theme comparison
+The default theme stores colours with 8 digits, so it equals today's constants only approximately (`is_equal_approx`);
+the default arena may therefore differ from the hard-coded look by under 1/255 per channel, which is invisible.

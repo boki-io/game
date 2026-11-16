@@ -20,6 +20,10 @@ const OUTLINE := Color("1e1a17")
 var footprint := Rect2()  # world rectangle covered, set by setup()
 
 var _flecks: Array[Rect2] = []
+var _top := TOP
+var _top_light := TOP_LIGHT
+var _side := SIDE
+var _outline := OUTLINE
 
 
 ## Footprints (world rectangles) of the walls. `reserved` rectangles (the spawn area ...) are kept clear.
@@ -50,8 +54,14 @@ static func layout(size: Vector2, band: float, reserved: Array[Rect2]) -> Array[
 	return out
 
 
-func setup(rect: Rect2) -> void:
+## `theme` is optional (spec 0.6 section 8): null keeps today's colours.
+func setup(rect: Rect2, theme: MapTheme = null) -> void:
 	footprint = rect
+	if theme != null:
+		_top = theme.wall_top
+		_top_light = theme.wall_top_light
+		_side = theme.wall_side
+		_outline = theme.wall_outline
 	position = Vector2(rect.get_center().x, rect.end.y)
 	collision_layer = 1
 	collision_mask = 0
@@ -73,12 +83,12 @@ func _draw() -> void:
 	var h := footprint.size.y
 	var body := Rect2(-w / 2.0, -h, w, h)
 	draw_colored_polygon(_shadow(w), Color(0, 0, 0, 0.3))
-	draw_rect(body, SIDE)
-	draw_rect(Rect2(body.position, Vector2(w, h - FACE)), TOP)
-	draw_rect(Rect2(body.position, Vector2(w, 2)), TOP_LIGHT)
+	draw_rect(body, _side)
+	draw_rect(Rect2(body.position, Vector2(w, h - FACE)), _top)
+	draw_rect(Rect2(body.position, Vector2(w, 2)), _top_light)
 	for f in _flecks:
-		draw_rect(f, TOP_LIGHT)
-	draw_rect(body, OUTLINE, false, 1.0)
+		draw_rect(f, _top_light)
+	draw_rect(body, _outline, false, 1.0)
 
 
 func _shadow(w: float) -> PackedVector2Array:
