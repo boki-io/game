@@ -74,3 +74,63 @@ All 20 tests pass (the full run had only `scene_flow.gd` and `hub_walk.gd` faili
 Definition of Done is knowingly missing. Not verified by eye: the death and victory screens and the banner
 (covered by tests that read their text, not by a rendered frame); the select screen (columns 1 and 2) and the HUD
 were rendered and looked at.
+
+# Agent decision log: spec v0.6 (stage maps), build step 1
+
+Decisions made while building step 1 of `docs/spec-0.6.md` section 14 (directory, data, migration), without asking.
+
+## M1. Field types of `MapTheme`
+The spec names the fields but not their GDScript types. Chosen: `floor_plain: Array[Color]`, `wall_lengths: Array[float]`,
+`monsters: Array[MonsterVariant]`, `style` and `MonsterVariant.mark` as enums (`MapTheme.Style`, `MonsterVariant.Mark`),
+`decor_weights` a plain `Dictionary` of `CaveDecor.Kind` (int) to float. Fields are in inspector groups. `variant_for()`
+takes a `StringName`.
+
+## M2. Placeholder decor weights use only today's five decor kinds
+The new decor kinds (moss, crystal, ...) are build step 5, so `decor_weights` of the eight maps only name the existing
+kinds (0 stalagmite, 1 rock, 2 pebbles, 3 bones, 4 mushroom), skewed per map (bones on Bone Warren, mushrooms on Spore
+Cavern). Zero weights are left out of the files. Whoever adds the new kinds should put the signature kinds in the weights.
+The `_default` weights are the odds of today's `CaveDecor.layout` (0.21, 0.27, 0.26, 0.13, 0.13), for information: the
+legacy layout does not read them.
+
+## M3. Placeholder palettes
+`rock`, `floor_plain[0]` and `glow_color` are the thumbnail colours of `tools/maps/gen_thumbnails.py` (spec 10). The rest
+is derived: `floor_plain[1..3]` are the first colour at 1.04, 0.97 and 1.02 brightness, `floor_dark` x0.82, `floor_light`
+x1.15, `rock_dark` x0.55, `rock_light` x1.35, wall tops x1.45 / x1.75, wall side x0.8, outline x0.5, pillar x1.7, torch colour
+is the glow blended 40% toward a warm yellow. Ambient, vignette and torch count differ a little per map (Ember Depths
+warm and brightest light, Frostbite and Crystal Vault cool). All are placeholders for the later per-map pass.
+
+## M4. Placeholder monster variants
+Body colour is the type's base colour (0.4) blended toward a per-map accent colour, then nudged in lightness until it is at
+least 0.14 OKLab from every floor colour of its map; marks are the ones of spec 7.3 (spots, crest, stripe) in the glow colour
+lightened by 25%. Outline is the body x0.5 and the eye white, as today. The three types stay at least 0.08 apart.
+`map_themes.gd` already checks both readability distances (the spec puts them in `monster_variants.gd`, step 7, which will
+repeat or replace them).
+
+## M5. `_template`
+A copy of Mossy Hollow's files with the id `_template`, name "Template Map" and the same thumbnail copy. It is not in the
+registry and `MapRegistry.by_id()` returns null for it; `map_content.gd` and `map_themes.gd` check it by path.
+
+## M6. Rock/floor "differ" rule loosened
+Spec 12 asks that two themes differ in rock and floor colour by an OKLab distance of at least 0.05. Because rock and floor
+`[0]` must equal the thumbnail colours (spec 10) and several thumbnails share a dark rock (Mossy Hollow / Flooded Gallery,
+Crystal Vault / Spore Cavern ...), the test checks that the rock distance **plus** the floor distance is at least 0.05. Later
+palette work can tighten it once the thumbnails are regenerated (step 9).
+
+## M7. Thumbnail-colour test is loose
+The average colour of a thumbnail must be within 0.12 OKLab of a 50/50 blend of `rock` and `floor_plain[0]`. Thumbnails will
+be redrawn in step 9, and the tolerance is to be tightened then.
+
+## M8. Commit order and the `.import` files
+Thumbnails were moved with `git mv` into `content/maps/<id>/thumbnail.png` (a PNG is unchanged: the moved generator
+reproduces the same bytes) and the old `.import` files deleted; `godot --headless --path . --import` made the new ones
+(committed). `_template/thumbnail.png` is a copy of Mossy Hollow's and has its own `.import`.
+
+## M9. Test enemy-type list
+`map_content.gd` takes the enemy types the director can spawn from `data/enemies/*.tres` with `immovable = false` (grunt,
+ranged, dasher; the training dummy is excluded) and asserts that list, so a new enemy type makes the test fail until every
+map has its variant file (spec 3.8).
+
+## M10. `PathGenerator` constants removed
+`NAMES`, `THUMBNAIL_COUNT` and `THUMBNAIL_PATH` are deleted (nothing else read them). The shuffle still draws one
+permutation of the registry (so the same seeds produce the same name/thumbnail pairing as v0.5, since the registry order
+equals the old name order).

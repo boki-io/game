@@ -5,7 +5,7 @@ Headless regression scripts. Each one starts the real game scenes, drives them w
 
 ```
 godot --headless --path . --script tests/<name>.gd
-tests/run_all.sh            # every test, one line each (120 s limit per test)
+tests/run_all.sh            # imports first, then every test in tests/ and tests/maps/, one line each (120 s limit per test)
 ```
 
 | Script | Checks |
@@ -26,9 +26,11 @@ tests/run_all.sh            # every test, one line each (120 s limit per test)
 | `scene_flow.gd` | Hub to select to run to hub to select: Arena size, unpausing, the hub pause menu |
 | `stage_modifiers.gd` | Additive percentage maths, the 300 alive cap ceiling, XP scaling, the SpawnDirector applying a stage |
 | `gold.gd` | Coin drop chance (25% + gold, clamped), drops, pickup through the XPCollector, gold persistence |
-| `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, seed reproducibility (30 seeds) |
+| `path_generator.gd` | Path shape, the connections, tier rules, value ranges, names, thumbnails, each stage's theme (7 different), seed reproducibility (30 seeds) |
 | `run_progress.gd` | GameSession path state; level, XP and upgrades carried between stages; cleared on death, abandon, victory |
 | `select_screen.gd` | Card states per column, the cursor (skips locked, wraps), keyboard and mouse picking, the abandon prompt |
+| `maps/map_content.gd` | `content/maps/` on disk against `MapRegistry`, required files, 64x40 thumbnails, ids, unique names, a monster variant per enemy type, no stray files (also `_template`, `_default`) |
+| `maps/map_themes.gd` | Every `MapTheme` field in range, ambient near white, the eight maps differ, monsters readable on the floor, thumbnail colour close to the theme |
 | `stage_flow.gd` | Stage cleared banner and its 2 s, level-up first, victory, death screen, the pause menu's abandon prompt |
 
 ## Writing one

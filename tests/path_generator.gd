@@ -1,8 +1,9 @@
 extends SceneTree
-## Path generator: shape, connections (spec 3.2), tier rules and value ranges (4.1), names, thumbnails and seeds.
+## Path generator: shape, connections (spec 3.2), tier rules and value ranges (4.1), names, thumbnails, themes and seeds.
 ## Run: godot --headless --path . --script tests/path_generator.gd
 
 const Generator := preload("res://scripts/stages/path_generator.gd")
+const RegistryScript := preload("res://scripts/maps/map_registry.gd")
 const StageDataScript := preload("res://scripts/stages/stage_data.gd")
 const SEED_COUNT := 30  # the spec asks for 1000+; reduced to 30 on the user's instruction (see AGENT_DECISION_LOG.md)
 
@@ -85,10 +86,21 @@ func _init() -> void:
 		_check(names.size() == 7, tag + "7 distinct names")
 		_check(thumbs.size() == 7, tag + "7 distinct thumbnail paths")
 
+		# Spec 0.6 section 12: name and thumbnail come from the stage's theme, and 7 stages use 7 themes.
+		var theme_ids := {}
+		for s in path.all_stages():
+			_check(s.theme != null, tag + "%s has a theme" % s.name)
+			if s.theme:
+				theme_ids[s.theme.id] = true
+				_check(s.name == s.theme.display_name, tag + "name equals the theme's display_name")
+				_check(s.thumbnail == s.theme.thumbnail, tag + "thumbnail is the theme's thumbnail")
+				_check(RegistryScript.IDS.has(String(s.theme.id)), tag + "the theme is a registry map")
+		_check(theme_ids.size() == 7, tag + "7 different themes")
+
 		# Seed reproducibility
 		_check(_signature(path) == _signature(Generator.generate(sd)), tag + "same seed, same path")
 
-	_check(Generator.NAMES.size() >= 7 and Generator.THUMBNAIL_COUNT >= 7, "pools hold at least 7 names and thumbnails")
+	_check(RegistryScript.all().size() >= 7, "the registry holds at least 7 maps")
 	_check(middle_seen[0] > 0 and middle_seen[2] > 0, "the middle stage's neighbour is rolled both ways over %d seeds" % SEED_COUNT)
 	# Different seeds give different paths (not every pair, but not all the same).
 	var distinct := {}
