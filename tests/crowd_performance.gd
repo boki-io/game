@@ -38,5 +38,29 @@ func _init() -> void:
 	if mean > BUDGET_MS:
 		_failed = true
 		print("FAIL: mean physics time %.2f ms is over %.1f ms" % [mean, BUDGET_MS])
+
+	# The same crowd with four relics at level 3 (spec 1.0): the Player walks a circle so Fire Trail drops flames.
+	for id: StringName in [&"storm_orbs", &"fire_trail", &"frost_comet", &"thorn_nova"]:
+		for level in 3:
+			p.relics.add_or_raise(RelicRegistry.find(id), false)
+	var centre: Vector2 = p.global_position
+	# The first relic hits on a crowd that has not been hit before cost extra for a few seconds (first-hit setup on
+	# every enemy), so the steady state is measured after a warm-up.
+	for i in 150:
+		p.global_position = centre + Vector2.from_angle(i * 0.12) * 40.0
+		await physics_frame
+	total = 0.0
+	worst = 0.0
+	for i in FRAMES:
+		p.global_position = centre + Vector2.from_angle(i * 0.12) * 40.0
+		await physics_frame
+		var ms: float = Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+		total += ms
+		worst = maxf(worst, ms)
+	mean = total / FRAMES
+	print("with four level 3 relics: mean physics %.2f ms, worst %.2f ms" % [mean, worst])
+	if mean > BUDGET_MS:
+		_failed = true
+		print("FAIL: mean physics time %.2f ms with relics is over %.1f ms" % [mean, BUDGET_MS])
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
