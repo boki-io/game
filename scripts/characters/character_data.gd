@@ -16,12 +16,6 @@ extends Resource
 ## Tick if the art is drawn facing left (it is mirrored when the player faces right).
 @export var sprite_faces_left: bool = false
 
-@export_group("Glow")
-## The soft light around the character, drawn additively behind it. A radius of 0 turns it off.
-@export var glow_color: Color = Color(1.0, 0.85, 0.6)
-@export_range(0.0, 160.0) var glow_radius: float = 56.0
-@export_range(0.0, 0.5) var glow_alpha: float = 0.16
-
 @export_group("Stats")
 @export var max_hp: float = 100.0
 @export var move_speed: float = 90.0

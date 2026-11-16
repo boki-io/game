@@ -40,8 +40,7 @@ a puff of dust every few steps. Hits throw sparks and recoil the enemy's body a 
 (`EnemyData.kill_shake` kicks the camera for tough ones), XP gems and coins hop out before they are pulled in, and the screen edges
 pulse red when the player is hit. Particles are tiny squares in `Effects` (capped at 256). Nothing ever stops or slows time.
 
-Atmosphere and audio (v0.9): each player carries a soft additive glow (`glow_color`, `glow_radius`, `glow_alpha` in `data/characters/*.tres`);
-every map has drifting motes (`ambience_kind`, `ambience_color`, `ambience_count` in its `map.tres`, see `content/maps/README.md`); scene changes
+Atmosphere and audio (v0.9): every map has drifting motes (`ambience_kind`, `ambience_color`, `ambience_count` in its `map.tres`, see `content/maps/README.md`); scene changes
 close a circle iris on the player (`SceneFader`, `shaders/iris.gdshader`), the death screen closes the screen to a small hole behind it and a
 stage clear washes a warm flash over the banner. Repeated sounds vary in pitch (`Audio.PITCH_SPREAD`) and hits, kills and Slam have layered
 sounds (`Audio.impact`, `AbilityData.sfx_layer`); the layers are generated placeholders from `tools/gen_sfx.py`.

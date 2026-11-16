@@ -1,6 +1,6 @@
 # Spec v0.9: Feel II (atmosphere and audio)
 
-Builds on spec v0.8 (merged into `main`, PR #7: the particle bits in `Effects`, the hurt pulse) and on v0.6's map themes. Status: draft rev 2 (rev 2 applies an independent review: the death iris focuses on the dead player, the opening focus waits for the camera, the layer-order rule is by sibling index, kills no longer play the hit sound, ambience placement is defined, the glow follows the sprite's blink, and audio tests read a log the code owns).
+Builds on spec v0.8 (merged into `main`, PR #7: the particle bits in `Effects`, the hurt pulse) and on v0.6's map themes. Status: built; the player glow (section 2) was removed after play (rev 3: it looked funny), so sections 2, the glow tests and the glow lines of the file layout and Definition of Done no longer apply. Rev 2 (rev 2 applies an independent review: the death iris focuses on the dead player, the opening focus waits for the camera, the layer-order rule is by sibling index, kills no longer play the hit sound, ambience placement is defined, the glow follows the sprite's blink, and audio tests read a log the code owns).
 
 Terms: **atmosphere** is what makes a place feel lived in without changing how it plays: a glow, drifting specks, the way a
 scene opens and closes. A **mote** is one drifting speck of ambient life (new, section 3). The **iris** is a circular wipe: the

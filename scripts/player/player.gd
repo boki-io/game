@@ -108,14 +108,6 @@ func _apply_character() -> void:
 		var trait_node: Node = character.trait_script.new()
 		trait_node.name = "Trait"
 		add_child(trait_node)
-	if character.glow_radius > 0.0:
-		var glow := PlayerGlow.new()
-		glow.name = "Glow"
-		glow.color = character.glow_color
-		glow.radius = character.glow_radius
-		glow.alpha = character.glow_alpha
-		glow.sprite = sprite
-		add_child(glow)
 
 
 func _exit_tree() -> void:
@@ -355,9 +347,6 @@ func _on_died() -> void:
 	_play(&"death", DEATH_ANIM_TIME)
 	velocity = Vector2.ZERO
 	_move_vel = Vector2.ZERO
-	var glow := get_node_or_null(^"Glow") as Node2D
-	if glow:
-		glow.visible = false
 	sprite.modulate = Color(0.4, 0.4, 0.4)
 	hurtbox.set_deferred("monitorable", false)
 	died.emit()
