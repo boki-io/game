@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3]
 
 [ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" uid="uid://kdpvlvajqxmd" path="res://scripts/abilities/ricochet_behavior.gd" id="2"]
+[ext_resource type="Script" uid="uid://kdpvlvajqxmd" path="res://content/characters/archer/abilities/ricochet/behavior.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ricochet"]

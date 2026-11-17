@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwrnaoncff0cn"
-path="res://.godot/imported/archer_death.png-ea2b14628c71c25a28eaed0565ec2b33.ctex"
+uid="uid://blono4v5mi68e"
+path="res://.godot/imported/archer_attack1.png-15d46d44031e5fa36305651d9a63960a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/archer/archer_death.png"
-dest_files=["res://.godot/imported/archer_death.png-ea2b14628c71c25a28eaed0565ec2b33.ctex"]
+source_file="res://content/characters/archer/sprites/archer_attack1.png"
+dest_files=["res://.godot/imported/archer_attack1.png-15d46d44031e5fa36305651d9a63960a.ctex"]
 
 [params]
 

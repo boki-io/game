@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3]
 
 [ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/abilities/arrow_behavior.gd" id="2"]
+[ext_resource type="Script" path="res://content/characters/archer/abilities/arrow/behavior.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_atlas"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_arrow"]

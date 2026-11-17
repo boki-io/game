@@ -1,12 +1,12 @@
 [gd_resource type="SpriteFrames" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_idle.png" id="t_idle"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_walk.png" id="t_walk"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_attack1.png" id="t_attack1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_attack2.png" id="t_attack2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_hurt.png" id="t_hurt"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_death.png" id="t_death"]
-[ext_resource type="Texture2D" path="res://assets/sprites/archer/archer_dash.png" id="t_dash"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_idle.png" id="t_idle"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_walk.png" id="t_walk"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_attack1.png" id="t_attack1"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_attack2.png" id="t_attack2"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_hurt.png" id="t_hurt"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_death.png" id="t_death"]
+[ext_resource type="Texture2D" path="res://content/characters/archer/sprites/archer_dash.png" id="t_dash"]
 
 [sub_resource type="AtlasTexture" id="a_idle_0"]
 atlas = ExtResource("t_idle")

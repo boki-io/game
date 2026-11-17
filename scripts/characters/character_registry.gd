@@ -5,7 +5,7 @@ extends RefCounted
 const PATHS := [
 	"res://content/characters/knight/character.tres",
 	"res://content/characters/wizard/character.tres",
-	"res://data/characters/archer.tres",
+	"res://content/characters/archer/character.tres",
 ]
 
 
