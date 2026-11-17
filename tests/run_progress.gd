@@ -52,9 +52,9 @@ func _init() -> void:
 	F.upgrade(p, "max_hp")
 	F.upgrade(p, "max_hp")
 	F.upgrade(p, "damage")
-	p.relics.add_or_raise(load("res://data/relics/storm_orbs.tres"))
-	p.relics.add_or_raise(load("res://data/relics/tidal_wave.tres"))
-	p.relics.add_or_raise(load("res://data/relics/tidal_wave.tres"))
+	p.relics.add_or_raise(load("res://content/relics/storm_orbs/relic.tres"))
+	p.relics.add_or_raise(load("res://content/relics/tidal_wave/relic.tres"))
+	p.relics.add_or_raise(load("res://content/relics/tidal_wave/relic.tres"))
 	var hp_max: float = p.health.max_health
 	_check(hp_max > base_hp, "max_hp upgrade raised the maximum")
 	main.run_manager.kills = 42
