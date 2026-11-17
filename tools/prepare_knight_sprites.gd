@@ -1,7 +1,7 @@
 extends SceneTree
 ## Turns the raw Knight animation sheets (large opaque frames on a black background) into clean game
 ## sprites: transparent background, pixel-art downscale, fixed 48x48 cells, feet on a common baseline.
-## Writes assets/sprites/knight/*.png and data/characters/knight_frames.tres.
+## Writes content/characters/knight/sprites/*.png and content/characters/knight/frames.tres.
 ##
 ## Run:  godot --headless --script tools/prepare_knight_sprites.gd
 ## Tune: TARGET_HEIGHT (how tall the knight is in game pixels) and the sheet grid below.

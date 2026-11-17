@@ -65,7 +65,7 @@ Every step goes **spec, review, approval, build, PR**, in that order. Do not sta
 - **Code reads like its neighbours:** match comment density, naming and idiom; `##` doc comments on classes and
   non-obvious functions; types on declarations. Autoloads are `GameSession`, `SceneFader`, `Audio`, `PlayerRegistry`,
   `EnemyGrid` and friends; do not read `GameSession` from low-level classes.
-- **Tuning and content are data** (`data/**/*.tres`, soon `content/`), not constants in scripts, unless they are
+- **Tuning and content are data** (`content/**/*.tres`), not constants in scripts, unless they are
   structural.
 - **Sounds:** a new sound goes in three places: `audio.gd` `SOUNDS`, `tools/gen_sfx.py` and the generated file in
   `assets/audio/` (missing files are skipped silently, so check all three). After running a generator, check

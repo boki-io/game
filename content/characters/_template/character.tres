@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
+[ext_resource type="Resource" path="res://content/characters/_template/abilities/example/ability.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
+[ext_resource type="Resource" path="res://content/characters/_template/abilities/example/upgrades/template_damage.tres" id="u0"]
+[ext_resource type="Resource" path="res://content/characters/_template/abilities/example/upgrades/template_arc.tres" id="u1"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/max_hp.tres" id="u2"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/mana_regen.tres" id="u3"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/max_mana.tres" id="u4"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/move_speed.tres" id="u5"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/pickup_radius.tres" id="u6"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/damage.tres" id="u7"]
+[ext_resource type="SpriteFrames" path="res://content/characters/_template/frames.tres" id="sf"]
+
+[resource]
+script = ExtResource("1")
+id = &"template_hero"
+display_name = "Template Hero"
+description = "Copy me: a minimal character with one ability."
+body_color = Color(0.5, 0.5, 0.5, 1)
+sprite_frames = ExtResource("sf")
+sprite_offset = Vector2(0, -20)
+max_hp = 100.0
+move_speed = 90.0
+accel_time = 0.06
+friction_time = 0.08
+ability_auto = ExtResource("2")
+ability_q = ExtResource("2")
+ability_e = ExtResource("2")
+ability_r = ExtResource("2")
+upgrade_pool = Array[ExtResource("6")]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7")])

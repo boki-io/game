@@ -7,9 +7,9 @@ extends SceneTree
 ## casts every ability once. With FOLDER_RULES the folder layout of spec 1.2 is checked too.
 ## Run: godot --headless --path . --script tests/content_load.gd
 
-## false: the layout before spec 1.2 (data/ and content/). true: content/characters/<id>/abilities/<id>/ and so on.
-const FOLDER_RULES := false
-const ROOTS := ["res://data", "res://content"]
+## true: content/characters/<id>/abilities/<id>/ and so on (the layout since spec 1.2). false: only load and registration checks.
+const FOLDER_RULES := true
+const ROOTS := ["res://content"]
 const TEMPLATE_DIR := "res://content/characters/_template"
 const SKIP_DIRS := ["res://content/maps", TEMPLATE_DIR]
 ## Ability ids whose behavior is a shared base that stays in scripts/abilities/ (spec 1.2 section 3).
