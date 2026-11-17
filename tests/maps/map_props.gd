@@ -12,13 +12,16 @@ const FlowFieldScript := preload("res://scripts/maps/flow_field.gd")
 const Builder := preload("res://scripts/maps/map_builder.gd")
 
 const SEED_COUNT := 30
-const SIZE := Vector2(1600, 896)
+const LARGE_SEEDS := 4  # seeds in the pass at the run arena's size
 const BAND := 16.0
 const CELL := 16.0
 const REACH := 0.99
 const PLACED_FLOOR := 0.8  # share of prop_count (single props) that must be placed
 const SETS_FLOOR := 0.6  # share of a map's sets that must be placed over the seeds
 
+## The room the checks run in: 1600x896 first, then the run arena (Arena.RUN_SIZE).
+var _size := Vector2(1600, 896)
+var _seeds := SEED_COUNT
 var _failed := false
 var _fails_logged := 0
 
@@ -39,6 +42,11 @@ func _init() -> void:
 			themes_with_props += 1
 			_theme(theme)
 	_check(themes_with_props >= 8, "at least the eight maps have props (%d)" % themes_with_props)
+	_size = Vector2(Arena.RUN_SIZE)
+	_seeds = LARGE_SEEDS
+	for theme in Registry.all():
+		if theme.prop_count > 0:
+			_theme(theme)
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 
@@ -79,14 +87,15 @@ func _theme(theme) -> void:
 	var catalog := Catalog.get_shared()
 	var singles_min := 1.0
 	var sets_wanted := 0
+	var scale: float = Layout.area_scale(_size)
 	var sets_placed := 0
 	var placed_kinds := {}
 	for sid in theme.prop_sets:
 		_check(catalog.find_set(StringName(sid)) != null, "%s names a set that exists: %s" % [theme.id, sid])
-	for i in SEED_COUNT:
+	for i in _seeds:
 		var map_seed := hash("%d:%s" % [i, theme.id])
-		var a = Layout.generate(theme, map_seed, SIZE)
-		var b = Layout.generate(theme, map_seed, SIZE)
+		var a = Layout.generate(theme, map_seed, _size)
+		var b = Layout.generate(theme, map_seed, _size)
 		_check(a.equals(b), "%s seed %d repeats" % [theme.id, i])
 		var singles := 0
 		var instances := {}
@@ -101,7 +110,7 @@ func _theme(theme) -> void:
 			placed_kinds[instances[inst]] = true
 		sets_placed += instances.size()
 		for sid in theme.prop_sets:
-			sets_wanted += int(theme.prop_sets[sid])
+			sets_wanted += roundi(float(theme.prop_sets[sid]) * scale)
 		_legal(theme, a, catalog, i)
 		_isolated(theme, a, map_seed)
 	_check(singles_min >= PLACED_FLOOR, "%s places at least %.0f%% of its single props (%.2f)" % [theme.id, PLACED_FLOOR * 100.0, singles_min])
@@ -113,8 +122,8 @@ func _theme(theme) -> void:
 
 
 func _legal(theme, layout, catalog, i: int) -> void:
-	var start: Rect2 = Layout.start_rect(SIZE)
-	var inner := Rect2(Vector2(BAND, BAND), SIZE - Vector2(BAND, BAND) * 2.0)
+	var start: Rect2 = Layout.start_rect(_size)
+	var inner := Rect2(Vector2(BAND, BAND), _size - Vector2(BAND, BAND) * 2.0)
 	var blockers: Array[Dictionary] = []  # {rect, inst, nook}
 	var single_inst := 1000
 	for item in layout.props:
@@ -146,9 +155,9 @@ func _legal(theme, layout, catalog, i: int) -> void:
 				_check(_gap(rect, blockers[m].rect) >= Layout.PROP_GAP - 0.01, "%s %d: blockers %d and %d keep apart" % [theme.id, i, n, m])
 	# No sealed area: the free cells stay connected with the blockers in.
 	var map = ObstacleMapScript.new()
-	map.setup(layout.walls + layout.prop_rects, layout.pillars, SIZE, Builder.playable_rect(SIZE, BAND))
-	var cols := int(SIZE.x / CELL)
-	var rows := int(SIZE.y / CELL)
+	map.setup(layout.walls + layout.prop_rects, layout.pillars, _size, Builder.playable_rect(_size, BAND))
+	var cols := int(_size.x / CELL)
+	var rows := int(_size.y / CELL)
 	var blocked := PackedByteArray()
 	blocked.resize(cols * rows)
 	for r in rows:
@@ -164,7 +173,7 @@ func _isolated(theme, layout, map_seed: int) -> void:
 	var plain = theme.duplicate()
 	plain.prop_count = 0
 	plain.prop_sets = {}
-	var base = Layout.generate(plain, map_seed, SIZE)
+	var base = Layout.generate(plain, map_seed, _size)
 	_check(base.walls == layout.walls and base.pillars == layout.pillars and base.decor == layout.decor
 		and base.torches == layout.torches, "%s: props move no wall, pillar, decor or torch (%d)" % [theme.id, map_seed])
 	_check(base.props.is_empty() and base.prop_rects.is_empty(), "%s: no props and no sets places none" % theme.id)
@@ -177,15 +186,15 @@ func _gap(a: Rect2, b: Rect2) -> float:
 
 
 func _reach(blocked: PackedByteArray) -> float:
-	var cols := int(SIZE.x / CELL)
-	var rows := int(SIZE.y / CELL)
+	var cols := int(_size.x / CELL)
+	var rows := int(_size.y / CELL)
 	var free := 0
 	for v in blocked:
 		if v == 0:
 			free += 1
 	var seen := PackedByteArray()
 	seen.resize(blocked.size())
-	var first := int(SIZE.y / 2.0 / CELL) * cols + int(SIZE.x / 2.0 / CELL)
+	var first := int(_size.y / 2.0 / CELL) * cols + int(_size.x / 2.0 / CELL)
 	var stack := PackedInt32Array([first])
 	seen[first] = 1
 	var count := 0
