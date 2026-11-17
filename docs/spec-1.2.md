@@ -1,6 +1,6 @@
 # Spec v1.2: Content layout (a folder per character, ability and relic)
 
-Builds on spec v1.1 (merged, PR #11, `main` at `9761712`: the Archer) and on the map layout of spec v0.6 (`content/maps/<id>/`). Status: draft rev 2 (rev 2 applies an independent review: two test assertions that change, `SteadyAim` stays in `scripts/`, template scripts without `class_name`, wider greps and docs list, a split build step 6, corrected cross-references). A **refactor**: no gameplay, number, scene or save change.
+Builds on spec v1.1 (merged, PR #11, `main` at `9761712`: the Archer) and on the map layout of spec v0.6 (`content/maps/<id>/`). Status: built (rev 3 records the build's deviations in section 14); rev 2 (rev 2 applies an independent review: two test assertions that change, `SteadyAim` stays in `scripts/`, template scripts without `class_name`, wider greps and docs list, a split build step 6, corrected cross-references). A **refactor**: no gameplay, number, scene or save change.
 
 Terms: **content** is a game data file (`.tres`) plus the small script or art that belongs to exactly one item. **Engine** is code that serves many items (bases, registries, systems, UI). An **owner** is the character an ability or upgrade belongs to. A **shared** item is used by more than one character.
 
@@ -183,3 +183,12 @@ Existing tests change only in a path or a helper call (section 6); none changes 
 - `content_load.gd`'s runtime half passes (all registered characters, all abilities cast); the hub's three pedestals and one run per character are looked at in rendered frames (not headless), and the hand play-through is an **unchecked** box in the PR's test plan.
 - A new character can be made by copying `content/characters/_template/` and adding one line to `CharacterRegistry` (the template loads in the content test).
 - The README, `CLAUDE.md`, `tests/README.md` and `content/characters/README.md` match the layout.
+
+## 14. Build notes (deviations from rev 2)
+
+- **Fixture lookup.** `Fixture.upgrade_path(id)` delegates to a new `tests/upgrade_index.gd` (a plain `RefCounted`, skipped by `run_all.sh`) instead of scanning inside `fixture.gd`: `archer_upgrades.gd` is data-only and cannot load the fixture, which names autoload classes. It scanned `data/upgrades` and `content/` until step 6 and scans `content/` only now.
+- **Content test.** `tests/content_load.gd` has a `FOLDER_RULES` switch (off in step 1, on in step 8). Its runtime half builds the grunt itself, so it needed no fixture change.
+- **Build order.** Step 6 became: enemies and attributes (6); relics (7a); shared upgrades (7b); template, docs and the switch (8). The migration script also rewrites `.import` files and handles paths with spaces. It was committed in step 2 and removed in step 8.
+- **Template.** `_template` has one example ability reused in all four slots, ids prefixed `template_`, and a `frames.tres` that points at the Knight's sprites (no art copied).
+- **A slip, fixed.** `scenes/main_menu.tscn` (not part of this work) was staged by mistake in step 6 and removed again by amending that unpushed commit; it is untracked and in no commit.
+- **Not verified.** Timing tests (`crowd_performance`, `crowd_bone_warren`, `enemy_status`) failed intermittently under load (a Godot editor and other test runs were open), then passed on rerun. Only the Knight pedestal was looked at in a rendered frame; the Wizard and Archer pedestals were behind the info panel. No full play-through by hand.
