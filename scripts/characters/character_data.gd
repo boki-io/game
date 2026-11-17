@@ -22,6 +22,8 @@ extends Resource
 ## Seconds to go from standstill to top speed, and from top speed to standstill, while walking. 0 is instant.
 @export_range(0.0, 0.5) var accel_time: float = 0.06
 @export_range(0.0, 0.5) var friction_time: float = 0.08
+## False for a character without a mana pool: the HUD and the hub panel show no mana.
+@export var uses_mana: bool = true
 @export var max_mana: float = 100.0
 @export var mana_regen: float = 8.0  # per second
 ## Optional trait: a Node script the player adds as a child (e.g. Arcane Focus).

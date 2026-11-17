@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/abilities/arrow.tres" id="2"]
+[ext_resource type="Resource" path="res://data/abilities/dash_shot.tres" id="3"]
+[ext_resource type="Resource" path="res://data/abilities/ricochet.tres" id="4"]
+[ext_resource type="Resource" path="res://data/abilities/arrow_rain.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/characters/steady_aim.gd" id="7"]
+[ext_resource type="Resource" path="res://data/upgrades/arrow_twin.tres" id="u0"]
+[ext_resource type="Resource" path="res://data/upgrades/arrow_pierce.tres" id="u1"]
+[ext_resource type="Resource" path="res://data/upgrades/arrow_rapid.tres" id="u2"]
+[ext_resource type="Resource" path="res://data/upgrades/dashshot_range.tres" id="u3"]
+[ext_resource type="Resource" path="res://data/upgrades/dashshot_spray.tres" id="u4"]
+[ext_resource type="Resource" path="res://data/upgrades/dashshot_chain.tres" id="u5"]
+[ext_resource type="Resource" path="res://data/upgrades/ricochet_count.tres" id="u6"]
+[ext_resource type="Resource" path="res://data/upgrades/ricochet_bounce.tres" id="u7"]
+[ext_resource type="Resource" path="res://data/upgrades/ricochet_hits.tres" id="u8"]
+[ext_resource type="Resource" path="res://data/upgrades/rain_radius.tres" id="u9"]
+[ext_resource type="Resource" path="res://data/upgrades/rain_zones.tres" id="u10"]
+[ext_resource type="Resource" path="res://data/upgrades/rain_linger.tres" id="u11"]
+[ext_resource type="Resource" path="res://data/upgrades/damage.tres" id="u12"]
+[ext_resource type="Resource" path="res://data/upgrades/max_hp.tres" id="u13"]
+[ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="u14"]
+[ext_resource type="Resource" path="res://data/upgrades/pickup_radius.tres" id="u15"]
+[ext_resource type="Resource" path="res://data/upgrades/archer_haste.tres" id="u16"]
+[ext_resource type="Resource" path="res://data/upgrades/archer_eagle.tres" id="u17"]
+[ext_resource type="SpriteFrames" path="res://data/characters/archer_frames.tres" id="sf"]
+
+[resource]
+script = ExtResource("1")
+id = &"archer"
+display_name = "Archer"
+description = "Ranged marksman. Needs no mana and bounces arrows."
+body_color = Color(0.4, 0.75, 0.35, 1)
+sprite_frames = ExtResource("sf")
+sprite_scale = 0.65
+sprite_offset = Vector2(-2, -18)
+max_hp = 85.0
+move_speed = 95.0
+accel_time = 0.06
+friction_time = 0.08
+uses_mana = false
+max_mana = 0.0
+mana_regen = 0.0
+trait_script = ExtResource("7")
+trait_name = "Steady Aim"
+trait_description = "Up to +30% damage with arrows that have flown 160 px or more."
+ability_auto = ExtResource("2")
+ability_q = ExtResource("3")
+ability_e = ExtResource("4")
+ability_r = ExtResource("5")
+upgrade_pool = Array[ExtResource("6")]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7"), ExtResource("u8"), ExtResource("u9"), ExtResource("u10"), ExtResource("u11"), ExtResource("u12"), ExtResource("u13"), ExtResource("u14"), ExtResource("u15"), ExtResource("u16"), ExtResource("u17")])

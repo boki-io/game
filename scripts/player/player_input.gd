@@ -104,6 +104,22 @@ func _update_aim(pad: int) -> void:
 		aim_vector = move_vector.normalized()
 
 
+## Where a targeted ability (Arrow Rain) lands: the mouse in world space when the mouse is in use, else `origin` plus
+## `aim * range_px`; at most `range_px` from `origin`. Pure, so a test can call it.
+static func target_point(origin: Vector2, mouse_world: Vector2, mouse_active: bool, aim: Vector2, range_px: float) -> Vector2:
+	var target := mouse_world if mouse_active else origin + aim * range_px
+	var offset := target - origin
+	if offset.length() > range_px:
+		target = origin + offset.normalized() * range_px
+	return target
+
+
+## `target_point` with the live mouse state and aim of this input.
+func aim_point(range_px: float) -> Vector2:
+	var body := get_parent() as Node2D
+	return target_point(body.global_position, body.get_global_mouse_position(), _mouse_active, aim_vector, range_px)
+
+
 func _stick(pad: int, axis_x: JoyAxis, axis_y: JoyAxis, deadzone: float) -> Vector2:
 	var v := Vector2(Input.get_joy_axis(pad, axis_x), Input.get_joy_axis(pad, axis_y))
 	if v.length() < deadzone:

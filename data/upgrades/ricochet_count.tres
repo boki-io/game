@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"ricochet_count"
+display_name = "More Arrows"
+description = "+1 arrow in the volley"
+tag = "Ricochet Volley"
+max_level = 3
+adds = {
+"ricochet.extra": 1.0
+}
+mults = {}

@@ -43,8 +43,8 @@ func _init() -> void:
 	var chars := CharacterRegistry.all()
 	_check(hub.pedestals.size() == chars.size(), "one pedestal per character")
 	_check(Arena.world_size == Vector2i(960, 560), "hub world size is 960x560")
-	_check(hub.pedestals[0].position == Vector2(410, 380) and hub.pedestals[1].position == Vector2(550, 380),
-		"pedestals at x=410 and x=550 on y=380")
+	_check(hub.pedestals[0].position == Vector2(340, 380) and hub.pedestals[1].position == Vector2(480, 380)
+		and hub.pedestals[2].position == Vector2(620, 380), "pedestals at x=340, 480 and 620 on y=380")
 	_check(hub.mode == hub.Mode.BROWSE and _players.players.is_empty(), "browse mode has no Player")
 	_check(not hub.door.is_open, "door starts closed")
 
@@ -73,14 +73,22 @@ func _init() -> void:
 	_key(&"hub_right")
 	await process_frame
 	_key(&"hub_right", false)
+	_check(hub.focus_index == 2, "hub_right from the middle goes to the last")
+	_key(&"hub_right")
+	await process_frame
+	_key(&"hub_right", false)
 	_check(hub.focus_index == 0, "hub_right wraps")
 	_key(&"hub_left")
 	await process_frame
 	_key(&"hub_left", false)
-	_check(hub.focus_index == 1, "hub_left wraps back")
+	_check(hub.focus_index == 2, "hub_left from the first wraps to the last")
+	_key(&"hub_left")
+	await process_frame
+	_key(&"hub_left", false)
+	_check(hub.focus_index == 1, "hub_left goes back one")
 	for i in 30:
 		await physics_frame
-	_check(absf(hub.camera.global_position.x - (550.0)) < 1.0, "camera glides to the focused pedestal")
+	_check(absf(hub.camera.global_position.x - (480.0)) < 1.0, "camera glides to the focused pedestal")
 
 	# Mouse click on the first pedestal (world to screen through the canvas transform).
 	var screen: Vector2 = hub.get_viewport().get_canvas_transform() * (hub.pedestals[0].global_position + Vector2(0, -14))

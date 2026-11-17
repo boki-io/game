@@ -175,6 +175,16 @@ func meteor_fall(pos: Vector2) -> void:
 	_fx.append({kind = &"meteor", pos = pos, age = 0.0, life = 0.3})
 
 
+## Placeholder: arrows streaking up from the Archer (Arrow Rain's cast).
+func arrow_rise(pos: Vector2) -> void:
+	_fx.append({kind = &"arrow_rise", pos = pos, age = 0.0, life = 0.4})
+
+
+## Placeholder: streaks falling onto a zone of `radius` over `life` seconds.
+func arrow_fall(pos: Vector2, radius: float, life: float) -> void:
+	_fx.append({kind = &"arrow_fall", pos = pos, radius = radius, age = 0.0, life = maxf(life, 0.01)})
+
+
 ## Expanding shockwave ring.
 func ring(pos: Vector2, radius: float) -> void:
 	_fx.append({kind = &"ring", pos = pos, radius = radius, age = 0.0, life = 0.25})
@@ -218,6 +228,15 @@ func _draw() -> void:
 				var streak: Vector2 = f.pos + Vector2(-26, -70) * (1.0 - t)
 				draw_line(streak, f.pos, Color(1.0, 0.6, 0.2, 0.9 * (1.0 - t)), 6.0 * (1.0 - t) + 1.0)
 				draw_circle(f.pos, 34.0 * t + 6.0, Color(1.0, 0.8, 0.35, 0.65 * (1.0 - t)))
+			&"arrow_rise":
+				for i in 5:
+					var tail: Vector2 = f.pos + Vector2((i - 2) * 5.0, -10.0 - 8.0 * (i % 2) - 50.0 * t)
+					draw_line(tail, tail + Vector2(0, -10), Color(0.9, 0.85, 0.6, 1.0 - t), 1.5)
+			&"arrow_fall":
+				for i in 7:
+					var spot: Vector2 = f.pos + Vector2.from_angle(TAU * i / 7.0 + 0.5) * f.radius * (0.2 + 0.7 * fmod(i * 0.37, 1.0))
+					var head := spot + Vector2(0, -60.0 * (1.0 - t))
+					draw_line(head + Vector2(0, -14), head, Color(0.9, 0.85, 0.6, 0.9), 1.5)
 			&"ring":
 				draw_circle(f.pos, f.radius, Color(1, 1, 1, 0.3 * (1.0 - t)))
 				draw_arc(f.pos, f.radius * (0.6 + 0.4 * t), 0.0, TAU, 40, Color(1, 1, 1, 1.0 - t), 2.0)

@@ -40,7 +40,7 @@ y_sort_enabled = true
 [node name="Ground" type="TileMapLayer" parent="World"]
 script = ExtResource("3")
 look = 1
-path_rects = Array[Rect2]([Rect2(450, 0, 60, 390), Rect2(330, 360, 300, 40)])
+path_rects = Array[Rect2]([Rect2(450, 0, 60, 390), Rect2(310, 360, 340, 40)])
 
 [node name="Pedestals" type="Node2D" parent="World"]
 y_sort_enabled = true

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://bn3qauvdmpeeg" path="res://scripts/abilities/arrow_rain_behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rain"]
+atlas = ExtResource("3")
+region = Rect2(480, 1632, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"arrow_rain"
+display_name = "Arrow Rain"
+description = "Arrows rain down in three circles around the cursor."
+icon = SubResource("AtlasTexture_rain")
+cooldown = 12.0
+mana_cost = 0.0
+damage = 16.0
+range = 240.0
+radius = 34.0
+windup = 0.9
+animation = &"attack2"
+params = {
+&"interval": 0.3,
+&"ticks": 5,
+&"zones": 3
+}
+behavior = ExtResource("2")

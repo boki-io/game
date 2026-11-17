@@ -29,8 +29,10 @@ static func num(value: float) -> String:
 	return str(roundi(value)) if is_equal_approx(value, roundf(value)) else String.num(value, 2)
 
 
-## "HP 100   Speed 90   Mana 100   Regen 8/s"
+## "HP 100   Speed 90   Mana 100   Regen 8/s" ("HP 85   Speed 95" without mana).
 static func stats_text(c: CharacterData) -> String:
+	if not c.uses_mana:
+		return "HP %s   Speed %s" % [num(c.max_hp), num(c.move_speed)]
 	return "HP %s   Speed %s   Mana %s   Regen %s/s" % [
 		num(c.max_hp), num(c.move_speed), num(c.max_mana),
 		num(c.mana_regen)]

@@ -59,6 +59,11 @@ func _on_relic_flashed(slot: int) -> void:
 	_relic_flash[slot] = FLASH_TIME
 
 
+## Whether the MP bar (and its no-mana flash) is shown for `character`.
+static func shows_mana(character: CharacterData) -> bool:
+	return character == null or character.uses_mana
+
+
 func _on_hit_taken(_amount: float) -> void:
 	_hurt_pulse = HURT_PULSE_TIME
 
@@ -68,7 +73,7 @@ func _on_cast_failed(slot: StringName, reason: StringName) -> void:
 		return
 	_flash[slot] = FLASH_TIME
 	Audio.play(&"no_mana")
-	if reason == &"mana":
+	if reason == &"mana" and shows_mana(player.character):
 		_mana_flash = FLASH_TIME
 
 
@@ -93,13 +98,15 @@ func _draw() -> void:
 		_draw_hurt_pulse()
 	var font := ThemeDB.fallback_font
 	if run_manager == null:
-		_draw_bar(Vector2(6, 6), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
-			_mana_flash > 0.0)
+		if shows_mana(player.character):
+			_draw_bar(Vector2(6, 6), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
+				_mana_flash > 0.0)
 		_draw_icons(font)
 		return
 	_draw_bar(Vector2(6, 6), player.health.current, player.health.max_health, Color("d84040"), "HP", font)
-	_draw_bar(Vector2(6, 17), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
-		_mana_flash > 0.0)
+	if shows_mana(player.character):
+		_draw_bar(Vector2(6, 17), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
+			_mana_flash > 0.0)
 
 	if player.trait_active():
 		_text(font, Vector2(28, 36), "FOCUS", 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
