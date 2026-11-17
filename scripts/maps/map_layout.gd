@@ -13,9 +13,11 @@ const WALL_CLEARING := 24.0  # walls stay this far outside the start square
 const MARGIN := 56.0  # wall to rock band, and wall to wall in SCATTER (CaveWall.MARGIN)
 const GAP_MIN := 40.0  # the least gap between two obstacles in any style
 const LANE_GAP := 64.0  # the least gap between two segments of one lane
-const MAX_OBSTACLES := 16
-const WALL_TRIES := 1500
+const REF_SIZE := Vector2(1600.0, 896.0)  # the room every count, try budget and rule below was tuned for
+const MAX_OBSTACLES := 16  # at REF_SIZE; the room's budget is this times area_scale
+const WALL_TRIES := 1500  # at REF_SIZE; the try budgets scale with area_scale too
 const PILLAR_TRIES := 1500
+const MAX_TORCHES := 40  # every torch is a glow drawn additively: keep the count sane in a big room
 const PILLAR_RADIUS := 6.0
 ## A pillar's collider centre is this far from its base position (prop.gd).
 const PILLAR_OFFSET := Vector2(0.0, -6.0)
@@ -59,18 +61,41 @@ static func generate(theme: MapTheme, map_seed: int, size: Vector2) -> MapLayout
 		for length: float in WallScript.LENGTHS:
 			lengths.append(length)
 	var anchors: Array[Vector2] = []
+	var k := area_scale(size)
+	var walls := roundi(theme.wall_count * k)
 	match theme.style:
 		MapTheme.Style.LANES:
-			_lane_walls(theme, rng, size, start, lengths, data.walls)
+			_lane_walls(theme, rng, size, start, lengths, data.walls, walls)
 		MapTheme.Style.CLUSTERS:
-			_cluster_walls(theme, rng, size, start, lengths, data.walls, anchors)
+			_cluster_walls(theme, rng, size, start, lengths, data.walls, anchors, walls)
 		_:
-			_scatter_walls(theme, rng, size, start, lengths, data.walls, theme.wall_count, -1)
-	_place_pillars(theme, rng, size, start, data, anchors)
-	_place_torches(theme, rng, size, data.torches)
-	_place_decor(theme, rng, size, start, data)
+			_scatter_walls(theme, rng, size, start, lengths, data.walls, walls, -1)
+	_place_pillars(theme, rng, size, start, data, anchors, roundi(theme.pillar_count * k))
+	_place_torches(rng, size, data.torches, torch_total(theme.torch_count, size))
+	_place_decor(theme, rng, size, start, data, roundi(theme.decor_count * k))
 	_place_props(theme, map_seed, size, start, data)
 	return data
+
+
+## How many times the area of the reference room (1600x896) `size` is: 1.0 there, so every layout of that room is
+## unchanged. Wall, pillar, decor and prop counts and the try budgets are multiplied by it.
+static func area_scale(size: Vector2) -> float:
+	return (size.x * size.y) / (REF_SIZE.x * REF_SIZE.y)
+
+
+## How many times the perimeter of the reference room `size` has (torches sit on the rock band).
+static func perimeter_scale(size: Vector2) -> float:
+	return (size.x + size.y) / (REF_SIZE.x + REF_SIZE.y)
+
+
+## The torches of a room of `size` for a theme's `base` count: by perimeter, at most MAX_TORCHES (never below `base`).
+static func torch_total(base: int, size: Vector2) -> int:
+	return maxi(base, mini(roundi(base * perimeter_scale(size)), MAX_TORCHES))
+
+
+## A try budget `base` (tuned for the reference room) for a room of `size`.
+static func tries_for(base: int, size: Vector2) -> int:
+	return roundi(base * area_scale(size))
 
 
 ## The free square around the arena centre.
@@ -82,11 +107,12 @@ static func start_rect(size: Vector2) -> Rect2:
 ## Today's arena: CaveWall.layout, the v0.5 pillar loop (here since MapBuilder replaced main.gd's copy), CaveDecor.layout
 ## and the hand-placed torches.
 static func _legacy(theme: MapTheme, size: Vector2, start: Rect2, data: MapLayoutData) -> void:
-	data.walls = WallScript.layout(size, BAND, [start])
+	var k := area_scale(size)
+	data.walls = WallScript.layout(size, BAND, [start], roundi(WallScript.COUNT * k))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = LEGACY_PILLAR_SEED
 	var centre := size / 2.0
-	for i in theme.pillar_count:
+	for i in roundi(theme.pillar_count * k):
 		var pos := Vector2(
 			rng.randf_range(LEGACY_PILLAR_MARGIN, size.x - LEGACY_PILLAR_MARGIN),
 			rng.randf_range(LEGACY_PILLAR_MARGIN, size.y - LEGACY_PILLAR_MARGIN))
@@ -101,13 +127,18 @@ static func _legacy(theme: MapTheme, size: Vector2, start: Rect2, data: MapLayou
 		data.pillars.append(pos)
 	var reserved: Array[Rect2] = [start]
 	reserved.append_array(data.walls)
-	data.decor = DecorScript.layout(size, BAND, reserved, theme.decor_count)
-	for x in [200.0, 600.0, 1000.0, 1400.0]:
-		data.torches.append(Vector2(x, 9.0))
-		data.torches.append(Vector2(x + 100.0, size.y - BAND + 1.0))
-	for y in [220.0, 670.0]:
-		data.torches.append(Vector2(BAND - 3.0, y))
-		data.torches.append(Vector2(size.x - BAND + 3.0, y))
+	data.decor = DecorScript.layout(size, BAND, reserved, roundi(theme.decor_count * k))
+	if size == REF_SIZE:
+		for x in [200.0, 600.0, 1000.0, 1400.0]:
+			data.torches.append(Vector2(x, 9.0))
+			data.torches.append(Vector2(x + 100.0, size.y - BAND + 1.0))
+		for y in [220.0, 670.0]:
+			data.torches.append(Vector2(BAND - 3.0, y))
+			data.torches.append(Vector2(size.x - BAND + 3.0, y))
+	else:  # another room: the same even spacing as the other maps (a seed of its own, the layout has none)
+		var torch_rng := RandomNumberGenerator.new()
+		torch_rng.seed = LEGACY_PILLAR_SEED
+		_place_torches(torch_rng, size, data.torches, torch_total(theme.torch_count, size))
 
 
 # --- Walls ---------------------------------------------------------------------------------------------------------
@@ -136,7 +167,8 @@ static func _scatter_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 	var edge := BAND + MARGIN
 	var target := walls.size() + count
 	var tries := 0
-	while walls.size() < target and tries < WALL_TRIES:
+	var max_tries := tries_for(WALL_TRIES, size)
+	while walls.size() < target and tries < max_tries:
 		tries += 1
 		var length := _pick_length(rng, lengths)
 		var horizontal := rng.randf() < theme.horizontal_bias if force_horizontal < 0 else force_horizontal == 1
@@ -154,14 +186,15 @@ static func _scatter_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 ## LANES: lines across the arena with broken rows of walls on them (gaps of at least LANE_GAP), and the other
 ## orientation's share as scattered cross pieces.
 static func _lane_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
-		lengths: Array[float], walls: Array[Rect2]) -> void:
+		lengths: Array[float], walls: Array[Rect2], wall_count: int) -> void:
 	var edge := BAND + MARGIN
 	var horizontal := theme.horizontal_bias >= 0.5
 	var share := theme.horizontal_bias if horizontal else 1.0 - theme.horizontal_bias
-	var on_lanes := clampi(roundi(theme.wall_count * share), 0, theme.wall_count)
-	var lane_count := 3 if theme.wall_count <= 6 else 4
+	var on_lanes := clampi(roundi(wall_count * share), 0, wall_count)
 	# A lane is the coordinate across the walls' direction: y for left-right walls, x for up-down ones.
 	var across_size := size.y if horizontal else size.x
+	# 3 or 4 lanes in the reference room (by the theme's own count), more in a room that is wider across.
+	var lane_count := roundi((3 if theme.wall_count <= 6 else 4) * across_size / (REF_SIZE.y if horizontal else REF_SIZE.x))
 	var along_size := size.x if horizontal else size.y
 	var lo := edge
 	var hi := across_size - edge - WallScript.THICKNESS
@@ -183,15 +216,16 @@ static func _lane_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Vecto
 			if wall_ok(rect, walls, start, size, LANE_GAP):
 				walls.append(rect)
 				break
-	_scatter_walls(theme, rng, size, start, lengths, walls, theme.wall_count - on_lanes, 0 if horizontal else 1)
+	_scatter_walls(theme, rng, size, start, lengths, walls, wall_count - on_lanes, 0 if horizontal else 1)
 
 
 ## CLUSTERS: anchors at least CLUSTER_APART apart, two walls at each (parallel or an L), 40 to 56 px between them.
 static func _cluster_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
-		lengths: Array[float], walls: Array[Rect2], anchors: Array[Vector2]) -> void:
+		lengths: Array[float], walls: Array[Rect2], anchors: Array[Vector2], wall_count: int) -> void:
 	var edge := BAND + MARGIN
 	var tries := 0
-	while walls.size() < theme.wall_count and tries < WALL_TRIES:
+	var max_tries := tries_for(WALL_TRIES, size)
+	while walls.size() < wall_count and tries < max_tries:
 		tries += 1
 		var anchor := Vector2(rng.randf_range(edge + 40.0, size.x - edge - 40.0),
 			rng.randf_range(edge + 40.0, size.y - edge - 40.0)).round()
@@ -201,7 +235,7 @@ static func _cluster_walls(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 				near = true
 		if near:
 			continue
-		var pair := _cluster_pair(theme, rng, anchor, lengths, mini(2, theme.wall_count - walls.size()))
+		var pair := _cluster_pair(theme, rng, anchor, lengths, mini(2, wall_count - walls.size()))
 		var ok := true
 		for rect in pair:
 			if not wall_ok(rect, walls, start, size, MARGIN):
@@ -271,11 +305,11 @@ static func pillar_ok(c: Vector2, walls: Array[Rect2], centres: Array[Vector2], 
 
 
 static func _place_pillars(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
-		data: MapLayoutData, anchors: Array[Vector2]) -> void:
+		data: MapLayoutData, anchors: Array[Vector2], pillar_count: int) -> void:
 	var centres: Array[Vector2] = []
 	var edge := BAND + PILLAR_EDGE
-	var near_anchors := (theme.pillar_count + 1) / 2 if not anchors.is_empty() else 0
-	for i in theme.pillar_count:
+	var near_anchors := (pillar_count + 1) / 2 if not anchors.is_empty() else 0
+	for i in pillar_count:
 		var placed := false
 		if i < near_anchors:  # CLUSTERS: first the pillars next to an island
 			var anchor := anchors[i % anchors.size()]
@@ -286,7 +320,7 @@ static func _place_pillars(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 					placed = true
 					break
 		var tries := 0
-		while not placed and tries < PILLAR_TRIES / maxi(theme.pillar_count, 1):
+		while not placed and tries < tries_for(PILLAR_TRIES, size) / maxi(pillar_count, 1):
 			tries += 1
 			var c := Vector2(rng.randf_range(edge, size.x - edge), rng.randf_range(edge, size.y - edge)).round()
 			if pillar_ok(c, data.walls, centres, start, size):
@@ -298,20 +332,20 @@ static func _place_pillars(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 
 # --- Torches -------------------------------------------------------------------------------------------------------
 
-## `torch_count` torches spread over the four sides by length, evenly spaced with a little jitter, never within
+## `torch_count` torches (`torch_total`) spread over the four sides by length, evenly spaced with a little jitter, never within
 ## TORCH_CORNER of a corner. Positions sit on the rock band, as the hand-placed ones do.
-static func _place_torches(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, out: Array[Vector2]) -> void:
+static func _place_torches(rng: RandomNumberGenerator, size: Vector2, out: Array[Vector2], torch_count: int) -> void:
 	var lengths := [size.x, size.x, size.y, size.y]
 	var total: float = lengths[0] + lengths[1] + lengths[2] + lengths[3]
 	var counts := [0, 0, 0, 0]
 	var remainders := []
 	var used := 0
 	for s in 4:
-		var exact: float = theme.torch_count * lengths[s] / total
+		var exact: float = torch_count * lengths[s] / total
 		counts[s] = int(exact)
 		used += counts[s]
 		remainders.append(exact - counts[s])
-	while used < theme.torch_count:  # hand out the rest by largest remainder
+	while used < torch_count:  # hand out the rest by largest remainder
 		var best := 0
 		for s in 4:
 			if remainders[s] > remainders[best]:
@@ -336,7 +370,7 @@ static func _place_torches(theme: MapTheme, rng: RandomNumberGenerator, size: Ve
 ## As CaveDecor.layout: about a third along the rock band, the rest across the floor, but the kind comes from the
 ## theme's weights. Off the start square, the walls and the pillars.
 static func _place_decor(theme: MapTheme, rng: RandomNumberGenerator, size: Vector2, start: Rect2,
-		data: MapLayoutData) -> void:
+		data: MapLayoutData, decor_count: int) -> void:
 	var kinds: Array = theme.decor_weights.keys()
 	kinds.sort()
 	var total := 0.0
@@ -347,7 +381,8 @@ static func _place_decor(theme: MapTheme, rng: RandomNumberGenerator, size: Vect
 	var keep_start := start.grow(DECOR_CLEARANCE)
 	var inset := BAND + DECOR_EDGE
 	var tries := 0
-	while data.decor.size() < theme.decor_count and tries < DECOR_TRIES:
+	var max_tries := tries_for(DECOR_TRIES, size)
+	while data.decor.size() < decor_count and tries < max_tries:
 		tries += 1
 		var roll := rng.randf() * total
 		var kind: int = kinds[kinds.size() - 1]
@@ -410,7 +445,8 @@ static func _place_props(theme: MapTheme, map_seed: int, size: Vector2, start: R
 	rng.seed = map_seed ^ PROP_SEED_MIX
 	var inset := BAND + DECOR_EDGE
 	var keep_start := start.grow(PROP_START_GAP)
-	for n in theme.prop_count:
+	var count := roundi(theme.prop_count * area_scale(size))
+	for n in count:
 		var roll := rng.randf() * total
 		var group: StringName = StringName(groups[groups.size() - 1])
 		for g in groups:

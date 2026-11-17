@@ -68,7 +68,7 @@ func _init() -> void:
 	_session.select_stage(_session.available_stages()[0])
 	await _wait_idle()
 	_check(_scene_name() == "Main", "run scene loaded")
-	_check(Arena.world_size == Vector2i(1600, 896), "run uses the default arena size")
+	_check(Arena.world_size == Arena.RUN_SIZE, "run uses the default arena size")
 	_check(not paused, "unpaused in the run")
 	_check(root.get_node("PlayerRegistry").players.size() == 1, "one Player in the run")
 	_check(_has_button(current_scene.get_node("UI/PauseMenu"), "Return to Hub"), "run pause menu has Return to Hub")
@@ -91,7 +91,7 @@ func _init() -> void:
 	_check(_scene_name() == "Select" and _session.current_column == 0, "the next entry opens a fresh select screen")
 	_session.select_stage(_session.available_stages()[1])
 	await _wait_idle()
-	_check(_scene_name() == "Main" and Arena.world_size == Vector2i(1600, 896), "a stage loads the arena at full size")
+	_check(_scene_name() == "Main" and Arena.world_size == Arena.RUN_SIZE, "a stage loads the arena at full size")
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 

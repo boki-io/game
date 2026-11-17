@@ -24,8 +24,8 @@ func _init() -> void:
 	var main: Node = F.start_run(self, &"knight")
 	await _wait(3)
 	var p = F.player()
-	var size := Vector2(1600, 896)
-	_check(Arena.world_size == Vector2i(1600, 896), "the run arena is full size")
+	var size := Vector2(Arena.world_size)
+	_check(Arena.world_size == Arena.RUN_SIZE, "the run arena is full size")
 	_check(main.get_node("Arena").wall_band == 16, "the run has the 16px rock band")
 
 	var walls: Array[Rect2] = main.rock_walls
@@ -35,12 +35,13 @@ func _init() -> void:
 		_check(minf(w.size.x, w.size.y) == 16.0, "wall %s is 16px thick" % w)
 		_check(Rect2(Vector2(16, 16), size - Vector2(32, 32)).encloses(w), "wall %s is inside the rock band" % w)
 		_check(not w.intersects(Rect2(size / 2.0 - Vector2(110, 110), Vector2(220, 220))), "wall %s keeps the start clear" % w)
-	_check(walls.size() == 6, "six walls (%d)" % walls.size())
+	var wanted := roundi(6 * MapLayout.area_scale(size))
+	_check(walls.size() == wanted, "%d walls (%d)" % [wanted, walls.size()])
 	_check(lengths.size() >= 4, "at least 4 different lengths (%d)" % lengths.size())
 	for i in walls.size():
 		for j in range(i + 1, walls.size()):
 			_check(not walls[i].grow(40.0).intersects(walls[j]), "walls %d and %d leave a passage" % [i, j])
-	var again := CaveWall.layout(size, 16.0, [Rect2(size / 2.0 - Vector2(110, 110), Vector2(220, 220))])
+	var again := CaveWall.layout(size, 16.0, [Rect2(size / 2.0 - Vector2(110, 110), Vector2(220, 220))], wanted)
 	_check(again == walls, "the wall layout is seeded")
 
 	# Solid for the Player: walk into the first wall from its south side.
