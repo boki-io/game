@@ -2,6 +2,7 @@ extends SceneTree
 ## Spec 1.1 section 7: the 14 new Archer upgrade files (data only) and the four reused general ones.
 ## Run: godot --headless --path . --script tests/archer_upgrades.gd
 
+const Index := preload("res://tests/upgrade_index.gd")
 const NEW_IDS := [
 	&"arrow_twin", &"arrow_pierce", &"arrow_rapid", &"dashshot_range", &"dashshot_spray", &"dashshot_chain",
 	&"ricochet_count", &"ricochet_bounce", &"ricochet_hits", &"rain_radius", &"rain_zones", &"rain_linger",
@@ -34,7 +35,7 @@ func _check(ok: bool, what: String) -> void:
 func _init() -> void:
 	var seen: Dictionary = {}
 	for id: StringName in NEW_IDS + REUSED_IDS:
-		var data: UpgradeData = load("res://data/upgrades/%s.tres" % id)
+		var data: UpgradeData = load(Index.path_of(id))
 		_check(data != null, "%s loads" % id)
 		if data == null:
 			continue
@@ -64,7 +65,7 @@ func _init() -> void:
 		stats.free()
 
 	# Eagle Eye's second key: the full Steady Aim distance drops 20 px per level.
-	var eagle: UpgradeData = load("res://data/upgrades/archer_eagle.tres")
+	var eagle: UpgradeData = load(Index.path_of("archer_eagle"))
 	var s := Stats.new()
 	for i in eagle.max_level:
 		for key: String in eagle.adds:
@@ -76,7 +77,7 @@ func _init() -> void:
 	s.free()
 
 	# Exact text from the spec for the two general ones.
-	var haste: UpgradeData = load("res://data/upgrades/archer_haste.tres")
+	var haste: UpgradeData = load(Index.path_of("archer_haste"))
 	_check(haste.display_name == "Fast Hands" and haste.description == "Q, E and R cooldowns -8%", "Fast Hands text")
 	_check(eagle.display_name == "Eagle Eye", "Eagle Eye name")
 

@@ -37,8 +37,13 @@ static func spawn_enemy(main: Node, id: String, pos: Vector2, hp_multiplier: flo
 	return e
 
 
+## The path of the upgrade `id` (see tests/upgrade_index.gd).
+static func upgrade_path(id: String) -> String:
+	return load("res://tests/upgrade_index.gd").path_of(id)
+
+
 static func upgrade(p: Player, id: String) -> void:
-	p.upgrades.apply(load("res://data/upgrades/%s.tres" % id))
+	p.upgrades.apply(load(upgrade_path(id)))
 
 
 static func frames(tree: SceneTree, count: int) -> void:
