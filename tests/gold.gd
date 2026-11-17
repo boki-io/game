@@ -60,7 +60,7 @@ func _init() -> void:
 
 	# A mob with no XP drop drops no coin even at 100%.
 	main.spawn_director.apply_stage(always)
-	var no_xp = load("res://data/enemies/grunt.tres").duplicate()
+	var no_xp = load("res://content/enemies/grunt.tres").duplicate()
 	no_xp.xp_drop = 0
 	main.spawn_director._pools[no_xp] = []
 	main.spawn_director.alive_by_type[no_xp.id] += 1

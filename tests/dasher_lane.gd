@@ -18,7 +18,7 @@ func _run(F: GDScript, sidestep: bool) -> float:
 	await F.frames(self, 3)
 	var p = F.player()
 	p.caster.set_physics_process(false)  # no auto-attacks: the Dasher must survive
-	var data = load("res://data/enemies/dasher.tres")
+	var data = load("res://content/enemies/dasher.tres")
 	var start = p.global_position
 	var dasher = F.spawn_enemy(main, "dasher", start + Vector2(-100, 0))
 	await F.seconds(self, data.aim_time + 0.05)
@@ -35,7 +35,7 @@ func _init() -> void:
 	await process_frame
 	await process_frame
 	var F: GDScript = load("res://tests/fixture.gd")
-	var data = load("res://data/enemies/dasher.tres")
+	var data = load("res://content/enemies/dasher.tres")
 	var standing: float = await _run(F, false)
 	_check(is_equal_approx(standing, data.dash_damage), "standing in the lane costs %s (took %s)" % [data.dash_damage, standing])
 	var stepped: float = await _run(F, true)

@@ -7,7 +7,7 @@ const Registry := preload("res://scripts/maps/map_registry.gd")
 const ThemeScript := preload("res://scripts/maps/map_theme.gd")
 const VariantScript := preload("res://scripts/maps/monster_variant.gd")
 const ROOT := "res://content/maps/"
-const ENEMY_DIR := "res://data/enemies/"
+const ENEMY_DIR := "res://content/enemies/"
 const THUMB_SIZE := Vector2i(64, 40)
 const SPRITE_SUFFIXES := ["_sheet.png", "_frames.tres"]
 
@@ -23,7 +23,7 @@ func _check(ok: bool, what: String) -> void:
 			print("FAIL: ", what)
 
 
-## Ids of the enemy types the director can spawn: every EnemyData in data/enemies/ that moves.
+## Ids of the enemy types the director can spawn: every EnemyData in content/enemies/ that moves.
 func _enemy_ids() -> Array:
 	var out: Array = []
 	for file in DirAccess.get_files_at(ENEMY_DIR):

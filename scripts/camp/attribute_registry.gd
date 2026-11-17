@@ -3,14 +3,14 @@ extends RefCounted
 ## All camp attributes, in camp screen order. Paths are listed explicitly so exported builds find them.
 
 const PATHS := [
-	"res://data/attributes/toughness.tres",
-	"res://data/attributes/recovery.tres",
-	"res://data/attributes/might.tres",
-	"res://data/attributes/fury.tres",
-	"res://data/attributes/haste.tres",
-	"res://data/attributes/agility.tres",
-	"res://data/attributes/focus.tres",
-	"res://data/attributes/greed.tres",
+	"res://content/attributes/toughness.tres",
+	"res://content/attributes/recovery.tres",
+	"res://content/attributes/might.tres",
+	"res://content/attributes/fury.tres",
+	"res://content/attributes/haste.tres",
+	"res://content/attributes/agility.tres",
+	"res://content/attributes/focus.tres",
+	"res://content/attributes/greed.tres",
 ]
 
 

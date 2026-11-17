@@ -24,12 +24,12 @@ static func player() -> Player:
 	return PlayerRegistry.players[0]
 
 
-## An active enemy of `id` (data/enemies/<id>.tres) at `pos`. A frozen one stays where it is (it is still hit
+## An active enemy of `id` (content/enemies/<id>.tres) at `pos`. A frozen one stays where it is (it is still hit
 ## by abilities, but never moves, attacks or hits the Player).
 static func spawn_enemy(main: Node, id: String, pos: Vector2, hp_multiplier: float = 1.0,
 		frozen: bool = false) -> Enemy:
 	var e: Enemy = ENEMY_SCENE.instantiate()
-	e.data = load("res://data/enemies/%s.tres" % id)
+	e.data = load("res://content/enemies/%s.tres" % id)
 	main.get_node("World/Enemies").add_child(e)
 	e.activate(pos, hp_multiplier)
 	if frozen:

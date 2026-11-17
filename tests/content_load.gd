@@ -220,7 +220,7 @@ func _check_upgrade_folder(path: String, u: UpgradeData, owners: Array) -> void:
 
 
 func _enemy_path() -> String:
-	for p in ["res://content/enemies/grunt.tres", "res://data/enemies/grunt.tres"]:
+	for p in ["res://content/enemies/grunt.tres", "res://content/enemies/grunt.tres"]:
 		if FileAccess.file_exists(p):
 			return p
 	return ""
