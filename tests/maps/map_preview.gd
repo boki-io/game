@@ -43,7 +43,7 @@ func _init() -> void:
 		await process_frame
 		var layout = Layout.generate(theme, 3 + i, size)
 		var tag := "[%s] " % theme.id
-		_check(preview.get_node("World/Props").get_child_count() == layout.walls.size() + layout.pillars.size(), tag + "wall and pillar count")
+		_check(preview.get_node("World/Props").get_child_count() == layout.walls.size() + layout.pillars.size() + layout.props.size(), tag + "wall, pillar and prop count")
 		_check(preview.get_node("World/Decor").get_child_count() == layout.decor.size(), tag + "decor count")
 		var monsters: Node = preview.get_node("World/Enemies")
 		_check(monsters.get_child_count() == 3, tag + "three monsters")

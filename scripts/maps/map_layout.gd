@@ -33,6 +33,15 @@ const DECOR_TRIES := 4000
 const TORCH_CORNER := 40.0
 const LEGACY_PILLAR_SEED := 1  # the fixed pillar seed of v0.5's main.gd
 const LEGACY_PILLAR_MARGIN := 48.0
+const PROP_SEED_MIX := 0x50524F50  # props use their own generator, so adding them never moves a wall, pillar or decor piece
+const PROP_TRIES := 600  # per prop
+const PROP_NEAR_WALL := 0.4  # chance a prop is placed against a freestanding wall
+const PROP_NEAR_BAND := 0.25  # chance it is placed along the rock band; the rest are scattered
+const PROP_GAP := 28.0  # a blocking prop to another blocking prop, in px
+const PROP_WALL_GAP := 40.0  # a blocking prop to a freestanding wall or a pillar (GAP_MIN)
+const PROP_EDGE := 6.0  # a footprint stays this far inside the rock band (Enemy.ARENA_PADDING)
+const PROP_START_GAP := 24.0  # any prop to the start square
+const PROP_SOFT_SIZE := Vector2(16.0, 8.0)  # the footprint used to place a walk-through prop
 
 
 ## The layout of `theme` for `map_seed` in a room of `size`.
@@ -60,6 +69,7 @@ static func generate(theme: MapTheme, map_seed: int, size: Vector2) -> MapLayout
 	_place_pillars(theme, rng, size, start, data, anchors)
 	_place_torches(theme, rng, size, data.torches)
 	_place_decor(theme, rng, size, start, data)
+	_place_props(theme, map_seed, size, start, data)
 	return data
 
 
@@ -379,3 +389,93 @@ static func _near_band(rng: RandomNumberGenerator, size: Vector2, inset: float) 
 			return Vector2(depth, rng.randf_range(depth + 10.0, size.y - depth))
 		_:
 			return Vector2(size.x - depth, rng.randf_range(depth + 10.0, size.y - depth))
+
+
+# --- Sprite props (test-props) -------------------------------------------------------------------------------------
+
+## `theme.prop_count` props from the catalog, picked by group weight: some against a freestanding wall, some along the
+## rock band, the rest scattered. Off the start square; blocking props keep passable gaps to walls, pillars and each other.
+static func _place_props(theme: MapTheme, map_seed: int, size: Vector2, start: Rect2, data: MapLayoutData) -> void:
+	if theme.prop_count <= 0 or theme.prop_weights.is_empty():
+		return
+	var catalog := PropCatalog.get_shared()
+	var groups: Array = theme.prop_weights.keys()
+	groups.sort()
+	var total := 0.0
+	for g in groups:
+		total += float(theme.prop_weights[g])
+	if total <= 0.0:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = map_seed ^ PROP_SEED_MIX
+	var inset := BAND + DECOR_EDGE
+	var keep_start := start.grow(PROP_START_GAP)
+	for n in theme.prop_count:
+		var roll := rng.randf() * total
+		var group: StringName = StringName(groups[groups.size() - 1])
+		for g in groups:
+			roll -= float(theme.prop_weights[g])
+			if roll < 0.0:
+				group = StringName(g)
+				break
+		var options := catalog.in_group(group)
+		if options.is_empty():
+			continue
+		var prop: PropData = options[rng.randi_range(0, options.size() - 1)]
+		var foot_size := prop.block_size if prop.blocks() else PROP_SOFT_SIZE
+		for attempt in PROP_TRIES:
+			var base := _prop_spot(rng, size, inset, data.walls, foot_size).round()
+			var rect := Rect2(base + Vector2(-foot_size.x / 2.0, -foot_size.y), foot_size)
+			if _prop_ok(prop, base, rect, size, keep_start, data):
+				data.props.append({id = prop.id, pos = base})
+				if prop.blocks():
+					data.prop_rects.append(prop.footprint(base))
+				break
+
+
+## A candidate base position: against a wall, along the rock band, or anywhere.
+static func _prop_spot(rng: RandomNumberGenerator, size: Vector2, inset: float, walls: Array[Rect2],
+		foot: Vector2) -> Vector2:
+	var roll := rng.randf()
+	if roll < PROP_NEAR_WALL and not walls.is_empty():
+		var wall: Rect2 = walls[rng.randi_range(0, walls.size() - 1)]
+		var gap := rng.randf_range(6.0, 14.0)
+		match rng.randi_range(0, 3):
+			0:  # north of the wall: the prop's body rises above its base
+				return Vector2(rng.randf_range(wall.position.x, wall.end.x), wall.position.y - gap)
+			1:  # south: the whole footprint sits below the wall
+				return Vector2(rng.randf_range(wall.position.x, wall.end.x), wall.end.y + gap + foot.y)
+			2:  # west
+				return Vector2(wall.position.x - gap - foot.x / 2.0, rng.randf_range(wall.position.y, wall.end.y + foot.y))
+			_:  # east
+				return Vector2(wall.end.x + gap + foot.x / 2.0, rng.randf_range(wall.position.y, wall.end.y + foot.y))
+	if roll < PROP_NEAR_WALL + PROP_NEAR_BAND:
+		return _near_band(rng, size, inset)
+	return Vector2(rng.randf_range(inset, size.x - inset), rng.randf_range(inset + 12.0, size.y - inset))
+
+
+static func _prop_ok(prop: PropData, base: Vector2, rect: Rect2, size: Vector2, keep_start: Rect2,
+		data: MapLayoutData) -> bool:
+	# Inside the room, with the sprite's body clear of the rock band at the top.
+	var edge := BAND + DECOR_EDGE
+	if base.x < edge or base.x > size.x - edge or base.y > size.y - edge:
+		return false
+	if base.y - minf(prop.anchor.y, 40.0) < BAND:
+		return false
+	var pad := BAND + PROP_EDGE
+	if not Rect2(Vector2(pad, pad), size - Vector2(pad, pad) * 2.0).encloses(rect):
+		return false
+	if rect.intersects(keep_start):
+		return false
+	var solid := prop.blocks()
+	var wall_gap := PROP_WALL_GAP if solid else DECOR_WALL_CLEARANCE
+	for wall in data.walls:
+		if rect.intersects(wall.grow(wall_gap)):
+			return false
+	for pillar in data.pillars:
+		if point_rect_distance(pillar + PILLAR_OFFSET, rect) < PILLAR_RADIUS + (PROP_WALL_GAP if solid else DECOR_WALL_CLEARANCE):
+			return false
+	for other in data.prop_rects:
+		if rect.intersects(other.grow(PROP_GAP if solid else 2.0)):
+			return false
+	return true

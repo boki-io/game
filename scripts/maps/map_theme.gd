@@ -73,6 +73,11 @@ enum AmbienceKind { NONE, DUST, EMBERS, SPORES, FROST, GLINT }
 ## CaveDecor.Kind -> weight (float).
 @export var decor_weights: Dictionary = {}
 
+@export_group("Props")
+## Sprite props from content/props/catalog.tres (test-props): how many, and `group` (String) -> weight.
+@export_range(0, 60) var prop_count := 0
+@export var prop_weights: Dictionary = {}
+
 @export_group("Ambience")
 ## Drifting motes in the air (spec v0.9 section 3). NONE or a count of 0 means none.
 @export var ambience_kind := AmbienceKind.NONE

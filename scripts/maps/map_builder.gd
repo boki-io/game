@@ -62,6 +62,13 @@ static func build(theme: MapTheme, map_seed: int, size: Vector2, targets: Target
 		decor.variant = item.variant
 		decor.position = item.pos
 		targets.decor.add_child(decor)
+	if not layout.props.is_empty():
+		var catalog := PropCatalog.get_shared()
+		for item in layout.props:
+			var prop := MapProp.new()
+			prop.setup(catalog.find(item.id), catalog.sheet)
+			prop.position = item.pos
+			targets.props.add_child(prop)
 	if targets.ambient_parent != null:
 		MapLook.apply_ambient(targets.ambient_parent, theme)
 	if targets.ambience_parent != null:
@@ -70,7 +77,7 @@ static func build(theme: MapTheme, map_seed: int, size: Vector2, targets: Target
 		MapLook.apply_vignette(targets.vignette, theme)
 	if targets.obstacles_parent != null:
 		var obstacles := ObstacleMap.new()
-		obstacles.setup(layout.walls, layout.pillars, size, playable_rect(size, MapLayout.BAND))
+		obstacles.setup(layout.walls + layout.prop_rects, layout.pillars, size, playable_rect(size, MapLayout.BAND))
 		targets.obstacles_parent.add_child(obstacles)
 		targets.obstacles = obstacles
 	return layout

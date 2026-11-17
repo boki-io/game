@@ -41,3 +41,5 @@ horizontal_bias = 0.5
 pillar_count = 6
 decor_count = 100
 decor_weights = {0: 1.5, 1: 2.5, 2: 3.0, 3: 0.5, 4: 0.5, 7: 7.0, 8: 6.0}
+prop_count = 14
+prop_weights = {"rock": 5.0, "grave": 2.0, "storage": 1.0}

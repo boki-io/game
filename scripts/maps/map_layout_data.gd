@@ -10,8 +10,13 @@ var pillars: Array[Vector2] = []
 var decor: Array[Dictionary] = []
 ## Torch positions along the rock band.
 var torches: Array[Vector2] = []
+## Sprite props: {id: StringName, pos: Vector2} (pos is the base).
+var props: Array[Dictionary] = []
+## Footprints of the blocking props (also added to the ObstacleMap; no node is built for them).
+var prop_rects: Array[Rect2] = []
 
 
 ## True when both layouts hold exactly the same things in the same order.
 func equals(other: MapLayoutData) -> bool:
-	return walls == other.walls and pillars == other.pillars and torches == other.torches and decor == other.decor
+	return walls == other.walls and pillars == other.pillars and torches == other.torches and decor == other.decor \
+			and props == other.props
