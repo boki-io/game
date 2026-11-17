@@ -5,7 +5,7 @@ Headless regression scripts. Each one starts the real game scenes, drives them w
 
 ```
 godot --headless --path . --script tests/<name>.gd
-tests/run_all.sh            # imports first, then every test in tests/ and tests/maps/, one line each (120 s limit per test)
+tests/run_all.sh            # imports first, then every test in tests/ and tests/maps/, one line each (180 s limit per test)
 ```
 
 | Script | Checks |
