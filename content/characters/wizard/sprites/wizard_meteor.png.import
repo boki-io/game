@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bc64apyowknww"
-path="res://.godot/imported/wizard_death.png-ed7b7137f158d7fd3e673b1263352ecf.ctex"
+uid="uid://dqng6jid61pp3"
+path="res://.godot/imported/wizard_meteor.png-64649787f50f8ea06808c163f3bf3e8b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/wizard/wizard_death.png"
-dest_files=["res://.godot/imported/wizard_death.png-ed7b7137f158d7fd3e673b1263352ecf.ctex"]
+source_file="res://content/characters/wizard/sprites/wizard_meteor.png"
+dest_files=["res://.godot/imported/wizard_meteor.png-64649787f50f8ea06808c163f3bf3e8b.ctex"]
 
 [params]
 

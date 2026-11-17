@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddgjclkcr4nmo"
-path="res://.godot/imported/wizard_phase.png-69b36986f121451f93b17826688739df.ctex"
+uid="uid://jirv6u8ue8vg"
+path="res://.godot/imported/wizard_lightning.png-2e74986c7c1d26859656f2b5ee095801.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/wizard/wizard_phase.png"
-dest_files=["res://.godot/imported/wizard_phase.png-69b36986f121451f93b17826688739df.ctex"]
+source_file="res://content/characters/wizard/sprites/wizard_lightning.png"
+dest_files=["res://.godot/imported/wizard_lightning.png-2e74986c7c1d26859656f2b5ee095801.ctex"]
 
 [params]
 

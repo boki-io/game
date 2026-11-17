@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://f4anaordsvey"]
 
 [ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" uid="uid://cvnn4vkuqknym" path="res://scripts/abilities/lightning_behavior.gd" id="2"]
+[ext_resource type="Script" uid="uid://cvnn4vkuqknym" path="res://content/characters/wizard/abilities/lightning/behavior.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_s0uoa"]
 [ext_resource type="AudioStream" uid="uid://u4c3dr6gk0ny" path="res://assets/audio/lightning.wav" id="3"]
 

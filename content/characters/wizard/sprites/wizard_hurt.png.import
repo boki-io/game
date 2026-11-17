@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqng6jid61pp3"
-path="res://.godot/imported/wizard_meteor.png-00aade6bdaf21db6549050eaa992c769.ctex"
+uid="uid://bburbeq18ox4a"
+path="res://.godot/imported/wizard_hurt.png-a222e3cccc1cf19a34ea4eae5dad680d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/wizard/wizard_meteor.png"
-dest_files=["res://.godot/imported/wizard_meteor.png-00aade6bdaf21db6549050eaa992c769.ctex"]
+source_file="res://content/characters/wizard/sprites/wizard_hurt.png"
+dest_files=["res://.godot/imported/wizard_hurt.png-a222e3cccc1cf19a34ea4eae5dad680d.ctex"]
 
 [params]
 

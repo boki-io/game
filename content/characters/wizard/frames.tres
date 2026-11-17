@@ -1,14 +1,14 @@
 [gd_resource type="SpriteFrames" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_idle.png" id="t_idle"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_walk.png" id="t_walk"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_attack1.png" id="t_attack1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_attack2.png" id="t_attack2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_lightning.png" id="t_lightning"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_meteor.png" id="t_meteor"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_phase.png" id="t_phase"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_hurt.png" id="t_hurt"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard/wizard_death.png" id="t_death"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_idle.png" id="t_idle"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_walk.png" id="t_walk"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_attack1.png" id="t_attack1"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_attack2.png" id="t_attack2"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_lightning.png" id="t_lightning"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_meteor.png" id="t_meteor"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_phase.png" id="t_phase"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_hurt.png" id="t_hurt"]
+[ext_resource type="Texture2D" path="res://content/characters/wizard/sprites/wizard_death.png" id="t_death"]
 
 [sub_resource type="AtlasTexture" id="a_idle_0"]
 atlas = ExtResource("t_idle")

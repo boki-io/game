@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://5daih28woc7g"]
 
 [ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" uid="uid://dhfrdir6naxsu" path="res://scripts/abilities/phase_behavior.gd" id="2"]
+[ext_resource type="Script" uid="uid://dhfrdir6naxsu" path="res://content/characters/wizard/abilities/phase/behavior.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_y7rcm"]
 [ext_resource type="AudioStream" uid="uid://bqpu576ei5bjn" path="res://assets/audio/phase.wav" id="3"]
 
