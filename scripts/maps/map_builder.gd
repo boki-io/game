@@ -44,7 +44,7 @@ static func build(theme: MapTheme, map_seed: int, size: Vector2, targets: Target
 		targets.ground.setup(theme, GroundScript.DIRT_SEED if theme.legacy_layout else map_seed)
 	if targets.cave != null:
 		targets.cave.wall_band = MapLayout.BAND
-		targets.cave.torches = layout.torches.slice(0, theme.torch_count)
+		targets.cave.torches = layout.torches
 		targets.cave.set_theme(theme)
 	for rect in layout.walls:
 		var wall := CaveWall.new()

@@ -36,7 +36,7 @@ func _init() -> void:
 	await process_frame
 	var themes: Array = Registry.all()
 	_check(preview.map != null and preview.map.id == themes[0].id, "an empty map shows the first map")
-	var size := Vector2(1600, 896)
+	var size := Vector2(Arena.world_size)
 	for i in themes.size():
 		var theme = themes[i]
 		preview.show_map(theme, 3 + i)

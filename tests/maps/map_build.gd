@@ -14,7 +14,7 @@ const PropScript := preload("res://scripts/systems/prop.gd")
 const DecorScript := preload("res://scripts/cave/cave_decor.gd")
 const StageScript := preload("res://scripts/stages/stage_data.gd")
 
-const SIZE := Vector2(1600, 896)
+const SIZE := Vector2(Arena.RUN_SIZE)  # the run arena, which main.tscn builds
 
 var _failed := false
 
@@ -91,7 +91,7 @@ func _init() -> void:
 		_check(main.rock_walls == expected.walls, tag + "main.rock_walls is the layout's walls")
 		_check(main.prop_positions == expected.pillars, tag + "main.prop_positions is the layout's pillars")
 		var cave = main.get_node("Cave")
-		_check(cave.torches.size() == map_theme.torch_count and cave.torches == expected.torches.slice(0, map_theme.torch_count), tag + "torches equal the layout, trimmed to torch_count")
+		_check(cave.torches.size() == Layout.torch_total(map_theme.torch_count, SIZE) and cave.torches == expected.torches, tag + "torches equal the layout")
 		var obstacles: ObstacleMap = main.spawn_director.obstacles
 		_check(obstacles != null and obstacles.get_parent() == main, tag + "the director has an ObstacleMap")
 
