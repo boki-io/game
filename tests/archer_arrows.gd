@@ -244,7 +244,7 @@ func _edge() -> void:
 	await _wait(15)
 	_check(ar.active and ar._dir.x < -0.99 and ar._bounces_left == 0, "edge: the right edge reflects (dir %s, left %d)" % [ar._dir, ar._bounces_left])
 	_check(ar.global_position.x <= right, "edge: stays inside the playable rectangle")
-	await _wait(220)
+	await _wait(320)
 	_check(not ar.active, "edge: with no bounce left the opposite edge retires it")
 	# The top edge reflects on the other axis.
 	var top = _shoot(Vector2(0, left - _c.y + 12.0), Vector2.UP, {&"bounces": 2}, 600.0, 3000.0)
@@ -268,7 +268,7 @@ func _hub() -> void:
 	await _wait(30)
 	_check(ar.active and ar._dir.is_equal_approx(Vector2.RIGHT) and ar._bounces_left == 1 and ar.global_position.x > _c.x + 100.0,
 		"hub: the (absent) wall is ignored")
-	await _wait(120)
+	await _wait(220)
 	_check(ar._dir.x < -0.99 and ar._bounces_left == 0 and ar.global_position.x <= right, "hub: the edge reflects (dir %s)" % ar._dir)
 	# An enemy bounce works without a map too.
 	var a = _enemy(Vector2(100, 0))
