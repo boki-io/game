@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="PropSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/prop_set.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/maps/prop_set_member.gd" id="2"]
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("2")
+props = Array[StringName]([&"grave_round", &"grave_carved", &"grave_small", &"grave_cross"])
+offset = Vector2(-66, -44)
+step = Vector2(44, 0)
+count_min = 4
+count_max = 4
+spread = 0.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("2")
+props = Array[StringName]([&"grave_round", &"grave_carved", &"grave_small", &"grave_cross"])
+offset = Vector2(-66, 4)
+step = Vector2(44, 0)
+count_min = 3
+count_max = 4
+spread = 0.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m2"]
+script = ExtResource("2")
+props = Array[StringName]([&"sarcophagus"])
+offset = Vector2(118, -20)
+step = Vector2(0, 0)
+count_min = 1
+count_max = 1
+spread = 0.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m3"]
+script = ExtResource("2")
+props = Array[StringName]([&"coffin_upright"])
+offset = Vector2(-118, -18)
+step = Vector2(0, 0)
+count_min = 1
+count_max = 1
+spread = 0.0
+chance = 0.8
+
+[sub_resource type="Resource" id="m4"]
+script = ExtResource("2")
+props = Array[StringName]([&"pebble_1", &"pebble_2", &"pebble_3", &"pebble_4", &"rock_small", &"rock_medium", &"shard_1", &"shard_2", &"rubble"])
+offset = Vector2(0, 0)
+step = Vector2(0, 0)
+count_min = 2
+count_max = 4
+spread = 95.0
+chance = 1.0
+
+[resource]
+script = ExtResource("1")
+id = &"graveyard_medium"
+display_name = "Medium graveyard"
+place = 0
+mirror = true
+members = Array[ExtResource("2")]([SubResource("m0"), SubResource("m1"), SubResource("m2"), SubResource("m3"), SubResource("m4")])

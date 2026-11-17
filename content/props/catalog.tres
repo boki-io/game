@@ -3,6 +3,16 @@
 [ext_resource type="Script" path="res://scripts/maps/prop_catalog.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/maps/prop_data.gd" id="2"]
 [ext_resource type="Texture2D" path="res://assets/tilesets/props.png" id="3"]
+[ext_resource type="Script" path="res://scripts/maps/prop_set.gd" id="4"]
+[ext_resource type="Resource" path="res://content/props/sets/graveyard_small.tres" id="set_0"]
+[ext_resource type="Resource" path="res://content/props/sets/graveyard_medium.tres" id="set_1"]
+[ext_resource type="Resource" path="res://content/props/sets/graveyard_large.tres" id="set_2"]
+[ext_resource type="Resource" path="res://content/props/sets/camp_small.tres" id="set_3"]
+[ext_resource type="Resource" path="res://content/props/sets/camp_supply.tres" id="set_4"]
+[ext_resource type="Resource" path="res://content/props/sets/camp_cache.tres" id="set_5"]
+[ext_resource type="Resource" path="res://content/props/sets/nook_crates.tres" id="set_6"]
+[ext_resource type="Resource" path="res://content/props/sets/nook_barrels.tres" id="set_7"]
+[ext_resource type="Resource" path="res://content/props/sets/nook_pots.tres" id="set_8"]
 
 [sub_resource type="Resource" id="prop_0"]
 script = ExtResource("2")
@@ -280,3 +290,4 @@ block_size = Vector2(0, 0)
 script = ExtResource("1")
 sheet = ExtResource("3")
 props = Array[ExtResource("2")]([SubResource("prop_0"), SubResource("prop_1"), SubResource("prop_2"), SubResource("prop_3"), SubResource("prop_4"), SubResource("prop_5"), SubResource("prop_6"), SubResource("prop_7"), SubResource("prop_8"), SubResource("prop_9"), SubResource("prop_10"), SubResource("prop_11"), SubResource("prop_12"), SubResource("prop_13"), SubResource("prop_14"), SubResource("prop_15"), SubResource("prop_16"), SubResource("prop_17"), SubResource("prop_18"), SubResource("prop_19"), SubResource("prop_20"), SubResource("prop_21"), SubResource("prop_22"), SubResource("prop_23"), SubResource("prop_24"), SubResource("prop_25"), SubResource("prop_26"), SubResource("prop_27"), SubResource("prop_28"), SubResource("prop_29"), SubResource("prop_30"), SubResource("prop_31"), SubResource("prop_32"), SubResource("prop_33")])
+sets = Array[ExtResource("4")]([ExtResource("set_0"), ExtResource("set_1"), ExtResource("set_2"), ExtResource("set_3"), ExtResource("set_4"), ExtResource("set_5"), ExtResource("set_6"), ExtResource("set_7"), ExtResource("set_8")])

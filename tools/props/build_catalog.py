@@ -52,6 +52,84 @@ NAMES = {
 }
 
 
+SETS_DIR = "content/props/sets"
+GRAVES = ["grave_round", "grave_carved", "grave_small", "grave_cross"]
+POTS = ["vase_tall", "pot_wide", "vase_round"]
+CRATES = ["crate_large", "crate_small"]
+ROCKS = ["pebble_1", "pebble_2", "pebble_3", "pebble_4", "rock_small", "rock_medium", "shard_1", "shard_2", "rubble"]
+
+
+def M(props=None, group="", off=(0, 0), step=(0, 0), n=(1, 1), spread=0.0, chance=1.0):
+    """One PropSetMember: `props` is a list of prop ids to pick from (or `group`), `n` the (min, max) copies."""
+    return dict(props=props or [], group=group, off=off, step=step, n=n, spread=spread, chance=chance)
+
+
+# id -> (display name, place, mirror, members). place: OPEN, BAND or WALL (a wall nook: x runs along the wall, y away from it).
+SETS = {
+    "graveyard_small": ("Small graveyard", "OPEN", True, [
+        M(GRAVES, off=(-40, 0), step=(40, 0), n=(3, 3)),
+        M(["grave_cross"], off=(0, -38)),
+        M(ROCKS, off=(0, 6), n=(1, 2), spread=60, chance=0.8),
+    ]),
+    "graveyard_medium": ("Medium graveyard", "OPEN", True, [
+        M(GRAVES, off=(-66, -44), step=(44, 0), n=(4, 4)),
+        M(GRAVES, off=(-66, 4), step=(44, 0), n=(3, 4)),
+        M(["sarcophagus"], off=(118, -20)),
+        M(["coffin_upright"], off=(-118, -18), chance=0.8),
+        M(ROCKS, off=(0, 0), n=(2, 4), spread=95),
+    ]),
+    "graveyard_large": ("Large graveyard", "OPEN", True, [
+        M(GRAVES, off=(-92, -84), step=(46, 0), n=(5, 5)),
+        M(GRAVES, off=(-92, -40), step=(46, 0), n=(4, 5)),
+        M(GRAVES, off=(-92, 4), step=(46, 0), n=(4, 5)),
+        M(["slab_huge"], off=(-64, -128)),
+        M(["slab_tall"], off=(64, -128)),
+        M(["statue"], off=(0, -146), chance=0.6),
+        M(["sarcophagus"], off=(150, -40)),
+        M(["sarcophagus"], off=(-150, -40), chance=0.7),
+        M(["coffin_upright"], off=(150, 24), chance=0.8),
+        M(["coffin_upright"], off=(-150, 24), chance=0.8),
+        M(ROCKS, off=(0, -30), n=(3, 6), spread=140),
+    ]),
+    "camp_small": ("Small camp", "OPEN", True, [
+        M(["crate_large"], off=(0, 0)),
+        M(["crate_small"], off=(34, 8)),
+        M(["barrel"], off=(-32, 6)),
+        M(POTS, off=(12, 30), chance=0.8),
+        M(ROCKS, n=(0, 2), spread=55, chance=0.6),
+    ]),
+    "camp_supply": ("Supply camp", "OPEN", True, [
+        M(CRATES, off=(-50, 0), step=(36, 2), n=(3, 3)),
+        M(["barrel"], off=(-42, 36), step=(30, 0), n=(1, 3)),
+        M(POTS, off=(0, 64), n=(1, 3), spread=45),
+        M(ROCKS, n=(1, 2), spread=80, chance=0.7),
+    ]),
+    "camp_cache": ("Barrel cache", "OPEN", True, [
+        M(["vase_tall"], off=(0, 0)),
+        M(["barrel"], off=(-30, 8)),
+        M(["barrel"], off=(30, 8), chance=0.85),
+        M(["barrel"], off=(0, -24), chance=0.85),
+        M(["crate_small"], off=(2, 38), chance=0.6),
+        M(ROCKS, n=(1, 2), spread=60, chance=0.6),
+    ]),
+    "nook_crates": ("Crates along a wall", "WALL", False, [
+        M(CRATES, off=(10, 0), step=(38, 0), n=(3, 4)),
+        M(["crate_small"], off=(30, 24), chance=0.6),
+        M(POTS, off=(0, 10), n=(0, 1), spread=0, chance=0.4),
+    ]),
+    "nook_barrels": ("Barrels along a wall", "WALL", False, [
+        M(["barrel"], off=(10, 0), step=(30, 0), n=(2, 3)),
+        M(["crate_large"], off=(100, 0), chance=0.7),
+        M(POTS, off=(40, 26), chance=0.6),
+    ]),
+    "nook_pots": ("Pots along a wall", "WALL", False, [
+        M(POTS, off=(8, 0), step=(26, 0), n=(3, 5)),
+        M(["crate_small"], off=(150, 0), chance=0.5),
+        M(ROCKS, off=(60, 30), n=(0, 2), spread=40, chance=0.7),
+    ]),
+}
+
+
 def load(path):
     d = open(path, "rb").read()
     pos, idat = 8, b""
@@ -119,7 +197,11 @@ def main():
     lines = ['[gd_resource type="Resource" script_class="PropCatalog" format=3]', "",
              '[ext_resource type="Script" path="res://scripts/maps/prop_catalog.gd" id="1"]',
              '[ext_resource type="Script" path="res://scripts/maps/prop_data.gd" id="2"]',
-             '[ext_resource type="Texture2D" path="res://assets/tilesets/props.png" id="3"]', ""]
+             '[ext_resource type="Texture2D" path="res://assets/tilesets/props.png" id="3"]',
+             '[ext_resource type="Script" path="res://scripts/maps/prop_set.gd" id="4"]']
+    for k, sid in enumerate(SETS):
+        lines.append(f'[ext_resource type="Resource" path="res://{SETS_DIR}/{sid}.tres" id="set_{k}"]')
+    lines.append("")
     order = sorted(NAMES, key=lambda k: (NAMES[k][1], k[1], k[0]))
     for i, key in enumerate(order):
         pid, group, bw, bd = NAMES[key]
@@ -129,11 +211,39 @@ def main():
                   f"anchor = Vector2({ax}, {ay})", f"block_size = Vector2({bw}, {bd})", ""]
     refs = ", ".join(f'SubResource("prop_{i}")' for i in range(len(order)))
     lines += ["[resource]", 'script = ExtResource("1")', 'sheet = ExtResource("3")',
-              f'props = Array[ExtResource("2")]([{refs}])', ""]
+              f'props = Array[ExtResource("2")]([{refs}])',
+              'sets = Array[ExtResource("4")]([' + ", ".join(f'ExtResource("set_{k}")' for k in range(len(SETS))) + "])", ""]
     open(OUT, "w").write("\n".join(lines))
+    write_sets({NAMES[k][0] for k in NAMES})
     print(f"wrote {OUT}: {len(order)} props")
     for key in order:
         print(NAMES[key][0], comps[key])
+
+
+def write_sets(known):
+    import os
+    os.makedirs(SETS_DIR, exist_ok=True)
+    for sid, (title, place, mirror, members) in SETS.items():
+        out = ['[gd_resource type="Resource" script_class="PropSet" format=3]', "",
+               '[ext_resource type="Script" path="res://scripts/maps/prop_set.gd" id="1"]',
+               '[ext_resource type="Script" path="res://scripts/maps/prop_set_member.gd" id="2"]', ""]
+        for i, m in enumerate(members):
+            for pid in m["props"]:
+                assert pid in known, f"{sid}: unknown prop {pid}"
+            lo, hi = m["n"]
+            names = ", ".join(f'&"{x}"' for x in m["props"])
+            out += [f'[sub_resource type="Resource" id="m{i}"]', 'script = ExtResource("2")',
+                    f"props = Array[StringName]([{names}])"]
+            if m["group"]:
+                out.append(f'group = &"{m["group"]}"')
+            out += [f'offset = Vector2({m["off"][0]}, {m["off"][1]})', f'step = Vector2({m["step"][0]}, {m["step"][1]})',
+                    f"count_min = {lo}", f"count_max = {hi}", f'spread = {float(m["spread"])}', f'chance = {float(m["chance"])}', ""]
+        refs = ", ".join(f'SubResource("m{i}")' for i in range(len(members)))
+        out += ["[resource]", 'script = ExtResource("1")', f'id = &"{sid}"', f'display_name = "{title}"',
+                f"place = {['OPEN', 'BAND', 'WALL'].index(place)}", f'mirror = {"true" if mirror else "false"}',
+                f'members = Array[ExtResource("2")]([{refs}])', ""]
+        open(f"{SETS_DIR}/{sid}.tres", "w").write("\n".join(out))
+    print(f"wrote {len(SETS)} sets to {SETS_DIR}")
 
 
 main()

@@ -393,23 +393,42 @@ static func _near_band(rng: RandomNumberGenerator, size: Vector2, inset: float) 
 
 # --- Sprite props (test-props) -------------------------------------------------------------------------------------
 
-## `theme.prop_count` props from the catalog, picked by group weight: some against a freestanding wall, some along the
-## rock band, the rest scattered. Off the start square; blocking props keep passable gaps to walls, pillars and each other.
+const SET_TRIES := 80  # per set
+
+## Props from the catalog: first the theme's sets (a graveyard, a camp, a nook along a wall), each placed as one unit,
+## then `theme.prop_count` single props by group weight: some against a freestanding wall, some along the rock band,
+## the rest scattered. Off the start square; blocking props keep passable gaps to walls, pillars and other props (the
+## members of one set may stand close). Uses its own generator, so adding props never moves a wall or a pillar.
 static func _place_props(theme: MapTheme, map_seed: int, size: Vector2, start: Rect2, data: MapLayoutData) -> void:
-	if theme.prop_count <= 0 or theme.prop_weights.is_empty():
+	if theme.prop_count <= 0 and theme.prop_sets.is_empty():
 		return
 	var catalog := PropCatalog.get_shared()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = map_seed ^ PROP_SEED_MIX
+	var keep_start := start.grow(PROP_START_GAP)
+	var instance := 0
+	var set_ids: Array = theme.prop_sets.keys()
+	set_ids.sort()
+	for sid in set_ids:
+		var set := catalog.find_set(StringName(sid))
+		if set == null:
+			continue
+		for n in int(theme.prop_sets[sid]):
+			if _place_set(set, instance, catalog, rng, size, keep_start, data):
+				instance += 1
+	_place_singles(theme, catalog, rng, size, keep_start, data)
+
+
+static func _place_singles(theme: MapTheme, catalog: PropCatalog, rng: RandomNumberGenerator, size: Vector2,
+		keep_start: Rect2, data: MapLayoutData) -> void:
 	var groups: Array = theme.prop_weights.keys()
 	groups.sort()
 	var total := 0.0
 	for g in groups:
 		total += float(theme.prop_weights[g])
-	if total <= 0.0:
+	if theme.prop_count <= 0 or total <= 0.0:
 		return
-	var rng := RandomNumberGenerator.new()
-	rng.seed = map_seed ^ PROP_SEED_MIX
 	var inset := BAND + DECOR_EDGE
-	var keep_start := start.grow(PROP_START_GAP)
 	for n in theme.prop_count:
 		var roll := rng.randf() * total
 		var group: StringName = StringName(groups[groups.size() - 1])
@@ -422,18 +441,123 @@ static func _place_props(theme: MapTheme, map_seed: int, size: Vector2, start: R
 		if options.is_empty():
 			continue
 		var prop: PropData = options[rng.randi_range(0, options.size() - 1)]
-		var foot_size := prop.block_size if prop.blocks() else PROP_SOFT_SIZE
+		var foot_size := _foot(prop)
 		for attempt in PROP_TRIES:
 			var base := _prop_spot(rng, size, inset, data.walls, foot_size).round()
 			var rect := Rect2(base + Vector2(-foot_size.x / 2.0, -foot_size.y), foot_size)
-			if _prop_ok(prop, base, rect, size, keep_start, data):
-				data.props.append({id = prop.id, pos = base})
-				if prop.blocks():
-					data.prop_rects.append(prop.footprint(base))
+			if _prop_ok(prop, base, rect, size, keep_start, data, -1):
+				_add_prop(data, prop, base, &"", -1)
 				break
 
 
-## A candidate base position: against a wall, along the rock band, or anywhere.
+static func _foot(prop: PropData) -> Vector2:
+	return prop.block_size if prop.blocks() else PROP_SOFT_SIZE
+
+
+static func _add_prop(data: MapLayoutData, prop: PropData, base: Vector2, set_id: StringName, instance: int) -> void:
+	data.props.append({id = prop.id, pos = base, set = set_id, inst = instance})
+	if prop.blocks():
+		data.prop_rects.append(prop.footprint(base))
+
+
+## Resolves the set's lines into {prop, rel} entries in set space: which props, how many copies, where.
+static func _resolve_set(set: PropSet, catalog: PropCatalog, rng: RandomNumberGenerator) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for m in set.members:
+		if m.chance < 1.0 and rng.randf() > m.chance:
+			continue
+		var pool: Array[PropData] = []
+		if m.props.is_empty():
+			pool = catalog.in_group(m.group)
+		else:
+			for pid in m.props:
+				var found := catalog.find(pid)
+				if found != null:
+					pool.append(found)
+		if pool.is_empty():
+			continue
+		for i in rng.randi_range(m.count_min, m.count_max):
+			var rel := m.offset + m.step * i
+			if m.spread > 0.0:
+				rel += Vector2.from_angle(rng.randf() * TAU) * m.spread * sqrt(rng.randf())
+			out.append({prop = pool[rng.randi_range(0, pool.size() - 1)], rel = rel.round()})
+	return out
+
+
+## Places one copy of `set` as a unit: every member must fit, or nothing is added. Returns whether it was placed.
+static func _place_set(set: PropSet, instance: int, catalog: PropCatalog, rng: RandomNumberGenerator, size: Vector2,
+		keep_start: Rect2, data: MapLayoutData) -> bool:
+	var inset := BAND + DECOR_EDGE
+	for attempt in SET_TRIES:
+		var items := _resolve_set(set, catalog, rng)
+		if items.is_empty():
+			return false
+		if set.mirror and set.place != PropSet.Place.WALL and rng.randf() < 0.5:
+			for item in items:
+				item.rel = Vector2(-item.rel.x, item.rel.y)
+		var bases: Array[Vector2] = []
+		var wall_index := -1
+		if set.place == PropSet.Place.WALL:
+			if data.walls.is_empty():
+				return false
+			wall_index = rng.randi_range(0, data.walls.size() - 1)
+			var placed := _wall_bases(items, data.walls[wall_index], rng)
+			if placed.is_empty():
+				continue
+			bases = placed
+		else:
+			var origin := _near_band(rng, size, inset) if set.place == PropSet.Place.BAND else \
+				Vector2(rng.randf_range(inset, size.x - inset), rng.randf_range(inset + 12.0, size.y - inset))
+			for item in items:
+				bases.append((origin + item.rel).round())
+		var fits := true
+		for k in items.size():
+			var prop: PropData = items[k].prop
+			var foot := _foot(prop)
+			var rect := Rect2(bases[k] + Vector2(-foot.x / 2.0, -foot.y), foot)
+			if not _prop_ok(prop, bases[k], rect, size, keep_start, data, wall_index):
+				fits = false
+				break
+		if fits:
+			for k in items.size():
+				_add_prop(data, items[k].prop, bases[k], set.id, instance)
+			return true
+	return false
+
+
+## Base positions for a wall nook against `wall`: x runs along the wall, y is the distance away from it, on a random
+## side. Empty when the wall is too short for the set.
+static func _wall_bases(items: Array[Dictionary], wall: Rect2, rng: RandomNumberGenerator) -> Array[Vector2]:
+	var lo := INF
+	var hi := -INF
+	for item in items:
+		var w: float = _foot(item.prop).x
+		lo = minf(lo, item.rel.x - w / 2.0)
+		hi = maxf(hi, item.rel.x + w / 2.0)
+	var extent := hi - lo
+	var side := rng.randi_range(0, 3)  # 0 north, 1 south, 2 west, 3 east
+	var horizontal := side < 2
+	var length := wall.size.x if horizontal else wall.size.y
+	if extent > length:
+		return []
+	var along0 := rng.randf_range(0.0, length - extent) - lo
+	var gap := rng.randf_range(6.0, 14.0)
+	var out: Array[Vector2] = []
+	for item in items:
+		var foot := _foot(item.prop)
+		var along: float = along0 + item.rel.x
+		var away: float = gap + item.rel.y
+		match side:
+			0: out.append(Vector2(wall.position.x + along, wall.position.y - away))
+			1: out.append(Vector2(wall.position.x + along, wall.end.y + away + foot.y))
+			2: out.append(Vector2(wall.position.x - away - foot.x / 2.0, wall.position.y + along + foot.y))
+			_: out.append(Vector2(wall.end.x + away + foot.x / 2.0, wall.position.y + along + foot.y))
+	for i in out.size():
+		out[i] = out[i].round()
+	return out
+
+
+## A candidate base position for a single prop: against a wall, along the rock band, or anywhere.
 static func _prop_spot(rng: RandomNumberGenerator, size: Vector2, inset: float, walls: Array[Rect2],
 		foot: Vector2) -> Vector2:
 	var roll := rng.randf()
@@ -454,8 +578,10 @@ static func _prop_spot(rng: RandomNumberGenerator, size: Vector2, inset: float, 
 	return Vector2(rng.randf_range(inset, size.x - inset), rng.randf_range(inset + 12.0, size.y - inset))
 
 
+## Whether a prop with footprint `rect` (base `base`) is legal. `own_wall` is the index of the wall a nook is built
+## against (it may stand close to that one), or -1.
 static func _prop_ok(prop: PropData, base: Vector2, rect: Rect2, size: Vector2, keep_start: Rect2,
-		data: MapLayoutData) -> bool:
+		data: MapLayoutData, own_wall: int) -> bool:
 	# Inside the room, with the sprite's body clear of the rock band at the top.
 	var edge := BAND + DECOR_EDGE
 	if base.x < edge or base.x > size.x - edge or base.y > size.y - edge:
@@ -469,8 +595,11 @@ static func _prop_ok(prop: PropData, base: Vector2, rect: Rect2, size: Vector2, 
 		return false
 	var solid := prop.blocks()
 	var wall_gap := PROP_WALL_GAP if solid else DECOR_WALL_CLEARANCE
-	for wall in data.walls:
-		if rect.intersects(wall.grow(wall_gap)):
+	for w in data.walls.size():
+		if w == own_wall:
+			if rect.intersects(data.walls[w]):
+				return false
+		elif rect.intersects(data.walls[w].grow(wall_gap)):
 			return false
 	for pillar in data.pillars:
 		if point_rect_distance(pillar + PILLAR_OFFSET, rect) < PILLAR_RADIUS + (PROP_WALL_GAP if solid else DECOR_WALL_CLEARANCE):

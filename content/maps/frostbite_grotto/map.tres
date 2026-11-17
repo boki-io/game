@@ -42,4 +42,5 @@ pillar_count = 6
 decor_count = 100
 decor_weights = {0: 1.5, 1: 2.5, 2: 3.0, 3: 0.5, 4: 0.5, 7: 7.0, 8: 6.0}
 prop_count = 14
-prop_weights = {"rock": 5.0, "grave": 2.0, "storage": 1.0}
+prop_weights = {"rock": 7.0, "grave": 0.5, "storage": 0.5}
+prop_sets = {"graveyard_medium": 1, "graveyard_small": 2, "camp_small": 1, "nook_barrels": 1}

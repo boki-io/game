@@ -6,6 +6,8 @@ const PATH := "res://content/props/catalog.tres"
 
 @export var sheet: Texture2D
 @export var props: Array[PropData] = []
+## Prop sets (graveyards, camps, nooks), each a file in content/props/sets/.
+@export var sets: Array[PropSet] = []
 
 static var _shared: PropCatalog
 
@@ -31,4 +33,12 @@ func find(id: StringName) -> PropData:
 	for p in props:
 		if p.id == id:
 			return p
+	return null
+
+
+## The set named `id`, or null.
+func find_set(id: StringName) -> PropSet:
+	for s in sets:
+		if s.id == id:
+			return s
 	return null
