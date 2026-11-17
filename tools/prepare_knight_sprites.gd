@@ -6,16 +6,16 @@ extends SceneTree
 ## Run:  godot --headless --script tools/prepare_knight_sprites.gd
 ## Tune: TARGET_HEIGHT (how tall the knight is in game pixels) and the sheet grid below.
 
-const OUT_DIR := "res://assets/sprites/knight/"
-const FRAMES_PATH := "res://data/characters/knight_frames.tres"
+const OUT_DIR := "res://content/characters/knight/sprites/"
+const FRAMES_PATH := "res://content/characters/knight/frames.tres"
 const CELL := 48  # output frame size in px
 const FEET_Y := 44  # row where the feet sit inside the output cell
 const TARGET_HEIGHT := 30.0  # knight height in game px (the whole figure including the plume)
 const BG_MAX_CHANNEL := 0.09  # a pixel with every channel below this counts as background
 
 const SHEETS := [
-	{name = "idle", path = "res://assets/sprites/Pixel Knight Idle Animation Sheet.png", cols = 3, rows = 2, fps = 6.0},
-	{name = "walk", path = "res://assets/sprites/walk.png", cols = 4, rows = 2, fps = 10.0},
+	{name = "idle", path = "res://content/characters/knight/sprites/raw/Pixel Knight Idle Animation Sheet.png", cols = 3, rows = 2, fps = 6.0},
+	{name = "walk", path = "res://content/characters/knight/sprites/raw/walk.png", cols = 4, rows = 2, fps = 10.0},
 ]
 
 

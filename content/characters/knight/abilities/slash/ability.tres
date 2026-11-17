@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://dmha2e8tewkd0"]
 
 [ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
-[ext_resource type="Script" uid="uid://cby16qg1t21v5" path="res://scripts/abilities/slash_behavior.gd" id="2"]
+[ext_resource type="Script" uid="uid://cby16qg1t21v5" path="res://content/characters/knight/abilities/slash/behavior.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_m76rt"]
 [ext_resource type="AudioStream" uid="uid://bgpjhl566joou" path="res://assets/audio/slash.wav" id="3"]
 

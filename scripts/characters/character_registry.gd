@@ -3,7 +3,7 @@ extends RefCounted
 ## All playable characters. Paths are listed explicitly so exported builds find them.
 
 const PATHS := [
-	"res://data/characters/knight.tres",
+	"res://content/characters/knight/character.tres",
 	"res://data/characters/wizard.tres",
 	"res://data/characters/archer.tres",
 ]

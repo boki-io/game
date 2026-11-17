@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gus84vo18vfh"
-path="res://.godot/imported/knight_walk.png-7470dd1ad64f44992d6f7a156826eff2.ctex"
+uid="uid://cjnfhtjjnwfjm"
+path="res://.godot/imported/Pixel Knight Idle Animation Sheet.png-3faad00d79f1d21fd7ad9d2dd881f906.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/knight/knight_walk.png"
-dest_files=["res://.godot/imported/knight_walk.png-7470dd1ad64f44992d6f7a156826eff2.ctex"]
+source_file="res://content/characters/knight/sprites/raw/Pixel Knight Idle Animation Sheet.png"
+dest_files=["res://.godot/imported/Pixel Knight Idle Animation Sheet.png-3faad00d79f1d21fd7ad9d2dd881f906.ctex"]
 
 [params]
 

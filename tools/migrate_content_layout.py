@@ -107,7 +107,7 @@ DIRS = {
     "enemies_attributes": [("data/enemies/", "content/enemies/")],
 }
 
-TEXT_SUFFIXES = (".tres", ".tscn", ".gd", ".md", ".py", ".cfg", ".sh", ".godot")
+TEXT_SUFFIXES = (".tres", ".tscn", ".gd", ".md", ".py", ".cfg", ".sh", ".godot", ".import")
 SKIP = ("docs/spec-", "docs/requirements-", "AGENT_DECISION_LOG.md", "tools/migrate_content_layout.py")
 
 
@@ -179,7 +179,7 @@ def main():
         left = []
         for o, _ in pairs:
             out = subprocess.run(["git", "grep", "-lF", f"res://{o}", "--", "."] + [f":!{s}" for s in SKIP],
-                                 capture_output=True, text=True).stdout.split()
+                                 capture_output=True, text=True).stdout.splitlines()
             left += [f"{f}: {o}" for f in out]
         if left:
             sys.exit("old paths still named:\n" + "\n".join(left))
