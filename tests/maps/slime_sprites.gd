@@ -176,7 +176,7 @@ func _init() -> void:
 	# The other types are untouched by the cave.
 	var r: Node = main.spawn_director._acquire(ranged)
 	var d: Node = main.spawn_director._acquire(dasher)
-	_check(d._anim == null and d.sprite.body_visible, "the dasher stays procedural")
+	_check(d._anim != null and not d.sprite.body_visible, "the dasher shows its own art (tests/enemy_charger.gd)")
 	_check(r._anim != null and not r.sprite.body_visible, "the ranged enemy shows its own art (tests/enemy_demon_head.gd)")
 	await _end_run(main)
 

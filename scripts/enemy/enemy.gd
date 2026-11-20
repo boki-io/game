@@ -63,6 +63,8 @@ var _art_offset := ART_OFFSET
 var _art_scale := 1.0
 var _art_faces_left := ART_FACES_LEFT
 var _one_shot := false  # an attack or hurt animation is playing (it hands back to the base loop when it ends)
+var _attack_anim := &""  # the brain's attack animation in progress ("" when none, or when a hurt took over)
+var _held := false  # the attack animation stays on its last frame when it ends, until the brain ends it
 var _moving := false  # the brain asked to move last frame (walk instead of idle)
 
 @onready var health: Health = $Health
@@ -132,6 +134,9 @@ func _set_art(frames: SpriteFrames, offset := ART_OFFSET, art_scale := 1.0, face
 ## those two), else `bounce` (the slimes). Starts on a frame that depends on the enemy so a crowd does not move in step.
 func _play_base() -> void:
 	_one_shot = false
+	_attack_anim = &""
+	_held = false
+	_anim.speed_scale = 1.0
 	var frames := _anim.sprite_frames
 	var base := &"bounce"
 	if frames.has_animation(&"walk") and _moving:
@@ -142,28 +147,41 @@ func _play_base() -> void:
 	_anim.set_frame_and_progress((get_instance_id() + Engine.get_physics_frames()) % frames.get_frame_count(base), 0.0)
 
 
-## Plays a one-shot animation of the art (hurt, attack); false when the art has none of that name.
-func _play_one_shot(anim: StringName) -> bool:
+## Plays a one-shot animation of the art (hurt, attack); false when the art has none of that name. `fit_time` > 0
+## stretches or squeezes it to take that many seconds (the art's own length is not the brain's timing).
+func _play_one_shot(anim: StringName, fit_time := 0.0) -> bool:
 	if _anim == null or not _anim.sprite_frames.has_animation(anim):
 		return false
 	_one_shot = true
+	_attack_anim = &""
+	_held = false
+	var frames := _anim.sprite_frames
+	var length := 0.0
+	for i in frames.get_frame_count(anim):
+		length += frames.get_frame_duration(anim, i)
+	length /= frames.get_animation_speed(anim)
+	_anim.speed_scale = length / fit_time if fit_time > 0.0 and length > 0.0 else 1.0
 	_anim.play(anim)
 	return true
 
 
 func _on_anim_finished() -> void:
-	if active and _one_shot:
+	if active and _one_shot and not _held:
 		_play_base()
 
 
-## The brain winds up a shot: the art's `attack` animation plays (its peak is the shot).
-func play_attack() -> void:
-	_play_one_shot(&"attack")
+## The brain starts an attack: the art's `attack` animation plays (the ranged enemy's peak is the shot). Art with
+## its own phases passes the animation (`windup`, `dash`), the seconds it should take, and `hold` to stay on the last
+## frame until the next call or cancel_attack().
+func play_attack(anim := &"attack", fit_time := 0.0, hold := false) -> void:
+	if _play_one_shot(anim, fit_time):
+		_attack_anim = anim
+		_held = hold
 
 
-## The wind-up was interrupted (stun, freeze, walking on): an attack animation in progress ends.
+## The attack was interrupted or is over (stun, freeze, walking on, recovery): an attack animation in progress ends.
 func cancel_attack() -> void:
-	if _anim and _one_shot and _anim.animation == &"attack":
+	if _anim and _one_shot and _attack_anim != &"":
 		_play_base()
 
 

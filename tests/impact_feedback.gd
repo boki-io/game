@@ -91,7 +91,8 @@ func _step(e, frames: int) -> void:
 func _hit_tests(main, fx) -> void:
 	var p = _F.player()
 	var spot: Vector2 = p.global_position + Vector2(60, 0)
-	var e = _F.spawn_enemy(main, "dasher", spot, 1.0, true)  # no drawn frames: it flashes white
+	var e = _F.spawn_enemy(main, "dasher", spot, 1.0, true)
+	e._set_art(null)  # the drawn body (no frames): it flashes white
 	await _F.frames(self, 3)
 
 	# A hit that does not kill: 3 sparks, the flash, a recoil away from the player that eases back to nothing.
@@ -111,6 +112,7 @@ func _hit_tests(main, fx) -> void:
 	fx.burst(Vector2.ZERO, Color.WHITE, fx.SPARK_BUDGET + 8, Vector2(10, 10), 5.0, 2.0)
 	var n: int = fx._bits.size()
 	var e2 = _F.spawn_enemy(main, "dasher", spot, 1.0, true)
+	e2._set_art(null)
 	await _F.frames(self, 3)
 	e2.take_damage(1.0)
 	_check(fx._bits.size() == n, "no sparks over the budget")
@@ -143,12 +145,14 @@ func _death_tests(main, fx) -> void:
 	# The burst has one bit per 30 px^2 of body, 5 to 14: Grunt 6, Ranged 7, Dasher 14. A kill gets no hit sparks.
 	for row in [["grunt", 6], ["ranged", 7], ["dasher", 14]]:
 		var e = _F.spawn_enemy(main, row[0], p.global_position + Vector2(80, 0), 1.0, true)
+		if row[0] == "dasher":
+			e._set_art(null)  # its charger art is tested in enemy_charger.gd; here the drawn body's puff
 		await _F.frames(self, 3)
 		fx.clear()
 		cam._shake_time = 0.0
 		e.take_damage(1e9)
 		_check(fx._bits.size() == row[1], "%s death: %d bits, got %d" % [row[0], row[1], fx._bits.size()])
-		if row[0] == "dasher":  # the grunt and the ranged enemy die as drawn art; the dasher leaves the colour puff, exactly one
+		if row[0] == "dasher":  # the grunt and the ranged enemy die as drawn art; the drawn dasher leaves the colour puff, exactly one
 			_check(_puffs(fx) == 1, "%s death: exactly one puff, got %d" % [row[0], _puffs(fx)])
 		_check(e.sprite.body_color == fx._bits[0].color, "%s death: the burst is the body colour" % row[0])
 		# Only the Dasher (kill_shake 1.2) kicks the camera.

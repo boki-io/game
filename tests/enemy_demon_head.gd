@@ -56,8 +56,8 @@ func _resources() -> void:
 			_check(is_equal_approx(frames.get_frame_duration(anim, i), spec[3][i] / 100.0), "%s frame %d lasts %d ms" % [anim, i, spec[3][i]])
 	var ranged: EnemyData = load("res://content/enemies/ranged.tres")
 	_check(ranged.sprite_frames == frames, "ranged.tres names the frames")
-	_check(is_equal_approx(ranged.art_scale, 0.55) and ranged.art_offset == Vector2(-30, -66) and not ranged.art_faces_left, "ranged art scale, offset, facing")
-	for id in ["grunt", "dasher", "training_dummy"]:
+	_check(is_equal_approx(ranged.art_scale, 0.44) and ranged.art_offset == Vector2(-30, -66) and not ranged.art_faces_left, "ranged art scale, offset, facing")
+	for id in ["grunt", "training_dummy"]:
 		_check((load("res://content/enemies/%s.tres" % id) as EnemyData).sprite_frames == null, "%s has no art of its own" % id)
 	_check(ranged.windup_time == 0.4, "the 0.4 s wind-up still lands on the attack's glow (frame 4 starts at 0.39 s)")
 
@@ -73,7 +73,7 @@ func _behaviour() -> void:
 	var far = _F.spawn_enemy(main, "ranged", p.global_position + Vector2(400, 0), 1.0, false)
 	await _F.frames(self, 3)
 	_check(far._anim != null and not far.sprite.body_visible, "the ranged enemy shows the art, not the drawn body")
-	_check(far._anim.offset == Vector2(-30, -66) and far._anim.scale == Vector2(0.55, 0.55) and not far._anim.centered, "offset, scale, top-left origin")
+	_check(far._anim.offset == Vector2(-30, -66) and far._anim.scale == Vector2(0.44, 0.44) and not far._anim.centered, "offset, scale, top-left origin")
 	_check(far._anim.animation == &"walk", "it walks while the brain approaches (%s)" % far._anim.animation)
 	_check(far.sprite.get_child_count() == 1, "the art is the placeholder's only child")
 	far.deactivate()
@@ -122,7 +122,7 @@ func _behaviour() -> void:
 	for c in fx.get_children():
 		if c is AnimatedSprite2D and c.has_meta(&"corpse") and c.visible:
 			corpse = c
-	_check(corpse != null and corpse.animation == &"death" and corpse.scale == Vector2(0.55, 0.55) and corpse.offset == Vector2(-30, -66)
+	_check(corpse != null and corpse.animation == &"death" and corpse.scale == Vector2(0.44, 0.44) and corpse.offset == Vector2(-30, -66)
 		and corpse.position == pos, "the corpse plays death at the demon's scale and place")
 	await _F.seconds(self, 2.0)
 	_check(fx._corpses == count_before, "the corpse is recycled afterwards")

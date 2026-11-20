@@ -47,7 +47,7 @@ each map's `monsters/grunt_sheet.png` and `monsters/grunt_frames.tres`; `--check
 from the tags saved in the files (those overlap): `bounce` 0-3 (loops), `hit` 4-7 and `death` 8-12 (one shots), each frame
 lasting the file's duration. To give a new map a slime: add `slime_<id>.aseprite` and its id to `NAMES` in the script, run
 it, then set `sprite_frames` of the map's `grunt.tres` to `grunt_frames.tres` (Inspector, or an `ext_resource` line like
-the other maps). The dasher stays drawn in code. The ranged enemy has art on every map: the demon head, set on its `EnemyData` (`content/enemies/ranged/`, see below); a variant without `sprite_frames` keeps it. `tests/maps/slime_sprites.gd` checks all of it.
+the other maps). The ranged enemy and the dasher have art on every map, set on their `EnemyData` (the demon head and the charger, see below); a variant without `sprite_frames` keeps it. `tests/maps/slime_sprites.gd` checks all of it.
 
 ## The demon head (the ranged enemy's art)
 
@@ -58,3 +58,15 @@ in one row), `frames.tres` (a `SpriteFrames`) and, in `art/source/demon-head/`, 
 frames and sets `art_scale`, `art_offset` and `art_faces_left`. Animations: `idle` and `walk` loop, `attack` plays when a shot
 winds up (its glow frame lands at the 0.4 s shot), `hurt` on damage, `death` as a corpse. A map's ranged `MonsterVariant`
 needs no `sprite_frames`: it keeps this art. `tests/enemy_demon_head.gd` checks all of it.
+
+## The charger (the dasher's art)
+
+`content/enemies/charger/` holds the Dasher's art: `charger_sheet.png` (34 frames of 64x64), `frames.tres`, and in
+`art/source/charger/` the Aseprite file and its JSON. There was no exported sheet, so `python3 tools/enemies/export_aseprite.py
+<in.aseprite> <sheet.png> <json>` makes one without the Aseprite program (RGBA files); then `python3 tools/enemies/build_charger.py`
+rebuilds `frames.tres` (`--check` compares). The file's tags are `idle`, `walk`, `attack`, `damage`, `death`; the build renames
+`damage` to `hurt` and cuts `attack` at frame 16 into `windup` (the crouch) and `dash` (the lunge). `dasher.tres` sets
+`art_scale` 0.91 (about 49 px tall; the 36 px body is only the hitbox), `art_offset` (-32, -62) (feet on the ground) and faces right.
+The brain fits the animations to its own timings, so the art does not set the balance: `windup` is stretched to
+`aim_time + lock_time` and held on its last frame, `dash` is fitted to the dash's travel time (`Enemy.play_attack(anim,
+fit_time, hold)`); recovery, stun and walking on end them. `tests/enemy_charger.gd` checks all of it.
