@@ -47,4 +47,14 @@ each map's `monsters/grunt_sheet.png` and `monsters/grunt_frames.tres`; `--check
 from the tags saved in the files (those overlap): `bounce` 0-3 (loops), `hit` 4-7 and `death` 8-12 (one shots), each frame
 lasting the file's duration. To give a new map a slime: add `slime_<id>.aseprite` and its id to `NAMES` in the script, run
 it, then set `sprite_frames` of the map's `grunt.tres` to `grunt_frames.tres` (Inspector, or an `ext_resource` line like
-the other maps). Ranged and dasher stay drawn in code. `tests/maps/slime_sprites.gd` checks all of it.
+the other maps). The dasher stays drawn in code. The ranged enemy has art on every map: the demon head, set on its `EnemyData` (`content/enemies/ranged/`, see below); a variant without `sprite_frames` keeps it. `tests/maps/slime_sprites.gd` checks all of it.
+
+## The demon head (the ranged enemy's art)
+
+`content/enemies/ranged/` holds the Ranged enemy's drawn art for every map: `demon_head_sheet.png` (31 frames of 64x64
+in one row), `frames.tres` (a `SpriteFrames`) and, in `art/source/demon-head/`, the Aseprite file and its JSON export.
+`python3 tools/enemies/build_demon_head.py` rebuilds `frames.tres` from the JSON (animations come from the frame tags
+`walk`, `attack`, `idle`, `hurt`, `death`; the drawn frame times are kept; `--check` only compares). `ranged.tres` names the
+frames and sets `art_scale`, `art_offset` and `art_faces_left`. Animations: `idle` and `walk` loop, `attack` plays when a shot
+winds up (its glow frame lands at the 0.4 s shot), `hurt` on damage, `death` as a corpse. A map's ranged `MonsterVariant`
+needs no `sprite_frames`: it keeps this art. `tests/enemy_demon_head.gd` checks all of it.

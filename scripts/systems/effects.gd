@@ -105,9 +105,10 @@ func play_frames(frames: SpriteFrames, pos: Vector2, angle: float = 0.0, scale_f
 
 
 ## Plays animation `anim` of `frames` once at pos, independent of whoever asked (a dead enemy's pooled node is
-## already back in the pool). `offset` and `flip_h` are the AnimatedSprite2D's own, `centered` is off: pos is where
+## already back in the pool). `offset`, `flip_h` and `scale` are the AnimatedSprite2D's own, `centered` is off: pos is where
 ## the frame's top left plus offset lands, as for a sprite whose origin is the feet. Skipped past MAX_CORPSES.
-func play_once(frames: SpriteFrames, anim: StringName, pos: Vector2, offset: Vector2, flip_h: bool) -> void:
+func play_once(frames: SpriteFrames, anim: StringName, pos: Vector2, offset: Vector2, flip_h: bool,
+		scale := Vector2.ONE) -> void:
 	if frames == null or not frames.has_animation(anim) or _corpses >= MAX_CORPSES:
 		return
 	var sprite := _take_sprite()
@@ -118,6 +119,7 @@ func play_once(frames: SpriteFrames, anim: StringName, pos: Vector2, offset: Vec
 	sprite.centered = false
 	sprite.offset = offset
 	sprite.flip_h = flip_h
+	sprite.scale = scale
 	sprite.play(anim)
 
 

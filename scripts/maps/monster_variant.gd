@@ -20,6 +20,6 @@ enum Mark { NONE, STRIPE, SPOTS, CREST }
 ## Optional drawn art for this type on this map. With it the Enemy shows an AnimatedSprite2D instead of the drawn body
 ## (the shadow stays and the colours above are not drawn). Needs
 ## the animations `bounce` (loops), `hit` and `death` (one shots); the frames are 32x32 with the feet on row 29, drawn
-## at 1x. Null keeps the drawn placeholder. Today only grunts have it: content/maps/<map>/monsters/grunt_frames.tres,
+## at 1x. Null keeps the drawn placeholder. Today only grunts have it per map: content/maps/<map>/monsters/grunt_frames.tres,
 ## built by tools/slimes/build_slimes.py.
 @export var sprite_frames: SpriteFrames

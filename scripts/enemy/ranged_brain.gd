@@ -40,6 +40,7 @@ func think(delta: float, target: Player) -> Vector2:
 			_los_lost = 0.0 if _clear_shot(target) else _los_lost + delta
 			if dist > _d.resume_distance or _los_lost >= LOS_LOST_TIME:
 				_cancel_windup()
+				enemy.cancel_attack()
 				_state = State.APPROACH
 				return enemy.chase(target, _d.speed)
 			_tick_shooting(delta, target)
@@ -48,6 +49,7 @@ func think(delta: float, target: Player) -> Vector2:
 
 func cancel() -> void:
 	_cancel_windup()
+	enemy.cancel_attack()
 
 
 func can_contact() -> bool:
@@ -74,6 +76,7 @@ func _tick_shooting(delta: float, target: Player) -> void:
 		_windup_left = _d.windup_time
 		enemy.sprite.warn = true
 		enemy.sprite.warn_color = Color("ff8a3a")
+		enemy.play_attack()
 		Audio.play(&"ranged_windup", -4.0)
 
 
