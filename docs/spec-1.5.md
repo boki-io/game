@@ -1,6 +1,6 @@
 # Spec v1.5: Items (18 pieces of equipment in three ratings, legendary ones grant a relic, a loot drop from the charger)
 
-Builds on spec 1.4 (the chest and the inventory: `Inventory`, `ItemData`, `ItemRegistry`, `ItemEffects`, `InventoryScreen`; PR #16, not merged yet) and on the relics of spec 1.0 (`PlayerRelics`, `RelicData`, `LevelUpRoller`, the HUD slots). This branch is stacked on `spec-1.4-inventory` with `main` (`e996c02`, which has the vacuum magnet, PR #15) merged in. Status: rev 2 (applies an independent review: pickup range was never applied to the collector, the screen labels and the 1.4 test assertions that change, the default rating of the 1.4 test items, the tests' save path, a banner that survives the pause, the HUD outline rule, a cap and a throttle for lying drops, the restore ordering, unlock through the registry, and what `cooldown` really affects).
+Builds on spec 1.4 (the chest and the inventory: `Inventory`, `ItemData`, `ItemRegistry`, `ItemEffects`, `InventoryScreen`; PR #16, not merged yet) and on the relics of spec 1.0 (`PlayerRelics`, `RelicData`, `LevelUpRoller`, the HUD slots). This branch is stacked on `spec-1.4-inventory` with `main` (`e996c02`, which has the vacuum magnet, PR #15) merged in. Status: built (steps 1 to 4; build notes in section 14); rev 2 (applies an independent review: pickup range was never applied to the collector, the screen labels and the 1.4 test assertions that change, the default rating of the 1.4 test items, the tests' save path, a banner that survives the pause, the HUD outline rule, a cap and a throttle for lying drops, the restore ordering, unlock through the registry, and what `cooldown` really affects).
 
 Terms: a **rating** is an item's tier: `standard`, `epic` or `legendary`. A **granted relic** is a relic a worn legendary item gives the hero for the whole run, in an extra relic slot. The **loot drop** is the ground pickup that unlocks an item.
 
@@ -28,7 +28,7 @@ One folder each, `content/items/<id>/item.tres`, `id` equal to the folder name. 
 
 | Type | Standard | Epic | Legendary (relic) |
 |---|---|---|---|
-| Helmet | `leather_cap`: +0.3 HP/s | `warden_helm`: +0.6 HP/s, +10 max HP | `stormcaller_crown`: +1.0 HP/s, +20 max HP, **Storm Orbs** |
+| Helmet | `leather_cap`: +0.3 HP/s | `warden_helm`: +0.6 HP/s, +10 max HP | `stormcaller_crown`: +1 HP/s, +20 max HP, **Storm Orbs** |
 | Chestplate | `padded_vest`: +15 max HP | `reinforced_mail`: +30 max HP, +0.3 HP/s | `thornmail`: +50 max HP, +0.5 HP/s, **Thorn Nova** |
 | Necklace | `bone_charm`: +4% damage | `amber_pendant`: +8% damage, +15% pickup range | `frostfall_pendant`: +12% damage, +30% pickup range, **Frost Comet** |
 | Ring | `copper_ring`: +4% attack speed | `silver_ring`: +8% attack speed, +3% damage | `ring_of_mastery`: +14% attack speed, +6% damage (no relic) |
@@ -43,7 +43,7 @@ Relic ids (verified in `content/relics/*/relic.tres`): `storm_orbs`, `thorn_nova
 
 - New fields: `rating: StringName = &"standard"` (one of `ItemData.RATINGS = [&"standard", &"epic", &"legendary"]`) and `relic_id: StringName = &""` (the relic a worn legendary grants; empty otherwise).
 - `ItemData.rating_color(rating) -> Color`: standard `#b8b0a0` (stone), epic `#b070ff` (purple), legendary `#ff9a3a` (orange). `ItemData.rating_name(rating)`: "Standard", "Epic", "Legendary".
-- `stat_text() -> String`: the bonuses as one line, from `adds` then `scales`, each in the order the keys are written in the file, with labels from a fixed table (`max_hp` "max HP", `hp_regen` "HP/s", `damage` "damage", `auto_speed` "attack speed", `cooldown` "ability cooldowns", `move_speed` "move speed", `pickup_radius` "pickup range", `max_mana` "max mana", `mana_regen` "mana/s"): an add is `+N label` (a whole number without decimals, else one decimal), a scale is `+N% label` or `-N% label`. Example: `+1.0 HP/s, +20 max HP`. A key not in the table is shown as its own name. An item with no bonuses (the 1.4 test items) gives `""`. `rating` defaults to `standard` and `relic_id` to empty, so the 1.4 tests' hand-made items stay valid unchanged.
+- `stat_text() -> String`: the bonuses as one line, from `adds` then `scales`, each in the order the keys are written in the file, with labels from a fixed table (`max_hp` "max HP", `hp_regen` "HP/s", `damage` "damage", `auto_speed` "attack speed", `cooldown` "ability cooldowns", `move_speed` "move speed", `pickup_radius` "pickup range", `max_mana` "max mana", `mana_regen` "mana/s"): an add is `+N label` (a whole number without decimals, else one decimal), a scale is `+N% label` or `-N% label`. Example: `+1 HP/s, +20 max HP` (a whole number has no decimals). A key not in the table is shown as its own name. An item with no bonuses (the 1.4 test items) gives `""`. `rating` defaults to `standard` and `relic_id` to empty, so the 1.4 tests' hand-made items stay valid unchanged.
 - `description` shrinks to at most 40 characters (it is now a flavour line under the stat line; the 80 limit of spec 1.4 is replaced); the doc comment of the field and the header comment of `ItemRegistry` ("no item ships in spec 1.4") are updated.
 
 ## 4. The granted relic
@@ -138,3 +138,15 @@ Each step is one commit with its tests.
 - A charger kill drops an item with the chance in its data (10% now); walking onto it unlocks the item, saves it and shows the banner; no item drops twice and none drops when all are owned.
 - Existing relic, run-progress, HUD and inventory behaviour is unchanged for a hero with no items.
 - All new tests pass; the whole suite passes except the known `crowd_bone_warren` failure; `.uid` files are committed; the READMEs are current; the open questions are answered or logged; nothing is claimed as tried by hand that was not.
+
+## 14. Build notes
+
+Built in three parallel parts (items and screen, granted relic, loot drop) on top of a shared `ItemData` groundwork commit, then merged without conflicts.
+
+- `stat_text` prints whole numbers without decimals, so the Stormcaller Crown reads "+1 HP/s" (the table above is corrected).
+- The "bonuses rise with rating" test compares each type's main stat (the standard item's first key) and not the sum per key: the epic boots add pickup range that the legendary boots replace with a relic.
+- Item files write stat keys as `&"key"` (a `for key: StringName` loop needs it).
+- `Pickups.take_item_drop(drop)` takes only the drop; the `ItemBanner` label has a child `Hint` label for the grey line (one label cannot hold two colours); the banner fades with a tween that keeps running while paused; a second find cancels the first one's timer; `Pickups._ready` makes a default `LootData` when none is set.
+- `Hud.relic_ring_color(i)` is a small testable helper (gold for a granted relic); the Fire Trail check only asserts that its behavior node exists, not that it leaves flames.
+- `tests/inventory/item_drop.gd` had a flake (the drop hops up to 14 px away from a player standing on it, so it is not always taken); the test now steps onto it after the hop.
+- Not verified by hand: a play-through (a charger dropping an item, walking onto it, wearing it, starting a run with a granted relic), how the drop and the banner look, and the nine-slot HUD column with real relics.

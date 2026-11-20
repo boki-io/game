@@ -201,6 +201,9 @@ func _pickup() -> void:
 		if not _taken.is_empty() and drop.hopping():
 			early = true
 	_check(not early, "not taken during its hop")
+	if _taken.is_empty():  # the hop carried it up to 14 px away from the player: step onto it
+		p.global_position = drop.global_position - _ID.BODY_POINT
+		await _F.frames(self, 14)
 	_check(_taken == [&"warden_helm"], "taken once the hop is over, by the player standing there: %s" % [_taken])
 	_check(not drop.active and pickups.lying_item_ids().is_empty(), "the drop is released")
 	_check(gs.inventory.is_unlocked(&"warden_helm"), "the item is unlocked in the inventory")
