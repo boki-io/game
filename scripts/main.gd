@@ -2,11 +2,15 @@ extends Node2D
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const STAGE_CLEARED_TIME := 2.0  # seconds the "Stage cleared" banner stays
+const ITEM_BANNER_TIME := 3.0  # seconds the "Found: ..." banner stays, then it fades for ITEM_BANNER_FADE
+const ITEM_BANNER_FADE := 0.5
 
 ## Footprints of the freestanding rock walls (the layout's).
 var rock_walls: Array[Rect2] = []
 ## Base positions of the pillars (the layout's).
 var prop_positions: Array[Vector2] = []
+
+var _item_banner_id := 0  # which showing of the item banner is current; an older timer does nothing
 
 @onready var players_root: Node2D = $World/Players
 @onready var props_root: Node2D = $World/Props
@@ -18,6 +22,8 @@ func _ready() -> void:
 	spawn_director.run_manager = run_manager
 	spawn_director.enemies_root = $World/Enemies
 	spawn_director.pickups = $Pickups
+	$Pickups.inventory = GameSession.inventory
+	$Pickups.item_collected.connect(_on_item_collected)
 	# Without a stage (main.tscn run from the editor) every modifier is 0%.
 	spawn_director.apply_stage(GameSession.current_stage if GameSession.current_stage else StageData.new())
 	spawn_director.coin_bonus = CampAttributes.coin_bonus(GameSession.attribute_levels)
@@ -44,6 +50,30 @@ func _ready() -> void:
 	player.died.connect(run_manager.on_player_died)
 	player.xp.leveled_up.connect(func(_level: int) -> void: $UI/LevelUpMenu.queue_level_up(player))
 	$UI/Hud.bind(player, run_manager)
+
+
+## An item was taken from the ground: unlock it (saved at once) and announce it. Nothing happens for an item already owned.
+func _on_item_collected(item_id: StringName) -> void:
+	if not GameSession.inventory.unlock(item_id):
+		return
+	Audio.play(&"level_up")
+	var item := ItemRegistry.find(item_id)
+	var banner: Label = $UI/ItemBanner
+	banner.text = "Found: %s (%s)" % [item.display_name, ItemData.rating_name(item.rating)]
+	banner.add_theme_color_override("font_color", ItemData.rating_color(item.rating))
+	banner.modulate.a = 1.0
+	banner.visible = true
+	_item_banner_id += 1
+	var mine := _item_banner_id
+	# The tree may be paused (a level-up menu): the timer and the tween must keep running.
+	await get_tree().create_timer(ITEM_BANNER_TIME, true).timeout
+	if mine != _item_banner_id or not is_instance_valid(banner):
+		return
+	var tween := banner.create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(banner, "modulate:a", 0.0, ITEM_BANNER_FADE)
+	await tween.finished
+	if mine == _item_banner_id and is_instance_valid(banner):
+		banner.visible = false
 
 
 ## Death shows the end screen. A win waits for the level-up menu to close (so no level is lost and the banner never

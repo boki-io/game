@@ -147,4 +147,6 @@ func _on_enemy_died(enemy: Enemy) -> void:
 			pickups.spawn_coin(enemy.global_position)
 		if enemy.data.xp_drop > 0:
 			pickups.roll_magnet(enemy.global_position)
+		if enemy.data.item_drop_chance > 0.0:
+			pickups.roll_item_drop(enemy.global_position, enemy.data.item_drop_chance)
 	release(enemy)
