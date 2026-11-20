@@ -25,6 +25,8 @@ const SIGN_POS := Vector2(480, 290)
 const TRAINING_AREA := Rect2(110, 100, 140, 120)
 const CAMP_POS := Vector2(170, 300)  # below the training dummies
 const CAMP_RADIUS := 48.0  # interact within this of CAMP_POS to open the camp
+const CHEST_POS := Vector2(570, 64)  # right of the door, on the floor below the wall band (the chest's base)
+const CHEST_RADIUS := 40.0  # interact within this of CHEST_POS to open the inventory
 const BROWSE_HINT := "< >  Browse      Enter  Choose      Esc  Menu"
 const WALK_HINT := "WASD  Move      Mouse  Aim      Q E R  Abilities      I  Info      Esc  Menu"
 
@@ -37,6 +39,9 @@ var player: Player
 ## The camp screen (a Control with `open()`, spec 0.7 7), built by `_build_camp_screen()`.
 var camp_screen: Control
 var camp_site: CampSite
+var chest: HubChest
+## The inventory screen (a Control with `open(character)` and a `closed(changed)` signal), built by `_build_inventory_screen()`.
+var inventory_screen: Control
 var gold_counter: GoldCounter
 var reward_banner: Label
 
@@ -59,6 +64,7 @@ func _ready() -> void:
 	_build_pedestals()
 	_build_dummies()
 	_build_camp()
+	_build_chest()
 	_build_cave()
 	MapLook.apply_ambience($World, MapRegistry.default(), 0)  # the hub builds no theme: the default cave's dust
 	panel.choose_pressed.connect(_confirm)
@@ -82,6 +88,8 @@ func _process(delta: float) -> void:
 	prompt.visible = target != &""
 	if target == &"camp":
 		prompt.text = "F: Camp"
+	elif target == &"chest":
+		prompt.text = "F: Inventory"
 	elif target == &"pedestal":
 		prompt.text = "F: Change character"
 
@@ -106,6 +114,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_enter_browse(focus_index, false)
 			elif _interact_target() == &"camp":
 				_open_camp()
+			elif _interact_target() == &"chest":
+				_open_inventory()
 		elif event.is_action_pressed(&"hub_info"):
 			panel.visible = not panel.visible
 		else:
@@ -131,7 +141,13 @@ func _build_camp() -> void:
 	$World.add_child(camp_site)
 
 
-## What interact would act on now: &"pedestal", &"camp" or &"" (nothing, and always nothing in browse mode).
+func _build_chest() -> void:
+	chest = HubChest.new()
+	chest.position = CHEST_POS
+	$World.add_child(chest)  # World Y-sorts, so the player passes in front of or behind it by its base
+
+
+## What interact would act on now: &"pedestal", &"camp", &"chest" or &"" (nothing, and always nothing in browse mode).
 func _interact_target() -> StringName:
 	if mode != Mode.WALK or not is_instance_valid(player):
 		return &""
@@ -139,6 +155,8 @@ func _interact_target() -> StringName:
 		return &"pedestal"
 	if CAMP_POS.distance_to(player.global_position) < CAMP_RADIUS:
 		return &"camp"
+	if CHEST_POS.distance_to(player.global_position) < CHEST_RADIUS:
+		return &"chest"
 	return &""
 
 
@@ -146,6 +164,24 @@ func _interact_target() -> StringName:
 func _open_camp() -> void:
 	if camp_screen != null:
 		camp_screen.open()
+
+
+## Opens the inventory of the character being played, with the sound and the ring and puff a pedestal choice has.
+func _open_inventory() -> void:
+	if inventory_screen == null:
+		return
+	Audio.play(&"door_open")
+	var fx := Effects.get_for(self)
+	if fx:
+		fx.ring(CHEST_POS, 24.0)
+		fx.puff(CHEST_POS + Vector2(0, -16), Color("ffd866"))
+	inventory_screen.open(characters[focus_index])
+
+
+func _on_inventory_closed(changed: bool) -> void:
+	_lockout = MODE_LOCKOUT
+	if changed:
+		_rebuild_player()
 
 
 ## Torches on the walls and the decor, which keeps clear of everything gameplay uses.
@@ -164,11 +200,12 @@ func _build_cave() -> void:
 		$World/Decor.add_child(decor)
 
 
-## Floor the decor must stay off: the pedestals, the training area, the lane from the door and the sign.
+## Floor the decor must stay off: the pedestals, the training area, the lane from the door, the sign, the camp and the chest.
 func reserved_areas() -> Array[Rect2]:
 	var out: Array[Rect2] = [TRAINING_AREA, Rect2(SIGN_POS.x - 70.0, SIGN_POS.y - 30.0, 140.0, 50.0),
 		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0),
-		Rect2(CAMP_POS.x - 50.0, CAMP_POS.y - 45.0, 100.0, 80.0)]
+		Rect2(CAMP_POS.x - 50.0, CAMP_POS.y - 45.0, 100.0, 80.0),
+		Rect2(CHEST_POS.x - 24.0, CHEST_POS.y - 40.0, 48.0, 56.0)]
 	for p in pedestals:
 		out.append(Rect2(p.position + Vector2(-34, -60), Vector2(68, 90)))
 	return out
