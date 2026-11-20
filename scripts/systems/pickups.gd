@@ -75,15 +75,6 @@ func vacuuming() -> bool:
 	return vacuum_target != null
 
 
-## The speed limit and acceleration of a gem or coin right now: the vacuum's while it runs, else the pickup's own.
-func pull_speed(normal: float) -> float:
-	return vacuum_data.pull_speed if vacuum_target != null else normal
-
-
-func pull_accel(normal: float) -> float:
-	return vacuum_data.pull_accel if vacuum_target != null else normal
-
-
 func spawn_gem(pos: Vector2, value: int) -> void:
 	var gem: XPGem
 	if _pool.is_empty():

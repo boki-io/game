@@ -43,7 +43,8 @@ func _physics_process(delta: float) -> void:
 	if _pop_vel != Vector2.ZERO:
 		_pop_vel = Pickups.pop_step(self, _pop_vel, delta)
 		return
-	if pool.vacuuming():
+	var vacuum := pool != null and pool.vacuuming()  # a bare scene (no pool) has no vacuum
+	if vacuum:
 		target = pool.vacuum_target  # the vacuum's player, whoever pulled this one before
 	if target == null:
 		return
@@ -57,7 +58,10 @@ func _physics_process(delta: float) -> void:
 		Audio.play(&"coin")
 		pool.release_coin(self)
 		return
-	_speed = minf(_speed + pool.pull_accel(ACCEL) * delta, pool.pull_speed(MAX_SPEED))
+	if vacuum:
+		_speed = minf(_speed + pool.vacuum_data.pull_accel * delta, pool.vacuum_data.pull_speed)
+	else:
+		_speed = minf(_speed + ACCEL * delta, MAX_SPEED)
 	global_position += to / dist * minf(_speed * delta, dist)
 
 

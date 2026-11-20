@@ -125,5 +125,5 @@ Step 2 tests call `start_vacuum` directly on the `Pickups` node (no item yet); s
 ## 12. Build notes
 
 - Test item 4: the sound call is not asserted (headless has no audio); the burst of 24 bits is.
-- `Pickups` also got `pull_speed(normal)` and `pull_accel(normal)` helpers, which `XPGem` and `Coin` call, instead of each reading the data themselves; `Pickups._ready` makes a default `VacuumData` when none is set (scenes other than `main.tscn`).
+- `XPGem` and `Coin` read the vacuum data through `pool` themselves and treat a missing `pool` (a bare `coin.tscn` loaded on its own, as `tests/iris_transition.gd` does) as no vacuum; `Pickups._ready` makes a default `VacuumData` when none is set (scenes other than `main.tscn`).
 - `main.tscn` names the data in step 2 and the magnet scene in step 3.
