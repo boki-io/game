@@ -15,6 +15,7 @@ character's Q / E / R abilities. Proof of concept.
 Each character has 18 to 19 upgrades. The game opens in the **hub**: look at each character on their pedestal
 (left / right or click), read their stats and abilities, and choose one. Then walk around the hub as them (infinite
 mana, no damage; F next to a pedestal changes character) and walk through the door in the north wall to start a run.
+The **chest** right of the door (F next to it) opens the **inventory** of the character you are playing (spec 1.4): seven slots (helmet, chestplate, necklace, two rings, pants, shoes) and the items you have unlocked; click or Enter wears an item or takes it off, Esc closes. Each character has their own loadout, an item is worn by one character at a time, and equipped items change the hero's stats in the hub and in runs. The loadouts and the pool are saved next to the camp save (`camp.json.inventory`). No item ships yet: the chest reads "No items yet" until the next PR adds them.
 The hub and the run arena are torch-lit dirt caves (the arena has rock walls of varied length). Three indestructible training dummies in the north-west corner show Last / Total / DPS for your hits.
 
 ## Run it
@@ -32,7 +33,7 @@ The base size is set in `project.godot` (`display/window/size`); the HUD, menus,
 | Aim | Mouse | Right stick |
 | Ability Q / E / R | Q / E / R | X / Y / Right trigger |
 | Hub: browse / choose | A D or arrows, click, Enter | D-pad, A (South) |
-| Hub: change character / info | F / I | A (South) / Back |
+| Hub: change character / open camp or chest / info | F / F / I | A (South) / Back |
 | Pause | Esc | Start |
 | Debug overlay | F3 | |
 
@@ -59,8 +60,9 @@ sounds (`Audio.impact`, `AbilityData.sfx_layer`); the layers are generated place
 
 ## Project layout
 - `scenes/`: the hub (`hub.tscn`, the main scene), the run (`main.tscn`), player, enemy, pickups, projectile.
-- `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `relics/` (`RelicData`, `RelicRegistry`, `PlayerRelics`, `RelicBehavior` and one behavior per relic), `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
+- `scripts/`: `hub/` (pedestals, door, chest), `inventory/` (`ItemData`, `ItemRegistry`, `Inventory`, `ItemEffects`, `InventorySave`), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `relics/` (`RelicData`, `RelicRegistry`, `PlayerRelics`, `RelicBehavior` and one behavior per relic), `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
 - `content/characters/<id>/`: everything about one character: `character.tres`, `frames.tres`, `sprites/`, `abilities/<ability id>/` (`ability.tres`, `behavior.gd` and that ability's `upgrades/`) and passives only that character has in `upgrades/`. `content/shared/upgrades/` holds the upgrades several characters use. `_template` is a complete character to copy. See `content/characters/README.md`.
+- `content/items/<id>/item.tres`: one folder per item (none yet); see `content/items/README.md`.
 - `content/relics/<id>/` (`relic.tres` and its behavior script), `content/enemies/*.tres`, `content/attributes/*.tres`: the rest of the game's data. Tuning is data, not code.
   `scripts/` keeps the engine: bases (`AbilityBehavior`, `DashSlashBehavior`, `BoltBehavior`), `SteadyAim`, registries and systems. Specs before 1.2 name the old `data/` and `assets/sprites/` paths.
 - `content/maps/<id>/`: everything about one map: `map.tres` (a `MapTheme`), `thumbnail.png` and `monsters/*.tres`

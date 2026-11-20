@@ -1,6 +1,6 @@
 # Spec v1.4: The chest and the inventory (equipment slots and an item pool, in the hub)
 
-Builds on the hub (spec 0.4: `Hub`, `HubDoor`, walk mode), the camp (spec 0.7: `CampSite`, `CampScreen`, `GameSession`, `SaveGame`, `CampAttributes`) and the content layout of spec 1.2. `main` at `cea4ff8`. Status: rev 2 (applies an independent review: inventory files in `run_all.sh`'s cleanup, a public `load_inventory()` so the load is testable, the `equip` edge cases and the meaning of `closed(changed)`, the focus and scroll rules, slot labels that fit, the typed-class rules for the new tests, the chest's opaque rows, the new `assets/hub/` folder, a stat-key allow-list). This PR builds the **system**; the items themselves (their art, stats and how they are unlocked) come in the next PR.
+Builds on the hub (spec 0.4: `Hub`, `HubDoor`, walk mode), the camp (spec 0.7: `CampSite`, `CampScreen`, `GameSession`, `SaveGame`, `CampAttributes`) and the content layout of spec 1.2. `main` at `cea4ff8`. Status: built (steps 1 to 6; build notes in section 14); rev 2 (applies an independent review: inventory files in `run_all.sh`'s cleanup, a public `load_inventory()` so the load is testable, the `equip` edge cases and the meaning of `closed(changed)`, the focus and scroll rules, slot labels that fit, the typed-class rules for the new tests, the chest's opaque rows, the new `assets/hub/` folder, a stat-key allow-list). This PR builds the **system**; the items themselves (their art, stats and how they are unlocked) come in the next PR.
 
 Terms: an **item** is a piece of equipment (`ItemData`). A **slot** is a place on a character where one item is worn. The **pool** is the list of items the player has unlocked. A **loadout** is what one character wears. The **chest** is the object in the hub that opens the inventory screen.
 
@@ -153,3 +153,11 @@ Each step is one commit with its tests.
 - Equipped items change the hero's stats in the hub and in runs; the loadouts and the pool survive a restart and a corrupt file never crashes or loses the camp save.
 - Nothing about gold, attributes, runs or the existing hub changes when no item is equipped.
 - All new tests pass; the whole suite passes except the known `crowd_bone_warren` failure; `.uid` and `.import` files are committed; README files are current; the open-question items are answered or logged; nothing is claimed as tried by hand that was not.
+
+## 14. Build notes
+
+- `Inventory.set_state` takes untyped `Array` and `Dictionary` (it copies into the typed pool): a test calling it dynamically cannot pass a typed array literal.
+- Until step 5 the hub's `_open_inventory()` returns when no screen is set; `Hub.inventory_screen` is the real `InventoryScreen` from step 5 on.
+- The "worn" test items of the screen test use rings only for the scroll case; `Inventory.equip`'s ring rules are what the third-ring check in the screen test exercises.
+- A rendered frame of the hub (chest and player overlapping, no collider) and of the open screen with test items was looked at; both read well. The chest sits at (570, 64) as specified, no move needed (O3).
+- Not verified by hand: a play-through of walking to the chest and wearing an item in the real game (no item ships to wear), the mouse hover and click feel, and the screen at a different window size.
