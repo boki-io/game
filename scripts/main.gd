@@ -35,6 +35,7 @@ func _ready() -> void:
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.character = GameSession.character
 	player.attribute_levels = GameSession.attribute_levels
+	player.equipment = GameSession.inventory.worn_items(GameSession.character.id)
 	player.position = Vector2(Arena.world_size) / 2.0
 	players_root.add_child(player)
 	# Level, XP and upgrades carried from the previous stage. Restored before leveled_up is connected.

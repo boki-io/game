@@ -266,6 +266,7 @@ func _spawn_player(index: int, pos: Vector2) -> void:
 	player.character = characters[index]
 	player.hub_mode = true
 	player.attribute_levels = GameSession.attribute_levels
+	player.equipment = GameSession.inventory.worn_items(characters[index].id)
 	player.position = pos
 	players_root.add_child(player)
 	hud.bind(player)
