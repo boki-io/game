@@ -2,7 +2,7 @@ extends SceneTree
 ## Renders every map for review (spec 0.6, section 13). It builds each map with the preview scene (MapBuilder, a fixed
 ## seed) inside off-screen SubViewports and saves PNGs into a folder:
 ##   <id>.png          the map at normal zoom (640x360 around the middle, with the three monsters)
-##   <id>_full.png     the whole arena (1600x896)
+##   <id>_full.png     the whole arena (Arena.RUN_SIZE, scaled to fit 1600x896)
 ##   <id>_monsters.png the monster row, 4x
 ##   contact_sheet.png all eight whole arenas in a 4x2 grid; monsters_sheet.png the eight monster rows
 ## Needs a real renderer, so do not pass --headless:

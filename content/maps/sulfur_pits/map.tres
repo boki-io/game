@@ -41,3 +41,6 @@ horizontal_bias = 0.5
 pillar_count = 8
 decor_count = 90
 decor_weights = {0: 3.0, 1: 4.0, 2: 2.0, 3: 1.0, 11: 9.0}
+prop_count = 14
+prop_weights = {"rock": 6.0, "storage": 0.5, "monument": 0.5}
+prop_sets = {"camp_supply": 2, "camp_small": 1, "nook_barrels": 2, "nook_crates": 2}

@@ -27,13 +27,14 @@ var _outline := OUTLINE
 
 
 ## Footprints (world rectangles) of the walls. `reserved` rectangles (the spawn area ...) are kept clear.
-static func layout(size: Vector2, band: float, reserved: Array[Rect2]) -> Array[Rect2]:
+static func layout(size: Vector2, band: float, reserved: Array[Rect2], count: int = COUNT) -> Array[Rect2]:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = WALL_SEED
 	var out: Array[Rect2] = []
 	var edge := band + MARGIN
 	var tries := 0
-	while out.size() < COUNT and tries < 1500:
+	var max_tries := roundi(1500.0 * float(count) / COUNT)
+	while out.size() < count and tries < max_tries:
 		tries += 1
 		var length: float = LENGTHS[rng.randi_range(0, LENGTHS.size() - 1)]
 		var horizontal := rng.randf() < 0.5

@@ -19,7 +19,7 @@ var _failed := false
 
 ## MapLayout's real Bone Warren output for a fixed seed: [walls, pillars].
 func _dense_layout() -> Array:
-	var layout = MapLayoutT.generate(MapRegistryT.by_id(&"bone_warren"), 12345, Vector2(1600, 896))
+	var layout = MapLayoutT.generate(MapRegistryT.by_id(&"bone_warren"), 12345, Vector2(Arena.RUN_SIZE))
 	return [layout.walls, layout.pillars]
 
 
@@ -41,7 +41,7 @@ func _run(F: GDScript, with_obstacles: bool, moving: bool) -> Array:
 		main.get_node("World/Props").add_child(w)
 		w.setup(r)
 	var map := ObstacleMapT.new()
-	map.setup(walls, pillars, Vector2(1600, 896), MapBuilderT.playable_rect(Vector2(1600, 896), 16.0))
+	map.setup(walls, pillars, Vector2(Arena.RUN_SIZE), MapBuilderT.playable_rect(Vector2(Arena.RUN_SIZE), 16.0))
 	main.add_child(map)
 	main.spawn_director.obstacles = map
 	var p = F.player()

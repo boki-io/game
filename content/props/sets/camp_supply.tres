@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="PropSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/prop_set.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/maps/prop_set_member.gd" id="2"]
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("2")
+props = Array[StringName]([&"crate_large", &"crate_small"])
+offset = Vector2(-50, 0)
+step = Vector2(36, 2)
+count_min = 3
+count_max = 3
+spread = 0.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("2")
+props = Array[StringName]([&"barrel"])
+offset = Vector2(-42, 36)
+step = Vector2(30, 0)
+count_min = 1
+count_max = 3
+spread = 0.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m2"]
+script = ExtResource("2")
+props = Array[StringName]([&"vase_tall", &"pot_wide", &"vase_round"])
+offset = Vector2(0, 64)
+step = Vector2(0, 0)
+count_min = 1
+count_max = 3
+spread = 45.0
+chance = 1.0
+
+[sub_resource type="Resource" id="m3"]
+script = ExtResource("2")
+props = Array[StringName]([&"pebble_1", &"pebble_2", &"pebble_3", &"pebble_4", &"rock_small", &"rock_medium", &"shard_1", &"shard_2", &"rubble"])
+offset = Vector2(0, 0)
+step = Vector2(0, 0)
+count_min = 1
+count_max = 2
+spread = 80.0
+chance = 0.7
+
+[resource]
+script = ExtResource("1")
+id = &"camp_supply"
+display_name = "Supply camp"
+place = 0
+mirror = true
+members = Array[ExtResource("2")]([SubResource("m0"), SubResource("m1"), SubResource("m2"), SubResource("m3")])

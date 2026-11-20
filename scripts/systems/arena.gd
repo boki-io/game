@@ -3,15 +3,18 @@ extends Node2D
 ## Fixed-size bounded map: wall colliders on the World layer plus a visible border.
 
 const WALL_THICKNESS := 32.0
+## The size of a run's arena (the stage maps): twice the old 1600x896 each way. main.tscn and map_preview.tscn use
+## the `size` default; the hub and the select screen set their own.
+const RUN_SIZE := Vector2i(3200, 1792)
 
 ## The size of the arena currently loaded. Assigned in _enter_tree (before any _ready in the scene),
 ## always from the `size` export, so it is never stale after a scene change. Must be the first child
 ## of its scene root so siblings after it read the right value.
-static var world_size := Vector2i(1600, 896)
+static var world_size := RUN_SIZE
 ## The rock band of the arena loaded (0 for none). Things that keep to the floor stay this far inside the edge.
 static var wall_margin := 0.0
 
-@export var size := Vector2i(1600, 896)
+@export var size := RUN_SIZE
 ## A solid, visible band of rock along every edge (the hub's cave walls). The colliders sit at the band's inner
 ## edge. 0 keeps the plain walls outside the arena and the yellow border (the run).
 @export var wall_band := 0
