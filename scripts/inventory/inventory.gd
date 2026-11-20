@@ -124,8 +124,8 @@ func worn_state() -> Dictionary:
 
 
 ## Replaces the contents without emitting `changed` (used by loading, which must not trigger a save).
-func set_state(pool: Array[StringName], loadouts: Dictionary) -> void:
-	unlocked = pool.duplicate()
+func set_state(pool: Array, loadouts: Dictionary) -> void:
+	unlocked.assign(pool)
 	_worn = {}
 	for character_id in loadouts:
 		_worn[character_id] = loadouts[character_id].duplicate()
