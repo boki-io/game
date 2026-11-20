@@ -94,12 +94,14 @@ func _enter(state: State) -> void:
 		State.APPROACH:
 			sprite.shake = 0.0
 			_lane.hide_lane()
+			enemy.cancel_attack()
 		State.AIM:
 			sprite.warn_color = _lane.AIM_COLOR
 			sprite.shake = 0.6
 			_lane.locked = false
 			_lane.lock_progress = 0.0
 			_lane.show_lane()
+			enemy.play_attack(&"windup", _d.aim_time + _d.lock_time, true)  # one pose change spans aim and lock
 			Audio.play(&"dasher_charge", -3.0)
 		State.LOCK:
 			sprite.warn_color = _lane.LOCK_COLOR
@@ -111,10 +113,12 @@ func _enter(state: State) -> void:
 			_lane.hide_lane()
 			_dash_left = _lane_length()
 			_dash_hit = false
+			enemy.play_attack(&"dash", _dash_left / _d.dash_speed, true)
 			Audio.play(&"dasher_dash", -2.0)
 		State.RECOVER:
 			sprite.shake = 0.0
 			_lane.hide_lane()
+			enemy.cancel_attack()
 
 
 func _direction_to(target: Player) -> Vector2:

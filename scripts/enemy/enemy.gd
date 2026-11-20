@@ -58,7 +58,14 @@ var _flow_dir := Vector2.ZERO
 var _stuck_anchor := Vector2.ZERO
 var _stuck_t := 0.0
 var status := EnemyStatus.new()  # slow, freeze, vulnerable, burn (spec 1.0 section 2)
-var _anim: AnimatedSprite2D  # only when the applied variant has sprite_frames
+var _anim: AnimatedSprite2D  # only when the type or the applied variant has sprite_frames
+var _art_offset := ART_OFFSET
+var _art_scale := 1.0
+var _art_faces_left := ART_FACES_LEFT
+var _one_shot := false  # an attack or hurt animation is playing (it hands back to the base loop when it ends)
+var _attack_anim := &""  # the brain's attack animation in progress ("" when none, or when a hurt took over)
+var _held := false  # the attack animation stays on its last frame when it ends, until the brain ends it
+var _moving := false  # the brain asked to move last frame (walk instead of idle)
 
 @onready var health: Health = $Health
 @onready var hitbox: Area2D = $Hitbox
@@ -75,6 +82,8 @@ func _ready() -> void:
 	$Hitbox/CollisionShape2D.shape = shape
 	brain = data.brain.new()
 	brain.setup(self)
+	if data.sprite_frames != null:
+		_set_art(data.sprite_frames, data.art_offset, data.art_scale, data.art_faces_left)
 	if obstacles == null:
 		obstacles = ObstacleMap.get_for(self)
 
@@ -90,13 +99,17 @@ func apply_variant(variant: MonsterVariant) -> void:
 	sprite.eye_color = variant.eye_color
 	sprite.mark = int(variant.mark)
 	sprite.mark_color = variant.mark_color
-	_set_art(variant.sprite_frames)
+	if variant.sprite_frames != null:
+		_set_art(variant.sprite_frames, ART_OFFSET, 1.0, ART_FACES_LEFT)
+	elif data.sprite_frames == null:
+		_set_art(null)  # the type has no art of its own either: back to the drawn body
 
 
 ## Swaps the drawn body for an AnimatedSprite2D showing `frames` (a child of the placeholder, so the stun tint
-## applies to it and its shadow stays), or back to the placeholder body when null.
-func _set_art(frames: SpriteFrames) -> void:
-	if frames == null or not frames.has_animation(&"bounce"):
+## applies to it and its shadow stays), or back to the placeholder body when null. The defaults are the slimes'
+## (32 px frames, feet on row 29, looking left); a type's own art passes its EnemyData values.
+func _set_art(frames: SpriteFrames, offset := ART_OFFSET, art_scale := 1.0, faces_left := ART_FACES_LEFT) -> void:
+	if frames == null or not (frames.has_animation(&"bounce") or frames.has_animation(&"idle")):
 		if _anim:
 			_anim.queue_free()
 			_anim = null
@@ -105,23 +118,71 @@ func _set_art(frames: SpriteFrames) -> void:
 	if _anim == null:
 		_anim = AnimatedSprite2D.new()
 		_anim.centered = false
-		_anim.offset = ART_OFFSET
 		_anim.animation_finished.connect(_on_anim_finished)
 		sprite.add_child(_anim)
+	_art_offset = offset
+	_art_scale = art_scale
+	_art_faces_left = faces_left
+	_anim.offset = offset
+	_anim.scale = Vector2(art_scale, art_scale)
 	_anim.sprite_frames = frames
 	sprite.body_visible = false
-	_play_bounce()
+	_play_base()
 
 
-## Back to the loop, starting on a frame that depends on the enemy so a crowd does not bounce in step.
-func _play_bounce() -> void:
-	_anim.play(&"bounce")
-	_anim.set_frame_and_progress((get_instance_id() + Engine.get_physics_frames()) % _anim.sprite_frames.get_frame_count(&"bounce"), 0.0)
+## The loop the enemy is in when nothing else is playing: `walk` while it moves and `idle` when it stands (art with
+## those two), else `bounce` (the slimes). Starts on a frame that depends on the enemy so a crowd does not move in step.
+func _play_base() -> void:
+	_one_shot = false
+	_attack_anim = &""
+	_held = false
+	_anim.speed_scale = 1.0
+	var frames := _anim.sprite_frames
+	var base := &"bounce"
+	if frames.has_animation(&"walk") and _moving:
+		base = &"walk"
+	elif frames.has_animation(&"idle"):
+		base = &"idle"
+	_anim.play(base)
+	_anim.set_frame_and_progress((get_instance_id() + Engine.get_physics_frames()) % frames.get_frame_count(base), 0.0)
+
+
+## Plays a one-shot animation of the art (hurt, attack); false when the art has none of that name. `fit_time` > 0
+## stretches or squeezes it to take that many seconds (the art's own length is not the brain's timing).
+func _play_one_shot(anim: StringName, fit_time := 0.0) -> bool:
+	if _anim == null or not _anim.sprite_frames.has_animation(anim):
+		return false
+	_one_shot = true
+	_attack_anim = &""
+	_held = false
+	var frames := _anim.sprite_frames
+	var length := 0.0
+	for i in frames.get_frame_count(anim):
+		length += frames.get_frame_duration(anim, i)
+	length /= frames.get_animation_speed(anim)
+	_anim.speed_scale = length / fit_time if fit_time > 0.0 and length > 0.0 else 1.0
+	_anim.play(anim)
+	return true
 
 
 func _on_anim_finished() -> void:
-	if active and _anim.animation == &"hit":
-		_play_bounce()
+	if active and _one_shot and not _held:
+		_play_base()
+
+
+## The brain starts an attack: the art's `attack` animation plays (the ranged enemy's peak is the shot). Art with
+## its own phases passes the animation (`windup`, `dash`), the seconds it should take, and `hold` to stay on the last
+## frame until the next call or cancel_attack().
+func play_attack(anim := &"attack", fit_time := 0.0, hold := false) -> void:
+	if _play_one_shot(anim, fit_time):
+		_attack_anim = anim
+		_held = hold
+
+
+## The attack was interrupted or is over (stun, freeze, walking on, recovery): an attack animation in progress ends.
+func cancel_attack() -> void:
+	if _anim and _one_shot and _attack_anim != &"":
+		_play_base()
 
 
 func activate(pos: Vector2, hp_multiplier: float) -> void:
@@ -141,7 +202,8 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	sprite.dim = false
 	if _anim:
 		_anim.flip_h = _flips(facing)
-		_play_bounce()
+		_moving = false
+		_play_base()
 	brain.reset()
 	_los_clear = true
 	_on_flow = false
@@ -191,8 +253,8 @@ func take_damage(amount: float, quiet := false) -> void:
 			_recoil_dir = away
 			_recoil_left = RECOIL_TIME
 			sprite.position = away * RECOIL_DISTANCE
-		if _anim and _anim.sprite_frames.has_animation(&"hit"):
-			_anim.play(&"hit")  # the art flashes itself
+		if _play_one_shot(&"hurt") or _play_one_shot(&"hit"):
+			pass  # the art flashes itself
 		else:
 			_flash_left = FLASH_TIME
 			sprite.flash = true
@@ -355,6 +417,11 @@ func _physics_process(delta: float) -> void:
 		var flip := _flips(facing)
 		if _anim.flip_h != flip:
 			_anim.flip_h = flip
+		var moving := velocity.length_squared() > 1.0
+		if moving != _moving:
+			_moving = moving
+			if not _one_shot:
+				_play_base()
 
 	_contact_cd = maxf(_contact_cd - delta, 0.0)
 	if _contact_cd <= 0.0 and not is_stunned() and brain.can_contact():
@@ -408,7 +475,7 @@ func _separation() -> Vector2:
 
 
 func _flips(dir: Vector2) -> bool:
-	return dir.x > 0.0 if ART_FACES_LEFT else dir.x < 0.0
+	return dir.x > 0.0 if _art_faces_left else dir.x < 0.0
 
 
 func _on_died() -> void:
@@ -417,7 +484,7 @@ func _on_died() -> void:
 	if fx:
 		if _anim and _anim.sprite_frames.has_animation(&"death"):
 			# This node is pooled and hidden at once, so the puddle is an effect of its own, not a state of this sprite.
-			fx.play_once(_anim.sprite_frames, &"death", global_position, ART_OFFSET, _anim.flip_h)
+			fx.play_once(_anim.sprite_frames, &"death", global_position, _art_offset, _anim.flip_h, _anim.scale)
 		else:
 			fx.puff(global_position + Vector2(0, -8), sprite.body_color)
 		# A burst in the enemy's own colour, more bits for a bigger body (Grunt 6, Ranged 7, Dasher 14).

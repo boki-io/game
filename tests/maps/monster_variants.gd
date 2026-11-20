@@ -144,7 +144,7 @@ func _init() -> void:
 			fx._fx.clear()
 			e.health.take_damage(1.0e9)
 			var puffs: Array = fx._fx.filter(func(f: Dictionary) -> bool: return f.kind == &"puff")
-			if v.sprite_frames == null:
+			if v.sprite_frames == null and type.sprite_frames == null:  # drawn art dies as a corpse animation, not a puff
 				_check(puffs.size() == 1 and puffs[0].color == v.body_color, "%s %s: death puff uses the variant body colour" % [theme.id, type.id])
 			else:  # drawn art dies as its own animation instead of a puff (slime_sprites.gd)
 				_check(puffs.is_empty(), "%s %s: a variant with frames has no puff" % [theme.id, type.id])

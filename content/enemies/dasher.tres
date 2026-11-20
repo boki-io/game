@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemy/dasher_data.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/enemy/dasher_brain.gd" id="2"]
+[ext_resource type="SpriteFrames" path="res://content/enemies/charger/frames.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
@@ -16,6 +17,10 @@ body_color = Color(0.62, 0.36, 0.86, 1)
 body_size = Vector2(20, 36)
 hitbox_radius = 7.0
 brain = ExtResource("2")
+sprite_frames = ExtResource("3")
+art_scale = 0.91
+art_offset = Vector2(-32, -62)
+art_faces_left = false
 spawn_weight = 15.0
 unlock_time = 90.0
 full_weight_time = 150.0
