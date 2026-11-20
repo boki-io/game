@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"bone_charm"
+display_name = "Bone Charm"
+description = "A knuckle on a string."
+slot = &"necklace"
+rating = &"standard"
+scales = {
+&"damage": 0.04
+}

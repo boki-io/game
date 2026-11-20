@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"cloth_trousers"
+display_name = "Cloth Trousers"
+description = "Patched twice."
+slot = &"pants"
+rating = &"standard"
+scales = {
+&"cooldown": -0.04
+}

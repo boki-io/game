@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"hardened_greaves"
+display_name = "Hardened Greaves"
+description = "Beaten out on a forge."
+slot = &"pants"
+rating = &"epic"
+adds = {
+&"max_hp": 10
+}
+scales = {
+&"cooldown": -0.08
+}

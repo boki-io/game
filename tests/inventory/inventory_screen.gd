@@ -20,8 +20,10 @@ func _check(ok: bool, what: String) -> void:
 		print("FAIL: ", what)
 
 
-func _item(id: String, name: String, slot: String, desc := "") -> Resource:
+func _item(id: String, name: String, slot: String, desc := "", rating := "standard", relic := "") -> Resource:
 	var it = ItemDataS.new()
+	it.rating = StringName(rating)
+	it.relic_id = StringName(relic)
 	it.id = StringName(id)
 	it.display_name = name
 	it.slot = StringName(slot)
@@ -60,6 +62,7 @@ func _init() -> void:
 	await process_frame
 	await _empty()
 	await _items()
+	await _rated()
 	await _keyboard()
 	await _other_character_and_close()
 	await _many()
@@ -96,7 +99,9 @@ func _items() -> void:
 	_screen.open(knight)
 	_check(_screen.grid_cells.size() == 6 and _screen._scroll.visible and not _screen._empty_label.visible, "the grid shows the six items")
 	_check(_screen.zone == _screen.Zone.GRID and _screen.grid_cursor == 0, "the cursor starts on the first item")
-	_check(_screen._name_label.text == "Iron Cap" and _screen._type_label.text == "Helmet" and _screen._desc_label.text == "A plain cap.", "the description line shows the item under the cursor")
+	_check(_screen._name_label.text == "Iron Cap" and _screen._type_label.text == "Standard Helmet" and _screen._desc_label.text == "\nA plain cap.", "the labels show the item under the cursor (type '%s', text '%s')" % [_screen._type_label.text, _screen._desc_label.text])
+	_check(_screen._name_label.get_theme_color("font_color") == ItemDataS.rating_color(&"standard"), "the name is in the rating colour")
+	_check(_screen._desc_label.custom_minimum_size.y == 33.0, "the description label is three lines high")
 
 	# Click wears; the slot shows it; a second click does nothing; a click on the slot takes it off.
 	_screen.click(_screen.Zone.GRID, 0)
@@ -134,6 +139,53 @@ func _items() -> void:
 	_screen.click(_screen.Zone.SLOTS, 6)
 	await _key(&"ui_cancel")
 	_check(closed_flags == [true, false, false], "wear then take off is not a change (%s)" % [closed_flags])
+
+
+## Rating colours on the frames and labels, the relic in the type line, stat lines (spec 1.5 section 6).
+func _rated() -> void:
+	_gs.inventory.set_state(Reg.test_items.map(func(it): return it.id), {})
+	var epic = _item("helm", "Warden Helm", "helmet", "", "epic")
+	epic.adds = {&"hp_regen": 0.6, &"max_hp": 10}
+	var legend = _item("boots2", "Emberstep Boots", "shoes", "Every step leaves a spark.", "legendary", "fire_trail")
+	legend.scales = {&"move_speed": 0.12}
+	var ring = _item("ring2", "Gold Ring", "ring", "", "legendary")
+	Reg.test_items.append_array([epic, legend, ring])
+	_gs.inventory.unlock(&"helm")
+	_gs.inventory.unlock(&"boots2")
+	_gs.inventory.unlock(&"ring2")
+	_screen.open(_character(&"knight"))
+	var i_epic: int = _screen.items.find(epic)
+	var i_leg: int = _screen.items.find(legend)
+	var i_ring: int = _screen.items.find(ring)
+	_screen.hover(_screen.Zone.GRID, i_epic)
+	_check(_screen._type_label.text == "Epic Helmet" and _screen._desc_label.text == "+0.6 HP/s, +10 max HP", "epic type and stat line: '%s' '%s'" % [_screen._type_label.text, _screen._desc_label.text])
+	_check(_screen._name_label.get_theme_color("font_color") == ItemDataS.rating_color(&"epic"), "the name of an epic is purple")
+	_screen.hover(_screen.Zone.GRID, i_leg)
+	_check(_screen._type_label.text == "Legendary Shoes - Fire Trail", "a legendary names its relic: '%s'" % _screen._type_label.text)
+	_check(_screen._desc_label.text == "+12% move speed\nEvery step leaves a spark.", "stat line then flavour line: '%s'" % _screen._desc_label.text)
+	_check(_screen._name_label.get_theme_color("font_color") == ItemDataS.rating_color(&"legendary"), "the name of a legendary is orange")
+	_screen.hover(_screen.Zone.GRID, i_ring)
+	_check(_screen._type_label.text == "Legendary Ring", "a legendary without a relic has no relic in the type line: '%s'" % _screen._type_label.text)
+	# Frames: cursor gold, others in the rating colour, worn ones brighter, empty slots plain.
+	_check(_screen.frame_color(_screen.grid_cells[i_ring]) == _screen.CURSOR, "the cursor frame stays gold")
+	_check(_screen.frame_color(_screen.grid_cells[i_epic]) == ItemDataS.rating_color(&"epic"), "an epic cell has a purple frame")
+	_check(_screen.frame_color(_screen.grid_cells[i_leg]) == ItemDataS.rating_color(&"legendary"), "a legendary cell has an orange frame")
+	var std_index: int = _screen.items.find(Reg.test_items[0])
+	_check(_screen.frame_color(_screen.grid_cells[std_index]) == ItemDataS.rating_color(&"standard"), "a standard cell has a stone frame")
+	_check(_screen.frame_color(_screen.slot_cells[6]) == _screen.FRAME, "an empty slot has the plain frame")
+	_screen.click(_screen.Zone.GRID, i_epic)
+	_screen.hover(_screen.Zone.GRID, i_ring)
+	_check(_screen.frame_color(_screen.grid_cells[i_epic]) == ItemDataS.rating_color(&"epic").lightened(0.3), "a worn item's frame is brighter")
+	_check(_screen.frame_color(_screen.slot_cells[0]) == ItemDataS.rating_color(&"epic").lightened(0.3), "the slot holding it shows its rating")
+	_screen.click(_screen.Zone.SLOTS, 0)
+	_screen.hover(_screen.Zone.SLOTS, 6)
+	_check(_screen._type_label.text == "Shoes slot", "an empty slot still names itself")
+	Reg.test_items.erase(epic)
+	Reg.test_items.erase(legend)
+	Reg.test_items.erase(ring)
+	_gs.inventory.set_state(Reg.test_items.map(func(it): return it.id), {})
+	_screen.close()
+	_gs.inventory.set_state(Reg.test_items.map(func(it): return it.id), {})
 
 
 func _keyboard() -> void:
