@@ -71,6 +71,7 @@ func _ready() -> void:
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
 	_build_camp_screen()
+	_build_inventory_screen()
 	_show_reward(GameSession.take_reward())  # before the early return below
 	# Coming back from a run: walk mode as the character just played, below the door.
 	var last := GameSession.last_character
@@ -342,6 +343,15 @@ func _build_camp_screen() -> void:
 	$UI.add_child(screen)
 	screen.closed.connect(_on_camp_closed)
 	camp_screen = screen
+
+
+## The inventory screen (spec 1.4) lives in the UI layer; closing it after a change rebuilds the Player, as the camp does.
+func _build_inventory_screen() -> void:
+	var screen := InventoryScreen.new()
+	screen.name = "InventoryScreen"
+	$UI.add_child(screen)
+	screen.closed.connect(_on_inventory_closed)
+	inventory_screen = screen
 
 
 func _on_camp_closed(changed: bool) -> void:
