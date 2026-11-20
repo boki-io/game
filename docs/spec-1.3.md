@@ -1,6 +1,6 @@
 # Spec v1.3: The Vacuum Magnet (a pickup that gathers every coin and XP gem for 5 seconds)
 
-Builds on the pickups of spec v0.3 (`Pickups`, `XPGem`, `Coin`, the player's `XPCollector`) and on the doubled run arena of PR #13 (3200x1792). `main` at `cea4ff8`. Status: rev 2 (applies an independent review: gems must not level the test player up, a freed vacuum target, a testable `roll_magnet`, the director setup the kill test needs, the magnet's hop rule, a numbered "Tests it touches" section, sound-generator ordering).
+Builds on the pickups of spec v0.3 (`Pickups`, `XPGem`, `Coin`, the player's `XPCollector`) and on the doubled run arena of PR #13 (3200x1792). `main` at `cea4ff8`. Status: built (steps 1 to 4; deviations in section 12); rev 2 (applies an independent review: gems must not level the test player up, a freed vacuum target, a testable `roll_magnet`, the director setup the kill test needs, the magnet's hop rule, a numbered "Tests it touches" section, sound-generator ordering).
 
 Terms: the **magnet** is the new item on the ground. The **vacuum** is its effect: for 5 seconds every XP gem and coin on the map flies to the player who took the magnet. The existing **Magnet upgrade** (`pickup_radius`, +30% pickup radius) is a different thing; the code and files here say "vacuum" to keep them apart.
 
@@ -121,3 +121,9 @@ Step 2 tests call `start_vacuum` directly on the `Pickups` node (no item yet); s
 - No HUD change; one new sound; all numbers in `vacuum_magnet.tres`.
 - `godot --headless --path . --import` was run and the `.uid` files are committed; after the sound generator `git status` shows only the new sound files.
 - `tests/vacuum_magnet.gd` passes; the whole suite passes except the known `crowd_bone_warren` failure; README and tests README are current; nothing is claimed as tried by hand that was not.
+
+## 12. Build notes
+
+- Test item 4: the sound call is not asserted (headless has no audio); the burst of 24 bits is.
+- `Pickups` also got `pull_speed(normal)` and `pull_accel(normal)` helpers, which `XPGem` and `Coin` call, instead of each reading the data themselves; `Pickups._ready` makes a default `VacuumData` when none is set (scenes other than `main.tscn`).
+- `main.tscn` names the data in step 2 and the magnet scene in step 3.
