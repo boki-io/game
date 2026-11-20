@@ -112,4 +112,6 @@ save("relic_zap", mix(noise(0.07, 0.9, 0.5, 2.0, 0.0), tone(1600, 700, 0.08, "sq
 save("arrow_fire", mix(tone(260, 120, 0.12, "triangle", 2.5), noise(0.05, 0.8, 0.3, 2.5, 0.0)), 0.4)
 save("arrow_bounce", mix(tone(1800, 1200, 0.04, "sine", 2.5), noise(0.02, 0.9, 0.5, 2.0, 0.0)), 0.3)
 save("arrow_rain", seq(mix(tone(500, 1800, 0.5, "sine", 0.6), noise(0.5, 0.2, 0.6, 0.8, 0.3)), noise(0.5, 0.7, 0.5, 1.2, 0.2)), 0.4)
+# v1.3 vacuum magnet sound, appended last for the same reason.
+save("vacuum_pickup", mix(tone(400, 1600, 0.25, "sine", 1.2), tone(800, 3200, 0.25, "square", 3.0)), 0.5)
 print("wrote", len(os.listdir(OUT)), "files to", os.path.abspath(OUT))

@@ -1,9 +1,12 @@
 class_name Pickups
 extends Node2D
-## Owns the XP gem pool and the coin pool.
+## Owns the XP gem pool and the coin pool, and the vacuum (spec 1.3): while it runs, every gem and coin flies to
+## `vacuum_target` fast. Gems and coins read it each frame (`vacuuming()`), so nothing is looped over when it starts.
 
 @export var gem_scene: PackedScene
 @export var coin_scene: PackedScene
+@export var vacuum_data: VacuumData
+@export var magnet_scene: PackedScene
 
 ## A pickup hops out of the dead enemy before it can be pulled in: 150 to 170 px/s, slowing at 1000 px/s^2 (11 to 15 px).
 const POP_SPEED := Vector2(150.0, 170.0)
@@ -11,6 +14,65 @@ const POP_DECEL := 1000.0
 
 var _pool: Array[XPGem] = []
 var _coin_pool: Array[Coin] = []
+## The player the vacuum pulls everything to (null when it is not running) and the seconds it has left.
+var vacuum_target: Player
+var vacuum_left := 0.0
+var _magnet: VacuumMagnet  # the one magnet, made on the first drop
+
+
+func _ready() -> void:
+	if vacuum_data == null:
+		vacuum_data = VacuumData.new()
+
+
+func _physics_process(delta: float) -> void:
+	if vacuum_target == null:
+		return
+	# A freed player is not null, so the validity check comes first.
+	vacuum_left -= delta
+	if vacuum_left <= 0.0 or not is_instance_valid(vacuum_target) or vacuum_target.dead:
+		vacuum_target = null
+		vacuum_left = 0.0
+
+
+## Starts the vacuum for `player` (or restarts it: a second one refreshes the time and takes over the target).
+## A null or dead player does nothing.
+func start_vacuum(player: Player) -> void:
+	if not is_instance_valid(player) or player.dead:
+		return
+	vacuum_target = player
+	vacuum_left = vacuum_data.effect_time
+
+
+## The magnet is lying on the ground.
+func magnet_on_map() -> bool:
+	return _magnet != null and _magnet.active
+
+
+## A killed mob's chance to drop the magnet. Nothing is rolled while one lies on the ground or the vacuum runs, so
+## there is never more than one. Returns whether one was placed.
+func roll_magnet(pos: Vector2) -> bool:
+	if magnet_on_map() or vacuuming() or randf() >= vacuum_data.drop_chance:
+		return false
+	place_magnet(pos)
+	return true
+
+
+## Puts the magnet on the ground at `pos` (it hops out like a coin).
+func place_magnet(pos: Vector2) -> void:
+	if _magnet == null:
+		_magnet = magnet_scene.instantiate()
+		_magnet.pool = self
+		add_child(_magnet)
+	_magnet.activate(pos)
+
+
+func release_magnet() -> void:
+	_magnet.deactivate()
+
+
+func vacuuming() -> bool:
+	return vacuum_target != null
 
 
 func spawn_gem(pos: Vector2, value: int) -> void:
