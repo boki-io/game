@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://f4anaordsvey"]
+
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cvnn4vkuqknym" path="res://content/characters/wizard/abilities/lightning/behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_s0uoa"]
+[ext_resource type="AudioStream" uid="uid://u4c3dr6gk0ny" path="res://assets/audio/lightning.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hf0vt"]
+atlas = ExtResource("2_s0uoa")
+region = Rect2(480, 1632, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"lightning"
+display_name = "Chain Lightning"
+description = "Lightning strikes the nearest enemy and jumps between nearby enemies."
+icon = SubResource("AtlasTexture_hf0vt")
+cooldown = 1.2
+mana_cost = 15.0
+damage = 22.0
+range = 220.0
+radius = 60.0
+cone_degrees = 180.0
+behavior = ExtResource("2")
+sfx = ExtResource("3")

@@ -7,7 +7,7 @@ extends Node2D
 
 const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
-const ENEMY_PATHS := ["res://data/enemies/grunt.tres", "res://data/enemies/ranged.tres", "res://data/enemies/dasher.tres"]
+const ENEMY_PATHS := ["res://content/enemies/grunt.tres", "res://content/enemies/ranged.tres", "res://content/enemies/dasher.tres"]
 const MONSTER_SPACING := 40.0
 const PAN_SPEED := 300.0
 

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://content/characters/_template/abilities/example/behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"template_example"
+display_name = "Example"
+description = "Automatically cuts the nearest enemy."
+cooldown = 0.8
+mana_cost = 0.0
+damage = 8.0
+range = 40.0
+behavior = ExtResource("2")

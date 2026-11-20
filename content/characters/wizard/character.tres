@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/character_data.gd" id="1"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/bolt/ability.tres" id="2"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/phase/ability.tres" id="3"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/lightning/ability.tres" id="4"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/meteor/ability.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/upgrades/upgrade_data.gd" id="6"]
+[ext_resource type="Script" path="res://content/characters/wizard/arcane_focus.gd" id="7"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/bolt/upgrades/bolt_twin.tres" id="u0"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/bolt/upgrades/bolt_pierce.tres" id="u1"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/bolt/upgrades/bolt_rapid.tres" id="u2"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/phase/upgrades/phase_long.tres" id="u3"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/phase/upgrades/phase_swift.tres" id="u4"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/phase/upgrades/phase_touch.tres" id="u5"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/phase/upgrades/phase_orbs.tres" id="u6"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/lightning/upgrades/lightning_jumps.tres" id="u7"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/lightning/upgrades/lightning_stun.tres" id="u8"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/lightning/upgrades/lightning_arc.tres" id="u9"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/meteor/upgrades/meteor_radius.tres" id="u10"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/meteor/upgrades/meteor_twin.tres" id="u11"]
+[ext_resource type="Resource" path="res://content/characters/wizard/abilities/meteor/upgrades/meteor_scorch.tres" id="u12"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/max_hp.tres" id="u13"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/mana_regen.tres" id="u14"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/max_mana.tres" id="u15"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/move_speed.tres" id="u16"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/pickup_radius.tres" id="u17"]
+[ext_resource type="Resource" path="res://content/shared/upgrades/damage.tres" id="u18"]
+[ext_resource type="SpriteFrames" path="res://content/characters/wizard/frames.tres" id="sf"]
+
+[resource]
+script = ExtResource("1")
+id = &"wizard"
+display_name = "Wizard"
+description = "Ranged spellcaster. Strikes from afar and phases out of trouble."
+body_color = Color(0.95, 0.8, 0.25, 1)
+sprite_frames = ExtResource("sf")
+sprite_scale = 0.65
+sprite_offset = Vector2(3, -18)
+max_hp = 90.0
+move_speed = 85.0
+accel_time = 0.06
+friction_time = 0.08
+max_mana = 140.0
+mana_regen = 10.0
+trait_script = ExtResource("7")
+trait_name = "Arcane Focus"
+trait_description = "+25% damage after standing still for 1s."
+ability_auto = ExtResource("2")
+ability_q = ExtResource("3")
+ability_e = ExtResource("4")
+ability_r = ExtResource("5")
+upgrade_pool = Array[ExtResource("6")]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7"), ExtResource("u8"), ExtResource("u9"), ExtResource("u10"), ExtResource("u11"), ExtResource("u12"), ExtResource("u13"), ExtResource("u14"), ExtResource("u15"), ExtResource("u16"), ExtResource("u17"), ExtResource("u18")])

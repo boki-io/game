@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://cnkssijhv7grh"]
+
+[ext_resource type="Script" uid="uid://dl0cx7lq21lws" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://b85cpn3dd4nrt" path="res://content/characters/knight/abilities/spin/behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_fiv3v"]
+[ext_resource type="AudioStream" uid="uid://cdbvclk0dkmf0" path="res://assets/audio/spin.wav" id="3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m76rt"]
+atlas = ExtResource("2_fiv3v")
+region = Rect2(224, 1568, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"spin"
+display_name = "Spin"
+description = "Hit everything around you. Move slowly while spinning."
+icon = SubResource("AtlasTexture_m76rt")
+cooldown = 2.0
+mana_cost = 15.0
+radius = 48.0
+duration = 0.4
+behavior = ExtResource("2")
+sfx = ExtResource("3")

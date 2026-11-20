@@ -6,8 +6,8 @@ extends SceneTree
 ## slots set to the Archer's data by hand.
 ## Run: godot --headless --path . --script tests/archer_ricochet_rain.gd
 
-const RICOCHET := "res://data/abilities/ricochet.tres"
-const RAIN := "res://data/abilities/arrow_rain.tres"
+const RICOCHET := "res://content/characters/archer/abilities/ricochet/ability.tres"
+const RAIN := "res://content/characters/archer/abilities/arrow_rain/ability.tres"
 const SPREAD: Array[float] = [0.0, -3.0, 3.0, -6.0, 6.0, 0.0, 0.0, -3.0, 3.0, -6.0]  # degrees, by arrow number
 const ARENA_INSET := 8.0  # AbilityBehavior.ARENA_INSET (not named here: it uses an autoload)
 const MAX_LIVE := 40  # PlayerProjectiles.MAX_LIVE (not named here: it uses an autoload)

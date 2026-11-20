@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1"]
+[ext_resource type="Script" path="res://content/characters/archer/abilities/arrow/behavior.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c8p4bo1qlxvnk" path="res://assets/32x32.png" id="2_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_arrow"]
+atlas = ExtResource("2_atlas")
+region = Rect2(32, 2016, 32, 32)
+
+[resource]
+script = ExtResource("1")
+id = &"arrow"
+display_name = "Arrow"
+description = "Automatically shoots an arrow at the nearest enemy."
+icon = SubResource("AtlasTexture_arrow")
+cooldown = 0.8
+mana_cost = 0.0
+damage = 14.0
+range = 220.0
+target_range = 180.0
+params = {
+&"speed": 320.0
+}
+behavior = ExtResource("2")

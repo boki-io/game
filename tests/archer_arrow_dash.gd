@@ -37,18 +37,18 @@ func _init() -> void:
 	await process_frame
 	await process_frame
 	var F: GDScript = load("res://tests/fixture.gd")
-	var arrow_data: AbilityData = load("res://data/abilities/arrow.tres")
-	var dash_data: AbilityData = load("res://data/abilities/dash_shot.tres")
+	var arrow_data: AbilityData = load("res://content/characters/archer/abilities/arrow/ability.tres")
+	var dash_data: AbilityData = load("res://content/characters/archer/abilities/dashshot/ability.tres")
 
 	# The data files, as the spec states them.
 	_check(arrow_data.id == &"arrow" and arrow_data.cooldown == 0.8 and arrow_data.damage == 14.0, "arrow.tres numbers")
 	_check(arrow_data.range == 220.0 and arrow_data.target_range == 180.0 and arrow_data.mana_cost == 0.0, "arrow.tres reach")
-	_check(arrow_data.param(&"speed", 0.0) == 320.0 and arrow_data.behavior.resource_path.ends_with("/arrow_behavior.gd"), "arrow.tres speed, behavior")
+	_check(arrow_data.param(&"speed", 0.0) == 320.0 and arrow_data.behavior.resource_path.ends_with("/arrow/behavior.gd"), "arrow.tres speed, behavior")
 	_check(dash_data.id == &"dashshot" and dash_data.animation == &"dash", "dash_shot.tres id and animation")
 	_check(dash_data.cooldown == 4.0 and dash_data.range == 80.0 and dash_data.duration == 0.15, "dash_shot.tres dash")
 	_check(dash_data.damage == 12.0 and dash_data.arc_degrees == 60.0 and dash_data.immunity_after == 0.2, "dash_shot.tres fan")
 	_check(dash_data.param(&"arrows", 0.0) == 7.0 and dash_data.param(&"speed", 0.0) == 300.0, "dash_shot.tres params")
-	_check(dash_data.mana_cost == 0.0 and dash_data.behavior.resource_path.ends_with("/dash_shot_behavior.gd") and dash_data.sfx != null, "dash_shot.tres rest")
+	_check(dash_data.mana_cost == 0.0 and dash_data.behavior.resource_path.ends_with("/dashshot/behavior.gd") and dash_data.sfx != null, "dash_shot.tres rest")
 	var player_script: GDScript = load("res://scripts/player/player.gd")
 	_check(player_script.ONE_SHOT_ANIMS.has(dash_data.animation), "the dash animation is a one-shot")
 

@@ -78,9 +78,9 @@ func _check_frames(tag: String, frames: SpriteFrames, folder: String) -> void:
 func _init() -> void:
 	await process_frame
 	await process_frame
-	var grunt: EnemyData = load("res://data/enemies/grunt.tres")
-	var ranged: EnemyData = load("res://data/enemies/ranged.tres")
-	var dasher: EnemyData = load("res://data/enemies/dasher.tres")
+	var grunt: EnemyData = load("res://content/enemies/grunt.tres")
+	var ranged: EnemyData = load("res://content/enemies/ranged.tres")
+	var dasher: EnemyData = load("res://content/enemies/dasher.tres")
 
 	# --- Resources: every map, and the default cave ---
 	var themes: Array = Registry.all()

@@ -33,7 +33,7 @@ func _init() -> void:
 	var F: GDScript = load("res://tests/fixture.gd")
 
 	# The data: the character carries its frames, every animation is there with the drawn timing.
-	var frames: SpriteFrames = load("res://data/characters/wizard_frames.tres")
+	var frames: SpriteFrames = load("res://content/characters/wizard/frames.tres")
 	var names := Array(frames.get_animation_names()).map(func(n: Variant) -> String: return String(n))
 	names.sort()
 	var expected := FRAME_MS.keys().map(func(n: Variant) -> String: return String(n))
@@ -50,7 +50,7 @@ func _init() -> void:
 			_check(tex != null and tex.region.size == Vector2(64, 64), "%s frame %d is a 64x64 atlas region" % [anim, i])
 			if tex != null:
 				_check(Vector2i(tex.atlas.get_size()) == Vector2i(64 * ms.size(), 64), "%s strip is %d frames of 64x64" % [anim, ms.size()])
-	var wizard: CharacterData = load("res://data/characters/wizard.tres")
+	var wizard: CharacterData = load("res://content/characters/wizard/character.tres")
 	_check(wizard.sprite_frames == frames, "the Wizard uses wizard_frames.tres")
 
 	# In a run.

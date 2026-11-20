@@ -43,11 +43,11 @@ Four relic slots sit on the right of the screen in a run. A level-up can offer a
 you own (3 levels each). Relics work by themselves and are the same for every character: **Tidal Wave** (a wave along your aim, Lv3 returns),
 **Frost Comet** (comets that freeze, Lv3 two comets and frozen enemies take 1.5x), **Thorn Nova** (a ring of thorns and a slowing bramble, Lv3 a damaging
 one), **Storm Orbs** (orbs circle you, Lv3 they zap) and **Fire Trail** (flames behind you, Lv3 they set enemies burning). With all four slots full only
-upgrades for the relics you own are offered. Relic damage scales with your damage stat. Their numbers are in `data/relics/*.tres`; enemy slow,
+upgrades for the relics you own are offered. Relic damage scales with your damage stat. Their numbers are in `content/relics/<id>/relic.tres`; enemy slow,
 freeze, vulnerable and burn live in `EnemyStatus`. See `docs/spec-1.0.md`.
 
 ## Feel
-Walking eases up to speed and coasts to a stop (`accel_time` and `friction_time` in `data/characters/*.tres`; 0 is instant), with
+Walking eases up to speed and coasts to a stop (`accel_time` and `friction_time` in `content/characters/<id>/character.tres`; 0 is instant), with
 a puff of dust every few steps. Hits throw sparks and recoil the enemy's body a hair, a kill throws a burst in the enemy's colour
 (`EnemyData.kill_shake` kicks the camera for tough ones), XP gems and coins hop out before they are pulled in, and the screen edges
 pulse red when the player is hit. Particles are tiny squares in `Effects` (capped at 256). Nothing ever stops or slows time.
@@ -60,7 +60,9 @@ sounds (`Audio.impact`, `AbilityData.sfx_layer`); the layers are generated place
 ## Project layout
 - `scenes/`: the hub (`hub.tscn`, the main scene), the run (`main.tscn`), player, enemy, pickups, projectile.
 - `scripts/`: `hub/` (pedestals, door), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `relics/` (`RelicData`, `RelicRegistry`, `PlayerRelics`, `RelicBehavior` and one behavior per relic), `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
-- `data/`: tuning as resources: `abilities/`, `enemies/`, `upgrades/`, `relics/`, `characters/`.
+- `content/characters/<id>/`: everything about one character: `character.tres`, `frames.tres`, `sprites/`, `abilities/<ability id>/` (`ability.tres`, `behavior.gd` and that ability's `upgrades/`) and passives only that character has in `upgrades/`. `content/shared/upgrades/` holds the upgrades several characters use. `_template` is a complete character to copy. See `content/characters/README.md`.
+- `content/relics/<id>/` (`relic.tres` and its behavior script), `content/enemies/*.tres`, `content/attributes/*.tres`: the rest of the game's data. Tuning is data, not code.
+  `scripts/` keeps the engine: bases (`AbilityBehavior`, `DashSlashBehavior`, `BoltBehavior`), `SteadyAim`, registries and systems. Specs before 1.2 name the old `data/` and `assets/sprites/` paths.
 - `content/maps/<id>/`: everything about one map: `map.tres` (a `MapTheme`), `thumbnail.png` and `monsters/*.tres`
   (a `MonsterVariant` per enemy type). `_default` is today's cave (used with no stage set), `_template` is a complete map to copy;
   neither is offered on a card. A new map is a folder plus one id in `MapRegistry`.
@@ -81,7 +83,7 @@ the `walk` export puts a Player in. To render all maps to PNGs for review (not `
 
 ## Adding things
 - **Map:** `python3 tools/maps/new_map.py <id> "<Name>"`, then follow `content/maps/README.md`.
-- **Enemy:** new `EnemyData` resource in `data/enemies/` with a brain script, then add it to
+- **Enemy:** new `EnemyData` resource in `content/enemies/` with a brain script in `scripts/enemy/`, then add it to
   `SpawnDirector.enemy_types` in `scenes/main.tscn`.
-- **Upgrade:** new `UpgradeData` resource in `data/upgrades/`, then add it to the character's `upgrade_pool`.
-- **Character:** new `CharacterData` in `data/characters/`, then list it in `CharacterRegistry`.
+- **Upgrade:** new `UpgradeData` in the `upgrades/` folder of the ability it upgrades (or the character's, or `content/shared/upgrades/`), then add it to the character's `upgrade_pool`.
+- **Character:** copy `content/characters/_template/`, then list it in `CharacterRegistry`. Abilities and relics are folders too: `content/characters/README.md`.

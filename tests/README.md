@@ -10,6 +10,7 @@ tests/run_all.sh            # imports first, then every test in tests/ and tests
 
 | Script | Checks |
 |---|---|
+| `content_load.gd` | Spec 1.2 content layout: every `.tres` under `content/` (not maps) loads and names existing files, upgrade ids are unique, no orphan upgrade, ability, relic, attribute or frames file, upgrade stat keys match their ability, every registered character casts auto, Q, E and R once; every file sits in its character, ability or shared folder (the shared dash and bolt bases excepted), shared upgrades are in two pools or more, and the template loads |
 | `double_dash.gd` | Knight's Double Dash: free follow-up, frozen cooldown, expiry |
 | `dash_immunity.gd` | Unhittable while dashing and for `immunity_after` seconds afterwards |
 | `dasher_lane.gd` | A Dasher's locked lane hurts a player standing in it and misses one who stepped out |

@@ -9,7 +9,7 @@ const Registry := preload("res://scripts/maps/map_registry.gd")
 const VariantScript := preload("res://scripts/maps/monster_variant.gd")
 const SpriteScript := preload("res://scripts/player/placeholder_sprite.gd")
 const ROOT := "res://content/maps/"
-const ENEMY_DIR := "res://data/enemies/"
+const ENEMY_DIR := "res://content/enemies/"
 ## The appearance fields of 7.2 (and sprite_frames: art, not gameplay). A new field here needs its own rule in the spec (7.7) and this list updated.
 const APPEARANCE_FIELDS := ["enemy_id", "body_color", "outline_color", "eye_color", "mark", "mark_color",
 	"sprite_frames"]

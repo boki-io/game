@@ -7,7 +7,7 @@ enum Mode { BROWSE, WALK }
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
-const DUMMY_DATA := preload("res://data/enemies/training_dummy.tres")
+const DUMMY_DATA := preload("res://content/enemies/training_dummy.tres")
 const DUMMY_POSITIONS: Array[Vector2] = [Vector2(150, 140), Vector2(150, 200), Vector2(210, 170)]
 const PEDESTAL_Y := 380.0
 const PEDESTAL_SPACING := 140.0
