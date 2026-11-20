@@ -145,4 +145,6 @@ func _on_enemy_died(enemy: Enemy) -> void:
 		# Mobs that drop no XP (the hub dummies) drop no coins either.
 		if enemy.data.xp_drop > 0 and randf() < clampf(stage.coin_chance() + coin_bonus, 0.0, 1.0):
 			pickups.spawn_coin(enemy.global_position)
+		if enemy.data.xp_drop > 0:
+			pickups.roll_magnet(enemy.global_position)
 	release(enemy)

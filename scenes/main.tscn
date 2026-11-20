@@ -29,6 +29,7 @@
 [ext_resource type="Script" path="res://scripts/ui/stage_banner.gd" id="32"]
 [ext_resource type="PackedScene" path="res://scenes/coin.tscn" id="31"]
 [ext_resource type="Resource" path="res://content/pickups/vacuum_magnet.tres" id="vacuum_data"]
+[ext_resource type="PackedScene" path="res://scenes/vacuum_magnet.tscn" id="magnet_scene"]
 
 [sub_resource type="Gradient" id="vignette_gradient"]
 offsets = PackedFloat32Array(0.5, 1.0)
@@ -53,6 +54,7 @@ script = ExtResource("11")
 gem_scene = ExtResource("12")
 coin_scene = ExtResource("31")
 vacuum_data = ExtResource("vacuum_data")
+magnet_scene = ExtResource("magnet_scene")
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true

@@ -6,6 +6,7 @@ extends Node2D
 @export var gem_scene: PackedScene
 @export var coin_scene: PackedScene
 @export var vacuum_data: VacuumData
+@export var magnet_scene: PackedScene
 
 ## A pickup hops out of the dead enemy before it can be pulled in: 150 to 170 px/s, slowing at 1000 px/s^2 (11 to 15 px).
 const POP_SPEED := Vector2(150.0, 170.0)
@@ -16,6 +17,7 @@ var _coin_pool: Array[Coin] = []
 ## The player the vacuum pulls everything to (null when it is not running) and the seconds it has left.
 var vacuum_target: Player
 var vacuum_left := 0.0
+var _magnet: VacuumMagnet  # the one magnet, made on the first drop
 
 
 func _ready() -> void:
@@ -40,6 +42,33 @@ func start_vacuum(player: Player) -> void:
 		return
 	vacuum_target = player
 	vacuum_left = vacuum_data.effect_time
+
+
+## The magnet is lying on the ground.
+func magnet_on_map() -> bool:
+	return _magnet != null and _magnet.active
+
+
+## A killed mob's chance to drop the magnet. Nothing is rolled while one lies on the ground or the vacuum runs, so
+## there is never more than one. Returns whether one was placed.
+func roll_magnet(pos: Vector2) -> bool:
+	if magnet_on_map() or vacuuming() or randf() >= vacuum_data.drop_chance:
+		return false
+	place_magnet(pos)
+	return true
+
+
+## Puts the magnet on the ground at `pos` (it hops out like a coin).
+func place_magnet(pos: Vector2) -> void:
+	if _magnet == null:
+		_magnet = magnet_scene.instantiate()
+		_magnet.pool = self
+		add_child(_magnet)
+	_magnet.activate(pos)
+
+
+func release_magnet() -> void:
+	_magnet.deactivate()
 
 
 func vacuuming() -> bool:

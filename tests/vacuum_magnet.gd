@@ -23,6 +23,9 @@ func _init() -> void:
 	await _vacuum()
 	await _refresh_and_coop()
 	await _pause()
+	await _drop()
+	await _lifetime()
+	await _pickup()
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 
@@ -38,6 +41,10 @@ func _data() -> void:
 	var audio = root.get_node("Audio")
 	_check(&"vacuum_pickup" in audio.SOUNDS, "the sound is in Audio.SOUNDS")
 	_check(audio._streams.get(&"vacuum_pickup") != null, "the sound file loads")
+	var scene: Node = load("res://scenes/main.tscn").instantiate()
+	var pk = scene.get_node("Pickups")
+	_check(pk.vacuum_data == d and pk.magnet_scene != null, "main.tscn's Pickups names the data and the magnet scene")
+	scene.free()
 
 
 ## A fresh run with the test player moved to `at`, a very high level (40 gems must not level it up: the level-up menu
@@ -192,3 +199,150 @@ func _pause() -> void:
 	paused = false
 	main.queue_free()
 	await process_frame
+
+
+func _magnets(pickups: Node) -> Array:
+	var script: Script = load("res://scripts/systems/vacuum_magnet.gd")
+	return pickups.get_children().filter(func(c: Node) -> bool: return c.get_script() == script and c.active)
+
+
+## A kill through the director, set up as tests/gold.gd does it (the director's pools need the type).
+func _kill(main: Node, at: Vector2, data: Resource = null) -> void:
+	var e = _F.spawn_enemy(main, "grunt", at, 1.0, true)
+	if data != null:
+		main.spawn_director._pools[data] = []
+		main.spawn_director.alive_by_type[data.id] += 1
+		e.data = data
+	main.spawn_director.alive += 1
+	main.spawn_director._on_enemy_died(e)
+
+
+func _drop() -> void:
+	var r := await _run(Vector2(60, 60))
+	var main: Node = r[0]
+	var pickups = r[2]
+	var d: VacuumData = pickups.vacuum_data.duplicate()  # never edit the cached resource
+	d.drop_chance = 1.0
+	pickups.vacuum_data = d
+	main.spawn_director.apply_stage(load("res://scripts/stages/stage_data.gd").new())
+
+	_kill(main, Vector2(1000, 800))
+	await _F.seconds(self, 0.4)
+	_check(_magnets(pickups).size() == 1 and pickups.magnet_on_map(), "a kill at 100%% drops one magnet")
+	var m = _magnets(pickups)[0]
+	_check(m.global_position.distance_to(Vector2(1000, 800)) < 25.0, "it hops out near the kill (%s)" % m.global_position)
+	var spot: Vector2 = m.global_position
+	_kill(main, Vector2(1500, 800))
+	await _F.frames(self, 2)
+	_check(_magnets(pickups).size() == 1 and m.global_position == spot, "a second kill leaves still one magnet, in place")
+	_check(not m.has_method("attract"), "the magnet has no attract(): the pickup radius never pulls it")
+
+	pickups.release_magnet()
+	d.drop_chance = 0.0
+	_kill(main, Vector2(1000, 800))
+	_check(_magnets(pickups).is_empty(), "at 0%% no drop")
+	d.drop_chance = 1.0
+	var no_xp = load("res://content/enemies/grunt.tres").duplicate()
+	no_xp.xp_drop = 0
+	_kill(main, Vector2(1000, 800), no_xp)
+	_check(_magnets(pickups).is_empty(), "a mob with xp_drop 0 never drops it")
+	pickups.start_vacuum(_F.player())
+	_kill(main, Vector2(1000, 800))
+	_check(_magnets(pickups).is_empty(), "no drop while the vacuum runs")
+	pickups.vacuum_target = null
+
+	d.drop_chance = 0.01
+	var hits := 0
+	for i in 2000:
+		if pickups.roll_magnet(Vector2(1000, 800)):
+			hits += 1
+			pickups.release_magnet()
+	_check(hits >= 5 and hits <= 40, "2000 rolls at 1%% gave %d drops (expected about 20)" % hits)
+	main.queue_free()
+	await process_frame
+	paused = false
+
+
+func _lifetime() -> void:
+	var r := await _run(Vector2(60, 60))
+	var main: Node = r[0]
+	var pickups = r[2]
+	pickups.place_magnet(Vector2(1500, 900))
+	var m = pickups._magnet
+	await _F.seconds(self, 0.4)
+	_check(m.active and not m.is_flashing(), "a new magnet is active and not flashing")
+	m._age = 19.9
+	await _F.frames(self, 1)
+	_check(not m.is_flashing(), "not flashing at 19.9 s")
+	m._age = 20.1
+	var seen := {}
+	for i in 40:
+		await _F.frames(self, 1)
+		seen[snappedf(m.modulate.a, 0.01)] = true
+	_check(m.is_flashing() and seen.has(1.0) and seen.has(0.25), "flashing at 20.1 s: it blinks between 1.0 and 0.25 (%s)" % [seen.keys()])
+	m._age = 29.95
+	await _F.frames(self, 4)
+	_check(not m.active and not m.visible and not pickups.magnet_on_map(), "gone at 30 s")
+
+	# Paused: its age does not move.
+	pickups.place_magnet(Vector2(1500, 900))
+	await _F.seconds(self, 0.3)
+	var age: float = m._age
+	paused = true
+	await _F.seconds(self, 0.4)
+	_check(is_equal_approx(m._age, age), "the age does not advance while the tree is paused")
+	paused = false
+	main.queue_free()
+	await process_frame
+
+
+func _pickup() -> void:
+	var r := await _run(Vector2(60, 60))
+	var main: Node = r[0]
+	var p = r[1]
+	var pickups = r[2]
+	var fx: Node = main.get_tree().get_first_node_in_group(&"effects")
+	pickups.place_magnet(Vector2(800, 600))
+	var m = pickups._magnet
+	await _F.seconds(self, 0.5)
+	p.global_position = m.global_position + Vector2(30, 6)  # near, but not on it
+	await _F.seconds(self, 0.2)
+	_check(m.active and not pickups.vacuuming(), "30 px away: not taken")
+	fx.clear()
+	p.global_position = m.global_position + Vector2(8, 6)
+	await _F.frames(self, 2)
+	_check(not m.active and pickups.vacuuming() and pickups.vacuum_target == p, "within 14 px it is taken and the vacuum starts")
+	_check(is_equal_approx(pickups.vacuum_left, 5.0) or pickups.vacuum_left > 4.95, "5 s of vacuum (%s)" % pickups.vacuum_left)
+	_check(fx._bits.size() == 24, "a burst of 24 bits marks the pickup (%d)" % fx._bits.size())
+	pickups.vacuum_target = null
+
+	# Not during its hop.
+	pickups.place_magnet(p.global_position + Vector2(0, 6))
+	await _F.frames(self, 2)
+	_check(pickups.magnet_on_map() and not pickups.vacuuming(), "it cannot be taken during its hop")
+	await _F.seconds(self, 0.6)  # the hop carried it up to 14 px away, so step onto it
+	if pickups.magnet_on_map():
+		p.global_position = pickups._magnet.global_position + Vector2(0, 6)
+		await _F.frames(self, 2)
+	_check(not pickups.magnet_on_map() and pickups.vacuuming(), "once the hop is over it is taken")
+	pickups.vacuum_target = null
+
+	# A living and a dead player on it: the living one takes it; two dead ones, nobody.
+	var p2 = await _second_player(main, p)
+	pickups.place_magnet(Vector2(2000, 1000))
+	await _F.seconds(self, 0.5)
+	p2.global_position = pickups._magnet.global_position + Vector2(0, 6)
+	p2.dead = true
+	p.global_position = pickups._magnet.global_position + Vector2(10, 6)
+	await _F.frames(self, 2)
+	_check(pickups.vacuum_target == p, "the living player took it, not the dead one on top of it")
+	pickups.vacuum_target = null
+	p.dead = true  # p2 is dead too: nobody is left to take a magnet lying between them
+	pickups.place_magnet(Vector2(2000, 1000))
+	await _F.seconds(self, 0.7)
+	_check(pickups.magnet_on_map() and not pickups.vacuuming(), "with only dead players nothing happens")
+	p.dead = false
+	p2.dead = false
+	main.queue_free()
+	await process_frame
+	paused = false
