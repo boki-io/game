@@ -23,7 +23,7 @@ static func roll(player: Node, count: int, rng: RandomNumberGenerator) -> Array[
 		pool.append(_stat_card(player.upgrades, u))
 
 	var picks: Array[LevelUpChoice] = []
-	if relics.levels.is_empty() and not new_relics.is_empty() and count > 0:
+	if relics.levels.size() <= relics.granted.size() and not new_relics.is_empty() and count > 0:
 		picks.append(_draw(new_relics, rng))
 		pool.erase(picks[0])
 	while picks.size() < count and not pool.is_empty():

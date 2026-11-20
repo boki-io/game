@@ -13,6 +13,8 @@ const HURT_PULSE_TIME := 0.35
 const HURT_BANDS := 8
 const HURT_BAND_WIDTH := 6.0
 const HURT_ALPHA := 0.3
+const GRANTED_RING := Color("ffd866")
+
 ## Relic slots (spec 1.0): a column on the right edge under Kills and gold.
 const RELIC_SLOT_SIZE := 22.0
 const RELIC_SLOT_GAP := 4.0
@@ -147,10 +149,20 @@ func _draw_gold(font: Font, view: Vector2) -> void:
 	draw_circle(centre, 2.5, Color("ffd23f"))
 
 
-## The rect of relic slot `i` (0 to 3) for a viewport of size `view`.
+## The rect of relic slot `i` (0 to slots - 1, nine at most) for a viewport of size `view`.
 static func relic_slot_rect(i: int, view: Vector2) -> Rect2:
 	return Rect2(view.x - RELIC_MARGIN, RELIC_COLUMN_TOP + i * (RELIC_SLOT_SIZE + RELIC_SLOT_GAP),
 		RELIC_SLOT_SIZE, RELIC_SLOT_SIZE)
+
+
+## The outline colour of relic slot `i` when not flashing: gold for a granted relic, else the relic's own colour.
+func relic_ring_color(i: int) -> Color:
+	var ids := player.relics.levels.keys()
+	if i >= ids.size():
+		return Color(1, 1, 1, 0.2)
+	if ids[i] in player.relics.granted:
+		return GRANTED_RING
+	return Color(RelicRegistry.find(ids[i]).color, 0.9)
 
 
 ## Seconds of flash left on relic slot `i` (0 when not flashing).
@@ -158,12 +170,12 @@ func relic_flash_left(i: int) -> float:
 	return _relic_flash.get(i, 0.0)
 
 
-## Four relic slots: a dim outline when empty; owned = tinted square, glyph, level pips and, for timed
+## One square per relic slot (four, plus one per granted relic): a dim outline when empty; owned = tinted square, glyph, level pips and, for timed
 ## relics, a cooldown sweep (cooldown_fraction() is 0 for always-on ones, so nothing is drawn for them).
 func _draw_relics(font: Font, view: Vector2) -> void:
 	var relics: PlayerRelics = player.relics
 	var ids := relics.levels.keys()
-	for i in PlayerRelics.MAX_SLOTS:
+	for i in relics.slots:
 		var rect := relic_slot_rect(i, view)
 		draw_rect(rect, Color(0, 0, 0, 0.6))
 		if i >= ids.size():
@@ -181,7 +193,7 @@ func _draw_relics(font: Font, view: Vector2) -> void:
 		for k in PlayerRelics.MAX_LEVEL:
 			var pip := Rect2(rect.position.x + 5.0 + k * 5.0, rect.end.y - 5.0, 3.0, 2.0)
 			draw_rect(pip, Color.WHITE if k < level else Color(1, 1, 1, 0.25))
-		var ring := Color(color, 0.9)
+		var ring := relic_ring_color(i)
 		if _relic_flash.has(i):
 			draw_rect(rect, Color(1, 1, 1, 0.6 * _relic_flash[i] / FLASH_TIME))
 			ring = Color.WHITE

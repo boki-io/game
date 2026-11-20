@@ -1,6 +1,6 @@
 class_name PlayerRelics
 extends Node
-## The relics a player carries (spec 1.0): up to MAX_SLOTS, each up to MAX_LEVEL. Each owned relic has one
+## The relics a player carries (spec 1.0): up to `slots` (MAX_SLOTS, plus one per granted relic), each up to MAX_LEVEL. Each owned relic has one
 ## RelicBehavior child that does the work. Nothing is added in the hub, and behaviors stop while the player is dead.
 
 const MAX_SLOTS := 4
@@ -8,12 +8,14 @@ const MAX_LEVEL := 3
 
 ## A relic was added or raised.
 signal changed
-## The slot (0 to 3) the HUD should flash.
+## The slot (0 to slots - 1) the HUD should flash.
 signal flashed(slot: int)
 
 ## id -> level. The insertion order is the slot order.
 var levels: Dictionary = {}
 var slots := MAX_SLOTS
+## Relics given by worn legendary items (spec 1.5). Each one has its own extra slot, so free_slots() is unchanged by it.
+var granted: Array[StringName] = []
 
 var _behaviors: Dictionary = {}  # id -> RelicBehavior
 var _stopped := false
@@ -50,6 +52,16 @@ func slot_of(id: StringName) -> int:
 ## The behavior node of an owned relic, or null.
 func behavior_of(id: StringName) -> RelicBehavior:
 	return _behaviors.get(id)
+
+
+## Gives a relic for the whole run in an extra slot (a worn legendary item, spec 1.5). Returns false in the hub or
+## when the relic is already owned.
+func grant(data: RelicData) -> bool:
+	if player.hub_mode or owns(data.id):
+		return false
+	slots += 1
+	granted.append(data.id)
+	return add_or_raise(data, false)
 
 
 ## Gives a new relic (level 1, first free slot) or raises an owned one. Returns false when nothing changed: the
