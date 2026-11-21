@@ -9,6 +9,9 @@ extends Node2D
 @export var magnet_scene: PackedScene
 @export var loot: LootData
 @export var item_drop_scene: PackedScene
+## Seconds a gem or coin lies on the ground before it fades out and is freed (spec 1.8: the overworld sets 60). 0 is
+## unlimited (the arena).
+@export var pickup_lifetime := 0.0
 
 ## An item was taken from the ground (spec 1.5); main.gd unlocks it and shows the banner.
 signal item_collected(item_id: StringName)
@@ -16,6 +19,8 @@ signal item_collected(item_id: StringName)
 ## A pickup hops out of the dead enemy before it can be pulled in: 150 to 170 px/s, slowing at 1000 px/s^2 (11 to 15 px).
 const POP_SPEED := Vector2(150.0, 170.0)
 const POP_DECEL := 1000.0
+## A pickup with a lifetime fades over its last FADE_TIME seconds.
+const FADE_TIME := 5.0
 
 var _pool: Array[XPGem] = []
 var _coin_pool: Array[Coin] = []
@@ -26,6 +31,9 @@ var _magnet: VacuumMagnet  # the one magnet, made on the first drop
 ## The player's items, set by main.gd. Null means no item ever drops.
 var inventory: Inventory
 var _item_drops: Array[ItemDrop] = []  # every item drop node made, active or not
+## Optional `func(pos: Vector2) -> bool`: when valid, a popping pickup never moves onto a position it rejects (the
+## overworld keeps drops out of walls).
+var walkable := Callable()
 
 
 func _ready() -> void:
@@ -176,8 +184,20 @@ static func random_pop() -> Vector2:
 
 
 ## One frame of a pop: moves `item` by `vel`, keeps it inside the arena as enemies are kept, and returns the slowed velocity.
-static func pop_step(item: Node2D, vel: Vector2, delta: float) -> Vector2:
+## A move onto a position `walkable` rejects is undone and ends the pop (zero velocity).
+static func pop_step(item: Node2D, vel: Vector2, delta: float, walkable := Callable()) -> Vector2:
+	var before := item.global_position
 	item.global_position += vel * delta
 	var pad := Vector2(Enemy.ARENA_PADDING + Arena.wall_margin, Enemy.ARENA_PADDING + Arena.wall_margin)
 	item.global_position = item.global_position.clamp(pad, Vector2(Arena.world_size) - pad)
+	if walkable.is_valid() and not walkable.call(item.global_position):
+		item.global_position = before
+		return Vector2.ZERO
 	return vel.move_toward(Vector2.ZERO, POP_DECEL * delta)
+
+
+## The opacity of a pickup that has lain `age` seconds with a `lifetime` (0 is unlimited): 1 until FADE_TIME before the end.
+static func life_alpha(age: float, lifetime: float) -> float:
+	if lifetime <= 0.0:
+		return 1.0
+	return clampf((lifetime - age) / FADE_TIME, 0.0, 1.0)

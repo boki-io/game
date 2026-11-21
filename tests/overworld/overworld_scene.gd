@@ -49,6 +49,7 @@ func _load(id: StringName, prep := Callable()):
 	if prep.is_valid():
 		prep.call(_gs.journey)
 	var ow = load("res://scenes/overworld.tscn").instantiate()
+	ow.hordes_enabled = false  # a quiet world; the director is the horde tests' business
 	root.add_child(ow)
 	current_scene = ow
 	_scenes.append(ow)
@@ -95,6 +96,17 @@ func _basics() -> void:
 	_check(cam.limit_right == 32000 and cam.limit_bottom == 32000, "the camera limits are the world (%d, %d)" % [cam.limit_right, cam.limit_bottom])
 	_check(ow.get_node("Arena").visible == false and ow.get_node("Arena").get_child_count() > 0, "the arena's debug border is hidden but its walls stay")
 	_check(ow.get_node("World/Effects").is_in_group(&"effects") and ow.get_node("World/PlayerProjectiles").is_in_group(&"player_projectiles") and ow.get_node("World/Zones") != null, "the nodes abilities need exist (Effects, Zones, PlayerProjectiles)")
+	for path in ["World/Enemies", "World/Projectiles", "Pickups", "WorldObstacles", "UI/LevelUpMenu"]:
+		_check(ow.has_node(path), "the fight nodes exist (%s)" % path)
+	var pickups = ow.get_node("Pickups")
+	_check(pickups.pickup_lifetime == 60.0 and pickups.walkable.is_valid(), "the pickups last 60 s and stay out of walls")
+	pickups.spawn_coin(ow.player.global_position + Vector2(200, 0))
+	var coin = null
+	for c in pickups.get_children():
+		if c.get_script().get_global_name() == &"Coin":
+			coin = c
+	_check(coin != null and coin.pool.pickup_lifetime == 60.0, "a coin made in the overworld has the 60 s lifetime")
+	_check(not ow.hordes_enabled, "hordes are off when asked")
 	await _frames(12)
 	_check(ow.terrain.loaded_chunks().size() >= 4, "the chunks around the player stream in (%d)" % ow.terrain.loaded_chunks().size())
 	_check(ow.markers.size() == 108, "108 markers are created")

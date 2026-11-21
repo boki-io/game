@@ -29,6 +29,13 @@ func _ready() -> void:
 	add_child(UiKit.centered(box))
 
 
+## Drops the queued level-ups and closes the menu if it is open (the overworld's respawn). The tree is unpaused.
+func dismiss() -> void:
+	_queue.clear()
+	if active:
+		_close()
+
+
 func queue_level_up(player: Player) -> void:
 	_queue.append(player)
 	if not active:
