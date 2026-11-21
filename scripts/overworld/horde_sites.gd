@@ -9,7 +9,7 @@ const CELL_PX := 512.0
 
 static var _shared: HordeSites
 
-## One per route site: `tile` (Vector2i), `pos` (world px), `zone`, `t` (route_t, 0 to 1 along the zone).
+## One per route site: `tile` (Vector2i), `x` and `y` (the same in tile coordinates, the shape `HordePlan` reads), `pos` (world px), `zone`, `t` (route_t, 0 to 1 along the zone).
 var routes: Array[Dictionary] = []
 ## One per trail: `marker` (index into `WorldData.markers`), `kind`, `points`: `tile`, `pos`, `t` (trail_t, 0 at the road, 1 at the end).
 var trails: Array[Dictionary] = []
@@ -26,12 +26,12 @@ func _init() -> void:
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SITES))
 	for r in data.route:
 		var tile := Vector2i(int(r.x), int(r.y))
-		routes.append({"tile": tile, "pos": WorldData.world_of(tile), "zone": int(r.zone), "t": float(r.t)})
+		routes.append({"tile": tile, "x": tile.x, "y": tile.y, "pos": WorldData.world_of(tile), "zone": int(r.zone), "t": float(r.t)})
 	for t in data.trails:
 		var points: Array[Dictionary] = []
 		for p in t.points:
 			var tile := Vector2i(int(p.x), int(p.y))
-			points.append({"tile": tile, "pos": WorldData.world_of(tile), "t": float(p.t)})
+			points.append({"tile": tile, "x": tile.x, "y": tile.y, "pos": WorldData.world_of(tile), "t": float(p.t)})
 		trails.append({"marker": int(t.marker), "kind": String(t.kind), "points": points})
 	for i in routes.size():
 		_add(&"route", i, -1, routes[i])

@@ -57,6 +57,12 @@ func _init() -> void:
 		r.seed = rules.seed + i
 		_rules_hold(r, Plan.build(_world, _sites, r), false)
 	_aggregate()
+	# the same rules on the real sites (about 600 trail points)
+	_sites = load("res://scripts/overworld/horde_sites.gd").shared()
+	var real := Plan.build(_world, _sites, rules)
+	print("real sites: %d route, %d trails; plan: %d hordes" % [_sites.routes.size(), _sites.trails.size(), real.size()])
+	_check(real.size() > 400, "the real plan has hundreds of hordes (%d)" % real.size())
+	_rules_hold(rules, real, true)
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 
