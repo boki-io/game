@@ -1,7 +1,7 @@
 # Items
 
 One folder per item: `content/items/<id>/item.tres` (an `ItemData`, `scripts/inventory/item_data.gd`) and, later, its
-`icon.png` beside it. 18 items ship (spec 1.5): for each of the six types (helmet, chestplate, necklace, ring, pants,
+an `icon.png` beside it if it has its own art. 18 items ship (spec 1.5): for each of the six types (helmet, chestplate, necklace, ring, pants,
 shoes) a **standard**, an **epic** and a **legendary** one. `loot.tres` (a `LootData`) is the drop table.
 
 Ratings: standard is about one camp-attribute level of one stat, epic two to three levels over two stats, legendary about
@@ -16,7 +16,7 @@ To add an item:
    `StringName` (`&"max_hp"`): `max_hp`, `damage`, `move_speed`, `pickup_radius` (shown as pickup range), `hp_regen`, `auto_speed`,
    `cooldown` (Q, E and R only; negative is faster), and the mana keys `max_mana`, `mana_regen` (avoid them: the Archer has
    no mana). They are written to the hero's `Stats` when it is created.
-3. An optional `icon` (24x24 or smaller); without one the screen draws a coloured square with the first letter of the name.
+3. An optional `icon`, a 32x32 `Texture2D` (the screen draws it 1:1): the 18 items use an `AtlasTexture` region of `assets/32x32.png` (the equipment is in rows 112 to 136 of that sheet). Without one the screen draws a coloured square with the first letter of the name.
 4. Add its path to `ItemRegistry.PATHS` (`scripts/inventory/item_registry.gd`) so exported builds find them.
 5. A found item is unlocked by `GameSession.inventory.unlock(&"<id>")`; today the charger drops them (`item_drop_chance` on
    its `EnemyData`; the rating shares are in `loot.tres`).

@@ -1,12 +1,18 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://scripts/inventory/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/32x32.png" id="2"]
+
+[sub_resource type="AtlasTexture" id="icon"]
+atlas = ExtResource("2")
+region = Rect2(32, 3872, 32, 32)
 
 [resource]
 script = ExtResource("1")
 id = &"cloth_trousers"
 display_name = "Cloth Trousers"
 description = "Patched twice."
+icon = SubResource("icon")
 slot = &"pants"
 rating = &"standard"
 scales = {

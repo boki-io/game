@@ -150,3 +150,11 @@ Built in three parallel parts (items and screen, granted relic, loot drop) on to
 - `Hud.relic_ring_color(i)` is a small testable helper (gold for a granted relic); the Fire Trail check only asserts that its behavior node exists, not that it leaves flames.
 - `tests/inventory/item_drop.gd` had a flake (the drop hops up to 14 px away from a player standing on it, so it is not always taken); the test now steps onto it after the hop.
 - Not verified by hand: a play-through (a charger dropping an item, walking onto it, wearing it, starting a run with a granted relic), how the drop and the banner look, and the nine-slot HUD column with real relics.
+
+## 15. Addendum: icons (added during the build, at the user's request)
+
+Every item has an `icon`: an `AtlasTexture` region of `assets/32x32.png` (a 512 x 4384 sheet of 32 x 32 cells; the equipment is in rows 112 to 136), chosen by eye to match each item: helmets and chestplates from the armor rows in a tan, a green and a gold set for the three ratings, a bead necklace, an orange pendant and a blue gold amulet, a copper, a silver-and-green-gem and a purple-gem ring, leg armor in tan, green and gold, and boots ending in the big orange pair for the Emberstep Boots. The regions are in the `.tres` files, not in code.
+- The inventory screen's cell grows from 28 to 36 px (a 32 px icon at 1:1 with a 2 px margin) and the grid shows 4 rows instead of 5 (18 items are three rows; more scroll). A 2 px padding inside the scroll area stops the first row's frame being clipped. The panel is about 390 x 290 px at the 640 x 360 base.
+- Items without an icon (the test items) still draw as a coloured letter square.
+- `tests/inventory/item_content.gd` checks that each icon is a 32 x 32 cell of the sheet, grid-aligned, inside it and not shared with another item. The key helper of `tests/inventory/inventory_screen.gd` waits a process frame between press and release (the keyboard assertions were flaky once in about seven runs).
+- `ItemDrop` still draws a rating-coloured gem on the ground, not the icon.

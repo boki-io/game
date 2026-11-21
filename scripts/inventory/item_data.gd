@@ -14,7 +14,7 @@ extends Resource
 @export var rating: StringName = &"standard"
 ## The relic a worn legendary item grants for the whole run, in an extra relic slot (RelicData.id); empty for none.
 @export var relic_id: StringName = &""
-## Optional, 24x24 or smaller. Without it the screen draws a coloured square with the first letter of the name.
+## Optional, 32x32 (the screen draws it 1:1; the 18 items use regions of assets/32x32.png). Without it the screen draws a coloured square with the first letter of the name.
 @export var icon: Texture2D
 ## Stats key -> amount (for example max_hp: 10).
 @export var adds: Dictionary = {}

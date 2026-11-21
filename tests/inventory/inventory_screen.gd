@@ -37,11 +37,13 @@ func _key(action: StringName) -> void:
 	e.pressed = true
 	Input.parse_input_event(e)
 	await physics_frame
+	await process_frame  # buffered events are flushed per frame: give the press time to arrive before the release
 	e = InputEventAction.new()
 	e.action = action
 	e.pressed = false
 	Input.parse_input_event(e)
 	await physics_frame
+	await process_frame
 
 
 func _character(id: StringName):

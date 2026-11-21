@@ -53,6 +53,7 @@ func _init() -> void:
 	var names := {}
 	var by_type := {}
 	var relics := {}
+	var regions := {}
 	for it in items:
 		var id := String(it.id)
 		_check(it.resource_path == "res://content/items/%s/item.tres" % id, "item %s: id equals its folder name (%s)" % [id, it.resource_path])
@@ -60,6 +61,16 @@ func _init() -> void:
 		ids[id] = true
 		names[it.display_name] = true
 		_check(it.slot in InventoryS.TYPES, "item %s: valid type" % id)
+		# The icon is a 32x32 cell of assets/32x32.png, aligned to the grid, inside the sheet, and not shared with another item.
+		var icon = it.icon
+		var atlas = icon.atlas if icon is AtlasTexture else null
+		_check(atlas != null and atlas.resource_path == "res://assets/32x32.png", "item %s: the icon is a region of assets/32x32.png" % id)
+		if atlas != null:
+			var region: Rect2 = icon.region
+			_check(region.size == Vector2(32, 32) and int(region.position.x) % 32 == 0 and int(region.position.y) % 32 == 0, "item %s: the icon region is one 32x32 cell (%s)" % [id, region])
+			_check(region.end.x <= atlas.get_width() and region.end.y <= atlas.get_height(), "item %s: the icon region is inside the sheet" % id)
+			_check(not regions.has(region), "item %s: its icon is not another item's" % id)
+			regions[region] = true
 		_check(it.rating in ItemDataS.RATINGS, "item %s: valid rating" % id)
 		if not by_type.has(it.slot):
 			by_type[it.slot] = {}

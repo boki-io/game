@@ -8,10 +8,11 @@ extends Control
 
 signal closed(changed: bool)
 
-const CELL := 28.0
+const CELL := 36.0  # a 32x32 icon at 1:1 with a 2 px margin
 const GAP := 4.0
 const COLUMNS := 6
-const VISIBLE_ROWS := 5
+const VISIBLE_ROWS := 4
+const GRID_PAD := 2.0  # the margin around the grid inside the scroll area
 const FRAME := Color("6b4a2b")
 const CURSOR := Color("ffd866")
 const SLOT_LABELS := {&"helmet": "Helm", &"chestplate": "Chest", &"necklace": "Neck", &"ring_1": "Ring", &"ring_2": "Ring", &"pants": "Pants", &"shoes": "Shoes"}
@@ -114,16 +115,20 @@ func _ready() -> void:
 	var grid_width := COLUMNS * CELL + (COLUMNS - 1) * GAP
 	var grid_height := VISIBLE_ROWS * CELL + (VISIBLE_ROWS - 1) * GAP
 	_scroll = ScrollContainer.new()
-	_scroll.custom_minimum_size = Vector2(grid_width + 8.0, grid_height)
+	_scroll.custom_minimum_size = Vector2(grid_width + 8.0, grid_height + 2.0 * GRID_PAD)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.focus_mode = Control.FOCUS_NONE
 	_grid = GridContainer.new()
 	_grid.columns = COLUMNS
 	_grid.add_theme_constant_override("h_separation", int(GAP))
 	_grid.add_theme_constant_override("v_separation", int(GAP))
-	_scroll.add_child(_grid)
+	var pad := MarginContainer.new()  # room for the frames' outer pixels, which the scroll area would clip
+	for side in ["left", "top", "right", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, int(GRID_PAD))
+	pad.add_child(_grid)
+	_scroll.add_child(pad)
 	_empty_label = UiKit.label("No items yet", UiKit.FONT_SIZE, Color("888888"))
-	_empty_label.custom_minimum_size = Vector2(grid_width + 8.0, grid_height)
+	_empty_label.custom_minimum_size = Vector2(grid_width + 8.0, grid_height + 2.0 * GRID_PAD)
 	_empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var stack := Control.new()
 	stack.custom_minimum_size = _scroll.custom_minimum_size
