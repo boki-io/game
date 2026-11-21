@@ -15,6 +15,7 @@ const KEY_ACTIONS := {
 	&"hub_confirm": KEY_ENTER,
 	&"interact": KEY_F,
 	&"hub_info": KEY_I,
+	&"world_map": KEY_M,
 }
 
 ## Extra keys for actions that have more than one (the primary key is in KEY_ACTIONS).
@@ -47,6 +48,8 @@ func _ready() -> void:
 	_add_buttons(&"hub_confirm", [JOY_BUTTON_A])
 	_add_buttons(&"interact", [JOY_BUTTON_A])
 	_add_buttons(&"hub_info", [JOY_BUTTON_BACK])
+	# The world map shares the Back button with hub_info: they live in different scenes, so they never both listen.
+	_add_buttons(&"world_map", [JOY_BUTTON_BACK])
 
 
 func _add_action(action: StringName, keys: Array, buttons: Array) -> void:
