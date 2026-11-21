@@ -12,7 +12,7 @@ const SOUNDS := [
 	&"hub_focus", &"hub_choose", &"door_open", &"door_enter", &"stage_clear", &"coin",
 	&"impact_crack", &"impact_thud", &"kill_pop", &"impact_boom",
 	&"relic_wave", &"relic_comet", &"relic_nova", &"relic_zap",
-	&"arrow_fire", &"arrow_bounce", &"arrow_rain",
+	&"arrow_fire", &"arrow_bounce", &"arrow_rain", &"vacuum_pickup",
 ]
 
 ## Random pitch range per sound: a sound plays at 1.0 plus or minus this much, so repeated hits do not sound identical. Sounds not

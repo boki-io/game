@@ -51,7 +51,7 @@ freeze, vulnerable and burn live in `EnemyStatus`. See `docs/spec-1.0.md`.
 Walking eases up to speed and coasts to a stop (`accel_time` and `friction_time` in `content/characters/<id>/character.tres`; 0 is instant), with
 a puff of dust every few steps. Hits throw sparks and recoil the enemy's body a hair, a kill throws a burst in the enemy's colour
 (`EnemyData.kill_shake` kicks the camera for tough ones), XP gems and coins hop out before they are pulled in, and the screen edges
-pulse red when the player is hit. Particles are tiny squares in `Effects` (capped at 256). Nothing ever stops or slows time.
+pulse red when the player is hit. A killed enemy rarely (1%) drops a glowing horseshoe **vacuum magnet** (one at a time; it lies 30 s and blinks for the last 10): walking onto it pulls every XP gem and coin on the map, including new drops, to you at 1000 px/s for 5 s (spec 1.3; `content/pickups/vacuum_magnet.tres`, `VacuumMagnet`, `Pickups`). Particles are tiny squares in `Effects` (capped at 256). Nothing ever stops or slows time.
 
 Atmosphere and audio (v0.9): every map has drifting motes (`ambience_kind`, `ambience_color`, `ambience_count` in its `map.tres`, see `content/maps/README.md`); scene changes
 close a circle iris on the player (`SceneFader`, `shaders/iris.gdshader`), the death screen closes the screen to a small hole behind it and a
@@ -63,6 +63,7 @@ sounds (`Audio.impact`, `AbilityData.sfx_layer`); the layers are generated place
 - `scripts/`: `hub/` (pedestals, door, chest), `inventory/` (`ItemData`, `ItemRegistry`, `Inventory`, `ItemEffects`, `InventorySave`), `player/`, `enemy/` (brains), `abilities/` (behaviors), `systems/`, `ui/`, `upgrades/`, `relics/` (`RelicData`, `RelicRegistry`, `PlayerRelics`, `RelicBehavior` and one behavior per relic), `characters/`, `stages/` (path), `maps/` (`MapTheme`, `MonsterVariant`, `MapRegistry`, `MapLayout`, `MapBuilder` which builds a run's arena from a theme, `ObstacleMap`, `FlowField`; map code only, no content).
 - `content/characters/<id>/`: everything about one character: `character.tres`, `frames.tres`, `sprites/`, `abilities/<ability id>/` (`ability.tres`, `behavior.gd` and that ability's `upgrades/`) and passives only that character has in `upgrades/`. `content/shared/upgrades/` holds the upgrades several characters use. `_template` is a complete character to copy. See `content/characters/README.md`.
 - `content/items/<id>/item.tres`: one folder per item (none yet); see `content/items/README.md`.
+- `content/pickups/vacuum_magnet.tres`: the vacuum magnet's tuning (`VacuumData`: drop chance, times, pull speed).
 - `content/relics/<id>/` (`relic.tres` and its behavior script), `content/enemies/*.tres`, `content/attributes/*.tres`: the rest of the game's data. Tuning is data, not code.
   `scripts/` keeps the engine: bases (`AbilityBehavior`, `DashSlashBehavior`, `BoltBehavior`), `SteadyAim`, registries and systems. Specs before 1.2 name the old `data/` and `assets/sprites/` paths.
 - `content/maps/<id>/`: everything about one map: `map.tres` (a `MapTheme`), `thumbnail.png` and `monsters/*.tres`
