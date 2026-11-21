@@ -13,6 +13,7 @@ var target: Player
 var pool: Pickups
 var _speed := START_SPEED
 var _pop_vel := Vector2.ZERO  # the hop out of the dead enemy; the pull-in waits until it is over
+var _age := 0.0  # seconds on the ground, for the pool's pickup_lifetime
 
 
 func activate(pos: Vector2, amount: int = 1) -> void:
@@ -21,6 +22,8 @@ func activate(pos: Vector2, amount: int = 1) -> void:
 	target = null
 	_speed = START_SPEED
 	_pop_vel = Pickups.random_pop()
+	_age = 0.0
+	modulate.a = 1.0
 	visible = true
 	process_mode = Node.PROCESS_MODE_INHERIT
 	set_deferred("monitorable", true)
@@ -40,8 +43,14 @@ func attract(player: Player) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if pool != null and pool.pickup_lifetime > 0.0 and target == null and not pool.vacuuming():
+		_age += delta
+		modulate.a = Pickups.life_alpha(_age, pool.pickup_lifetime)
+		if _age >= pool.pickup_lifetime:
+			pool.release_coin(self)
+			return
 	if _pop_vel != Vector2.ZERO:
-		_pop_vel = Pickups.pop_step(self, _pop_vel, delta)
+		_pop_vel = Pickups.pop_step(self, _pop_vel, delta, pool.walkable if pool != null else Callable())
 		return
 	var vacuum := pool != null and pool.vacuuming()  # a bare scene (no pool) has no vacuum
 	if vacuum:
