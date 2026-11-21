@@ -130,21 +130,24 @@ func _items() -> void:
 	_check(_screen._name_label.get_theme_color("font_color") == ItemDataS.rating_color(&"standard"), "the name is in the rating colour")
 	_check(_screen._desc_label.autowrap_mode != TextServer.AUTOWRAP_OFF and _screen._desc_label.custom_minimum_size.x <= _screen.PANEL_WIDTH, "the description wraps inside the panel")
 
-	# Click wears; the slot shows it; a second click does nothing; a click on the slot takes it off.
+	# Click wears: the item leaves the grid for its slot; clicking the slot takes it off and it comes back where it was.
 	_screen.click(_screen.Zone.GRID, 0)
 	_check(_gs.inventory.worn(&"knight", &"helmet").id == &"cap" and _screen.last_sound == &"hub_choose", "a click on an item wears it (sound %s)" % _screen.last_sound)
+	_check(_screen.items.map(func(it): return it.id) == [&"mail", &"band", &"loop", &"stud", &"boots"], "a worn item leaves the grid: %s" % [_screen.items.map(func(it): return it.id)])
+	_check(_screen.cell_item(_screen.grid_cells[0]).id == &"mail" and _screen.cell_item(_screen.grid_cells[5]) == null, "the rest close up in the window")
 	_screen.last_sound = &""
-	_screen.click(_screen.Zone.GRID, 0)
-	_check(_gs.inventory.worn(&"knight", &"helmet").id == &"cap" and _screen.last_sound == &"", "a click on a worn item does nothing and plays nothing")
 	_screen.click(_screen.Zone.SLOTS, 0)
 	_check(_gs.inventory.worn(&"knight", &"helmet") == null and _screen.last_sound == &"menu_click", "a click on the worn slot takes it off (sound %s)" % _screen.last_sound)
+	_check(_screen.items.map(func(it): return it.id) == [&"cap", &"mail", &"band", &"loop", &"stud", &"boots"], "an unequipped item comes back in unlock order")
 	_screen.last_sound = &""
 	_screen.click(_screen.Zone.SLOTS, 0)
 	_check(_screen.last_sound == &"", "a click on an empty slot does nothing")
+	_screen.click(_screen.Zone.GRID, 20)
+	_check(_screen.grid_cursor < _screen.items.size(), "a click on an empty place in the grid is ignored")
 
-	# Rings fill both ring slots.
+	# Rings fill both ring slots (each click takes the item that now stands at index 2).
 	_screen.click(_screen.Zone.GRID, 2)
-	_screen.click(_screen.Zone.GRID, 3)
+	_screen.click(_screen.Zone.GRID, 2)
 	_check(_gs.inventory.worn(&"knight", &"ring_1").id == &"band" and _gs.inventory.worn(&"knight", &"ring_2").id == &"loop", "two rings fill ring_1 and ring_2")
 	# Hover moves the cursor and the description.
 	_screen.hover(_screen.Zone.GRID, 1)
@@ -162,7 +165,7 @@ func _items() -> void:
 	_check(closed_flags == [true, false], "closing with no change reports false (%s)" % [closed_flags])
 	# Wearing and taking off again is no change.
 	_screen.open(knight)
-	_screen.click(_screen.Zone.GRID, 5)
+	_screen.click(_screen.Zone.GRID, 3)  # the boots (band and loop are still worn from before)
 	_screen.click(_screen.Zone.SLOTS, 6)
 	await _key(&"ui_cancel")
 	_check(closed_flags == [true, false, false], "wear then take off is not a change (%s)" % [closed_flags])
@@ -201,10 +204,10 @@ func _rated() -> void:
 	_check(_screen.frame_color(_screen.grid_cells[std_index]) == ItemDataS.rating_color(&"standard"), "a standard cell has a stone frame")
 	_check(_screen.frame_color(_screen.slot_cells[6]) == _screen.FRAME, "an empty slot has the plain frame")
 	_screen.click(_screen.Zone.GRID, i_epic)
-	_screen.hover(_screen.Zone.GRID, i_ring)
-	_check(_screen.frame_color(_screen.grid_cells[i_epic]) == ItemDataS.rating_color(&"epic").lightened(0.3), "a worn item's frame is brighter")
+	_check(not _screen.items.has(epic), "a worn item leaves the grid")
 	_check(_screen.frame_color(_screen.slot_cells[0]) == ItemDataS.rating_color(&"epic").lightened(0.3), "the slot holding it shows its rating")
 	_screen.click(_screen.Zone.SLOTS, 0)
+	_check(_screen.items.has(epic), "and it comes back when taken off")
 	_screen.hover(_screen.Zone.SLOTS, 6)
 	_check(_screen._type_label.text == "Shoes slot", "an empty slot still names itself")
 	Reg.test_items.erase(epic)
@@ -225,13 +228,12 @@ func _keyboard() -> void:
 	_check(_screen.grid_cursor == 2, "right moves along the grid")
 	await _key(&"ui_accept")
 	_check(_gs.inventory.worn(&"knight", &"ring_1").id == &"band", "Enter wears the item under the cursor (a ring takes the first free ring slot)")
-	await _key(&"ui_right")
-	await _key(&"ui_accept")
+	await _key(&"ui_accept")  # the band left the grid, so the cursor now stands on the loop
 	_check(_gs.inventory.worn(&"knight", &"ring_2").id == &"loop", "the next ring takes ring_2")
 	await _key(&"ui_down")
-	_check(_screen.grid_cursor == 3, "down in a one-row grid stays (cursor %d)" % _screen.grid_cursor)
+	_check(_screen.grid_cursor == 2, "down in a one-row grid stays (cursor %d)" % _screen.grid_cursor)
 	# Left from the first column goes to the slots, Right from a right-hand slot comes back.
-	for i in 4:
+	for i in 2:
 		await _key(&"ui_left")
 	_check(_screen.grid_cursor == 0, "left walks back to the first column (%d)" % _screen.grid_cursor)
 	await _key(&"ui_left")
@@ -261,6 +263,11 @@ func _other_character_and_close() -> void:
 	_screen.click(_screen.Zone.GRID, 0)
 	_check(_gs.inventory.wearer_of(&"cap") == &"wizard" and _gs.inventory.worn(&"knight", &"helmet") == null, "a click moves an item worn by another character")
 	await _key(&"ui_cancel")
+	# Everything unlocked is worn: the grid is empty and says so (not "No items yet").
+	_gs.inventory.set_state([&"cap"], {&"knight": {&"helmet": &"cap"}})
+	_screen.open(knight)
+	_check(_screen.items.is_empty() and _screen._empty_label.visible and _screen._empty_label.text == "Everything is equipped", "with every item worn the grid says so: '%s'" % _screen._empty_label.text)
+	await _key(&"ui_cancel")
 	_gs.inventory.set_state(_gs.inventory.unlocked, {})
 
 
@@ -282,7 +289,6 @@ func _many() -> void:
 	_check(_screen.cell_item(_screen.grid_cells[37]).id == &"it49" and _screen.cell_item(_screen.grid_cells[38]) == null, "the last row shows items 48 and 49, then empty places")
 	_screen.click(_screen.Zone.GRID, 48)
 	_check(_gs.inventory.wearer_of(&"it48") == &"knight", "a click on a scrolled cell wears the item it stands for")
-	_screen.click(_screen.Zone.GRID, 48)
 	_gs.inventory.unequip(&"knight", &"ring_1")
 	for i in 9:
 		await _key(&"ui_up")
@@ -297,8 +303,8 @@ func _many() -> void:
 	_screen.grid_cursor = 0
 	# A third ring when both are worn replaces ring_1.
 	_screen.click(_screen.Zone.GRID, 0)
-	_screen.click(_screen.Zone.GRID, 1)
-	_screen.click(_screen.Zone.GRID, 2)
+	_screen.click(_screen.Zone.GRID, 0)
+	_screen.click(_screen.Zone.GRID, 0)
 	_check(_gs.inventory.worn(&"knight", &"ring_1").id == &"it2" and _gs.inventory.worn(&"knight", &"ring_2").id == &"it1", "a third ring replaces ring_1")
 	await _key(&"ui_cancel")
 	_gs.inventory.set_state([], {})

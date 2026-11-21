@@ -216,14 +216,17 @@ func _loadout() -> Dictionary:
 	return GameSession.inventory.worn_state().get(_character.id, {})
 
 
-## The pool, in the order the items were unlocked.
+## The grid lists the pool in the order the items were unlocked, minus what this character wears (an equipped item is in its
+## slot, not in the bag, and comes back when it is taken off). What another character wears is listed, dimmed.
 func _rebuild_pool() -> void:
 	items.clear()
-	for id in GameSession.inventory.unlocked:
+	var inv := GameSession.inventory
+	for id in inv.unlocked:
 		var item := ItemRegistry.find(id)
-		if item != null:
+		if item != null and inv.slot_of(_character.id, id) == &"":
 			items.append(item)
 	_empty_label.visible = items.is_empty()
+	_empty_label.text = "No items yet" if inv.unlocked.is_empty() else "Everything is equipped"
 
 
 func _refresh() -> void:
