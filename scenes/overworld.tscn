@@ -1,0 +1,103 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/overworld.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/systems/arena.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/overworld/world_terrain.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/systems/camera_follow.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/systems/damage_zones.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/systems/player_projectiles.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="9"]
+[ext_resource type="Script" path="res://scripts/systems/effects.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/overworld/world_props.gd" id="11"]
+
+[node name="Overworld" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1")
+
+[node name="Arena" type="Node2D" parent="."]
+script = ExtResource("2")
+size = Vector2i(32000, 32000)
+
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Terrain" type="Node2D" parent="World"]
+script = ExtResource("3")
+
+[node name="Props" type="Node2D" parent="World"]
+y_sort_enabled = true
+script = ExtResource("11")
+
+[node name="Markers" type="Node2D" parent="World"]
+y_sort_enabled = true
+
+[node name="Players" type="Node2D" parent="World"]
+y_sort_enabled = true
+
+[node name="Zones" type="Node2D" parent="World"]
+script = ExtResource("7")
+
+[node name="PlayerProjectiles" type="Node2D" parent="World"]
+script = ExtResource("8")
+projectile_scene = ExtResource("9")
+
+[node name="Effects" type="Node2D" parent="World"]
+script = ExtResource("10")
+
+[node name="Camera" type="Camera2D" parent="."]
+script = ExtResource("4")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Hud" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5")
+
+[node name="Prompt" type="Label" parent="UI"]
+visible = false
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -62.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Banner" type="Label" parent="UI"]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 40.0
+offset_right = 150.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="PauseMenu" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6")
+overworld_mode = true

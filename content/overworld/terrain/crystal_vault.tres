@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ZoneTerrain" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/zone_terrain.gd" id="1_zt"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/crystal_vault.png" id="2_sheet"]
+
+[resource]
+script = ExtResource("1_zt")
+id = &"crystal_vault"
+sheet = ExtResource("2_sheet")
+ground = Array[Vector2i]([Vector2i(0, 8), Vector2i(1, 8), Vector2i(2, 8), Vector2i(0, 9), Vector2i(1, 9), Vector2i(2, 9), Vector2i(0, 10), Vector2i(1, 10), Vector2i(2, 10)])
+blocker = Vector2i(1, 1)
+blocker_deep = Vector2i(-1, -1)
+edge = Vector2i(-1, -1)
+shadow = Vector2i(-1, -1)
+ground_color = Color(0.162, 0.172, 0.247, 1)
+blocker_color = Color(0.09, 0.1, 0.149, 1)
+blocker_deep_color = Color(0.054, 0.06, 0.0894, 1)
+edge_color = Color(0.2916, 0.3096, 0.4446, 0.3)
+shadow_color = Color(0, 0, 0, 0.35)

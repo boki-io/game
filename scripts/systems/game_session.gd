@@ -6,6 +6,10 @@ extends Node
 const HUB := "res://scenes/hub.tscn"
 const SELECT := "res://scenes/select.tscn"
 const RUN := "res://scenes/main.tscn"
+const OVERWORLD := "res://scenes/overworld.tscn"
+const DUNGEON_RULES := "res://content/overworld/dungeon_rules.tres"
+## Where the player stands when leaving a dungeon: just below its marker (px).
+const EXIT_OFFSET := Vector2(0, 40)
 
 ## The character of the current or next run.
 var character: CharacterData
@@ -29,6 +33,10 @@ var run_kills := 0
 var run_summary: Dictionary = {}
 ## The Player's carried level, XP and upgrades (see RunProgress). Null at the start of a run and outside a run.
 var run_progress: Variant = null
+## The overworld journey of `character` (spec 1.6). Null outside the overworld and dungeon runs.
+var journey: Journey
+## The cave or dungeon being played as arena stages. Null outside one.
+var dungeon: DungeonRun
 ## Banked gold, spendable at the camp. Saved (SaveGame); only bank_run() and the camp raise it.
 var gold := 0
 ## Coins collected in the current run (the run purse). Not saved; banked when the run ends.
@@ -122,6 +130,8 @@ func _commit_shop(state: Dictionary) -> void:
 func map_seed() -> int:
 	if current_stage == null or current_stage.theme == null:
 		return 0
+	if dungeon != null:
+		return hash("%s|%d" % [dungeon.marker_name(), dungeon.index])
 	return hash("%d:%s" % [path_seed, current_stage.theme.id])
 
 
@@ -176,14 +186,20 @@ func select_stage(stage: StageData) -> void:
 			return
 
 
-## True on the final column. Without a path (main.tscn run from the editor) a won stage is also the last.
+## True on the final column (or the last stage of a dungeon). Without a path (main.tscn run from the editor) a won stage
+## is also the last.
 func is_last_stage() -> bool:
+	if dungeon != null:
+		return dungeon.is_last()
 	return path == null or current_column >= path.column_count() - 1
 
 
 ## A stage of column 1 or 2 was won: records it, adds its kills, saves the Player's progress, moves on to the
 ## next column and loads the select screen.
 func complete_stage() -> void:
+	if dungeon != null:
+		_complete_dungeon_stage()
+		return
 	beaten.append(current_row)
 	run_kills += _stage_kills()
 	var player := _player()
@@ -197,6 +213,9 @@ func complete_stage() -> void:
 
 ## The final stage was won: snapshots the summary for the victory screen and clears the path.
 func finish_run() -> void:
+	if dungeon != null:
+		_finish_dungeon()
+		return
 	var player := _player()
 	run_summary = {
 		stages_cleared = path.column_count() if path else 0,
@@ -210,12 +229,18 @@ func finish_run() -> void:
 
 ## Death: the run is over, back to the hub.
 func fail_run() -> void:
+	if dungeon != null:
+		leave_dungeon()
+		return
 	_clear_run()
 	go_to_hub()
 
 
 ## The player gave up: banks the purse, same as death.
 func abandon_run() -> void:
+	if dungeon != null:
+		leave_dungeon()
+		return
 	bank_run()
 	_clear_run()
 	go_to_hub()
@@ -245,6 +270,79 @@ func take_reward() -> int:
 func go_to_hub() -> void:
 	bank_run()
 	_go(HUB)
+
+
+## Door entry to the overworld: loads `selected`'s journey and changes scene. `last_character` is set so the hub, on
+## return, starts in walk mode.
+func enter_overworld(selected: CharacterData) -> void:
+	character = selected
+	last_character = selected
+	journey = JourneySave.load_for(selected.id, WorldData.shared())
+	_clear_run()
+	dungeon = null
+	_go(OVERWORLD)
+
+
+func save_journey() -> void:
+	if journey != null:
+		JourneySave.save(journey)
+
+
+## Starts the cave or dungeon `marker` (a markers.json entry): saves the journey, builds its stages and loads the arena.
+func enter_dungeon(marker: Dictionary) -> void:
+	if journey == null:
+		journey = JourneySave.load_for(character.id, WorldData.shared())
+	save_journey()
+	var rules: DungeonRules = load(DUNGEON_RULES)
+	path = null
+	dungeon = DungeonRun.new(marker, DungeonRules.stages_for(marker, rules), journey.progress.duplicate(true))
+	current_stage = dungeon.stages[0]
+	current_row = -1
+	run_progress = journey.progress.duplicate(true)
+	run_kills = 0
+	run_gold = 0
+	run_summary = {}
+	_go(RUN)
+
+
+## Back to the overworld below the dungeon's marker: banks the run's gold, saves, forgets the dungeon. The journey's
+## progress is whatever was last saved (the last cleared stage's).
+func leave_dungeon() -> void:
+	bank_run()
+	if dungeon != null and journey != null:
+		journey.position = WorldData.marker_world(dungeon.marker) + EXIT_OFFSET
+	save_journey()
+	dungeon = null
+	_clear_run()
+	_go(OVERWORLD)
+
+
+func _complete_dungeon_stage() -> void:
+	run_kills += _stage_kills()
+	var player := _player()
+	if player:
+		run_progress = RunProgress.capture(player)
+		journey.progress = RunProgress.capture(player, false)
+	save_journey()
+	dungeon.index += 1
+	current_stage = dungeon.current_stage()
+	_go(RUN)
+
+
+func _finish_dungeon() -> void:
+	var player := _player()
+	if player:
+		journey.progress = RunProgress.capture(player, false)
+	journey.mark_cleared(dungeon.marker_name())
+	run_summary = {
+		stages_cleared = dungeon.stages.size(),
+		kills = run_kills + _stage_kills(),
+		gold_earned = run_gold,
+		level = player.xp.level if player else 1,
+	}
+	bank_run()
+	journey.position = WorldData.marker_world(dungeon.marker) + EXIT_OFFSET
+	save_journey()
 
 
 func _go(scene_path: String) -> void:

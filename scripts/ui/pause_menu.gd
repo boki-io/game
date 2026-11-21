@@ -1,11 +1,17 @@
 extends Control
-## Esc / Start pauses. In a run: Continue, Return to Hub (asks "Abandon this run?"), Exit. In the hub: Continue, Exit.
+## Esc / Start pauses. In a run: Continue, Return to Hub (asks "Abandon this run?"), Exit. In the hub: Continue, Exit. In the
+## overworld (`overworld_mode`): Continue, Return to Hub and Exit, which only ask the overworld to save and leave (signals).
 ## Ignored while the level-up or end screen is up (absent in the hub) and during a scene fade.
 
 @export var level_up_menu: LevelUpMenu
 @export var end_screen: Control
 ## The hub has no run to abandon, so the Return to Hub button is left out.
 @export var hub_mode := false
+## The overworld (spec 1.6): Return to Hub and Exit emit a signal instead of acting, so the overworld saves the journey first.
+@export var overworld_mode := false
+
+signal return_to_hub_requested
+signal exit_requested
 
 var _continue: Button
 var _return: Button
@@ -21,15 +27,19 @@ func _ready() -> void:
 	_continue = UiKit.button("Continue")
 	_continue.pressed.connect(_resume)
 	box.add_child(_continue)
-	if not hub_mode:
+	if overworld_mode:
 		_return = UiKit.button("Return to Hub")
+		_return.pressed.connect(func() -> void: return_to_hub_requested.emit())
+		box.add_child(_return)
+	elif not hub_mode:
+		_return = UiKit.button("Return to Hub" if GameSession.dungeon == null else "Leave the dungeon")
 		_return.pressed.connect(func() -> void: _prompt.open())
 		box.add_child(_return)
 	var exit := UiKit.button("Exit")
-	exit.pressed.connect(func() -> void: get_tree().quit())
+	exit.pressed.connect(func() -> void: exit_requested.emit() if overworld_mode else get_tree().quit())
 	box.add_child(exit)
 	add_child(UiKit.centered(box))
-	if not hub_mode:
+	if not hub_mode and not overworld_mode:
 		_prompt = AbandonPrompt.new()
 		_prompt.name = "AbandonPrompt"
 		_prompt.dismissed.connect(func() -> void: _return.grab_focus.call_deferred())

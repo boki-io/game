@@ -15,7 +15,7 @@ func _ready() -> void:
 	add_child(UiKit.dim(0.7))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
-	box.add_child(UiKit.label("Abandon this run?", 12))
+	box.add_child(UiKit.label("Abandon this run?" if GameSession.dungeon == null else "Leave the dungeon?", 12))
 	var yes := UiKit.button("Yes")
 	yes.pressed.connect(_on_yes)
 	box.add_child(yes)

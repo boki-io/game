@@ -4,13 +4,18 @@ extends RefCounted
 ## level-ups. HP, mana and cooldowns are not carried: each stage starts at full health.
 
 
-## A snapshot of `player`'s carried progress.
-static func capture(player: Player) -> Dictionary:
+## A snapshot of `player`'s carried progress. With `include_granted` false the relics granted by worn legendary items
+## (player.relics.granted) are left out: a journey must not keep them permanently.
+static func capture(player: Player, include_granted := true) -> Dictionary:
+	var relics: Dictionary = player.relics.levels.duplicate()
+	if not include_granted:
+		for id in player.relics.granted:
+			relics.erase(id)
 	return {
 		level = player.xp.level,
 		xp = player.xp.xp,
 		upgrades = player.upgrades.levels.duplicate(),
-		relics = player.relics.levels.duplicate(),
+		relics = relics,
 	}
 
 

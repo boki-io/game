@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ZoneTerrain" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/zone_terrain.gd" id="1_zt"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ember_depths.png" id="2_sheet"]
+
+[resource]
+script = ExtResource("1_zt")
+id = &"ember_depths"
+sheet = ExtResource("2_sheet")
+ground = Array[Vector2i]([Vector2i(0, 8), Vector2i(1, 8), Vector2i(2, 8), Vector2i(0, 9), Vector2i(1, 9), Vector2i(2, 9), Vector2i(0, 10), Vector2i(1, 10), Vector2i(2, 10)])
+blocker = Vector2i(1, 1)
+blocker_deep = Vector2i(-1, -1)
+edge = Vector2i(-1, -1)
+shadow = Vector2i(-1, -1)
+ground_color = Color(0.27, 0.152, 0.1, 1)
+blocker_color = Color(0.149, 0.089, 0.065, 1)
+blocker_deep_color = Color(0.0894, 0.0534, 0.039, 1)
+edge_color = Color(0.486, 0.2736, 0.18, 0.3)
+shadow_color = Color(0, 0, 0, 0.35)
