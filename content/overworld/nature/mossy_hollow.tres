@@ -10,7 +10,7 @@ cell_tiles = 32
 wood_chance = 1.5
 wood_trees = Vector2i(5, 12)
 wood_radius_tiles = Vector2i(3, 6)
-tree_spacing_px = 28.0
+tree_spacing_px = 22.0
 centre_bias = 1.5
 wood_throws_per_tree = 14
 wood_shrubs = Vector2i(2, 6)
@@ -47,9 +47,9 @@ patch_radius_tiles = 2
 path_shrub_chance = 1.0
 path_shrub_reach_tiles = 3
 shrub_colours = {
-"green": 0.62,
+"green": 0.3,
 "yellow": 0.05,
-"yellowish": 0.33
+"yellowish": 0.65
 }
 path_clear_tiles = 2
 wall_clear_tiles = 2

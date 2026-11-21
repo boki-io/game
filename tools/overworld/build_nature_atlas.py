@@ -22,7 +22,7 @@ import numpy as np
 DEFAULT_SOURCE = "/Users/bok/Documents/game-characters/Nature"
 OUT_DIR = "assets/nature"
 MANIFEST = "content/overworld/nature/sprites.json"
-SCALES = {"trees": 0.4, "rocks": 0.5, "shrubs": 0.7}
+SCALES = {"trees": 0.4, "rocks": 0.7, "shrubs": 0.7}
 
 TREE_SHEET = "treeeeeee.png"
 ROCK_SHEET = "Rock Pile - Spritesheet.png"

@@ -44,3 +44,11 @@ the zone tiers and `max_population`. First-pass numbers, meant to be tuned in pl
 | `special` | F shows its name and type (no reward yet) |
 | `gate` | drawn across its gap, open; `OverworldRules.gate_locked` and `Journey.gate_open` are the lock hook |
 | `camp`, `cache`, `arena` | placed, inert (the enemy spec uses them) |
+
+## Nature props (spec 1.7)
+
+`nature/mossy_hollow.tres` (a `NatureRules`) tunes the green zone's trees, rocks and shrubs: the seed, woods (chance, tree count,
+radius, spacing), loner trees and rocks, rock piles, shrub patches, the clearances (path, walls, markers) and the colliders.
+Counts are scaled by each 32 tile cell's open ground. `nature/sprites.json` and `assets/nature/*.png` are generated:
+`python3 tools/overworld/build_nature_atlas.py` (add `--check` to verify the committed files), reading the Nature pack from
+`/Users/bok/Documents/game-characters/Nature`. A later zone adds its own `.tres` and hands it to `WorldProps.setup`.
