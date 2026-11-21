@@ -4,7 +4,11 @@ extends Node2D
 ## around a focus position loaded (builds at most `BUILDS_PER_FRAME` per physics frame, nearest first) and frees chunks
 ## beyond `UNLOAD_RADIUS` (at most `FREES_PER_FRAME` per frame). A chunk is a Node2D with a `ground` and an `overlay`
 ## TileMapLayer and a `body` StaticBody2D (layer 1) whose rectangles cover blocked tiles 1 to `COLLIDER_DEPTH` deep.
-## Uses no autoload: the owner calls `focus()` each physics frame.
+## Uses no autoload: the owner calls `focus()` each physics frame. Emits `chunk_built` and `chunk_freed` so the props (spec 1.7)
+## come and go with the ground.
+
+signal chunk_built(chunk: Vector2i)
+signal chunk_freed(chunk: Vector2i)
 
 const CHUNKS := ceili(float(WorldData.SIZE) / OverworldRules.CHUNK_TILES)
 const CHUNK_PX := OverworldRules.CHUNK_TILES * WorldData.TILE_PX
@@ -129,6 +133,7 @@ func free_chunk_now(chunk: Vector2i) -> void:
 		return
 	_chunks.erase(chunk)
 	node.queue_free()
+	chunk_freed.emit(chunk)
 
 
 ## True where the tile is blocked (the map's edge counts as blocked, like `WorldData`).
@@ -229,6 +234,7 @@ func build_chunk_now(chunk: Vector2i) -> void:
 	node.add_child(_body(solid, w, h))
 	add_child(node)
 	_chunks[chunk] = node
+	chunk_built.emit(chunk)
 
 
 func _layer(layer_name: String, z: int) -> TileMapLayer:

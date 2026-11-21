@@ -6,7 +6,7 @@ failures=0
 # A fresh clone has no global class cache (.godot/ is ignored), and new class_name types need it: import first.
 godot --headless --path . --import > /dev/null 2>&1
 for t in tests/*.gd tests/maps/*.gd tests/camp/*.gd tests/inventory/*.gd tests/overworld/*.gd; do
-	[[ "$t" == tests/fixture.gd || "$t" == tests/upgrade_index.gd ]] && continue
+	[[ "$t" == tests/fixture.gd || "$t" == tests/upgrade_index.gd || "$t" == tests/overworld/fake_nature_sprites.gd ]] && continue
 	# A script error in a test leaves its SceneTree running forever, so give each test a time limit.
 	# Each test gets its own save file path (it does not exist yet) so banking coins never touches the player's save.
 	save=$(mktemp -u)

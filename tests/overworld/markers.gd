@@ -76,6 +76,9 @@ func _stand_at(ow, m) -> void:
 	ow.player.global_position = m.position
 	ow._lockout = 0.0
 	await _frames(3)
+	# the marker targets are updated in _process; building the props of the new chunks can make physics frames run back to back
+	await process_frame
+	await process_frame
 
 
 func _init() -> void:
