@@ -1,7 +1,7 @@
 extends SceneTree
 ## Hub walk mode: choosing spawns exactly one Player with infinite mana, the door lights up, interact near a
 ## pedestal goes back to browsing and wipes pending meteors and bolts, the same key press cannot choose and
-## interact, and walking into the door starts a run.
+## interact, and walking into the door opens the overworld (spec 1.6).
 ## Run: godot --headless --path . --script tests/hub_walk.gd
 
 var _failed := false
@@ -102,16 +102,16 @@ func _init() -> void:
 	await _action(&"interact")
 	_check(hub.mode == hub.Mode.WALK, "interact inside the lockout is ignored")
 
-	# The door starts a run.
+	# The door opens the overworld.
 	await _wait(20)
 	p.global_position = Vector2(480, 80)
 	await _wait(3)
 	p.global_position = Vector2(480, 30)
 	await _wait(5)
 	_check(_fader.busy, "walking into the door starts the fade")
-	await _wait(120)
-	_check(current_scene.name == "Select" and _session.last_character == chars[0], "the door opens the select screen")
-	_check(_session.path != null and _session.current_column == 0, "a new path starts at column 1")
+	await _wait(300)  # the fade, then the overworld loads its world data
+	_check(current_scene.name == "Overworld" and _session.last_character == chars[0], "the door opens the overworld")
+	_check(_session.journey != null and _session.journey.character_id == chars[0].id and _session.path == null, "with that character's journey, and no stage path")
 
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)

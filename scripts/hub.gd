@@ -393,7 +393,7 @@ func _enter_run() -> void:
 		return
 	_entering_run = true
 	Audio.play(&"door_enter")
-	GameSession.start_run(characters[focus_index])
+	GameSession.enter_overworld(characters[focus_index])  # the door leads to the overworld (spec 1.6)
 
 
 ## The title on a wooden post sign.
