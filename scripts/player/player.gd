@@ -363,3 +363,27 @@ func _on_died() -> void:
 	sprite.modulate = Color(0.4, 0.4, 0.4)
 	hurtbox.set_deferred("monitorable", false)
 	died.emit()
+
+
+## Brings a dead hero back at `pos` with full health and mana (the overworld's respawn at a checkpoint). Undoes what
+## `_on_died` set: the corpse flag, the hurtbox, the grey tint, the animation lock and any running cast.
+func revive(pos: Vector2) -> void:
+	dead = false
+	end_phase(false)
+	caster.cancel()
+	for slot in caster.cooldowns:
+		caster.cooldowns[slot] = 0.0
+	if _hit_tint_tween:
+		_hit_tint_tween.kill()
+	sprite.modulate = Color.WHITE
+	hurtbox.monitorable = true
+	hurtbox.invulnerable = false
+	global_position = pos
+	_last_pos = pos
+	velocity = Vector2.ZERO
+	_move_vel = Vector2.ZERO
+	health.setup(health.max_health)
+	mana.gain(mana.max_mana())
+	_anim_busy = false
+	_play(&"idle")
+	PlayerRegistry.register(self)

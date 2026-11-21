@@ -116,6 +116,10 @@ func _progress_and_relic() -> void:
 	_check(ow.player.xp.level == 5 and ow.player.xp.xp == 3, "the journey's level and XP are restored (%d, %d)" % [ow.player.xp.level, ow.player.xp.xp])
 	_check(ow.player.upgrades.levels.get(upgrade.id, 0) == 1, "an upgrade is restored")
 	_check(ow.player.relics.level_of(RelicRegistry.find(&"storm_orbs")) == 2, "a relic is restored at its level")
+	ow.player.xp.level = 9
+	ow.player.xp.xp = 17
+	ow._sync_journey()
+	_check(ow.journey.progress.level == 9 and ow.journey.progress.xp == 17, "a sync copies the player's level and XP into the journey (%s)" % [ow.journey.progress])
 	await _unload(ow)
 	# A worn legendary's relic is granted in the overworld and never written into the journey.
 	_gs.inventory.set_state([&"emberstep_boots"], {&"knight": {&"shoes": &"emberstep_boots"}})

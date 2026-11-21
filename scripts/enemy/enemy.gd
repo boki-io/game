@@ -5,6 +5,14 @@ extends Node2D
 ## The SpawnDirector calls activate()/deactivate() instead of instancing and freeing.
 
 signal died(enemy: Enemy)
+## A dormant or returning enemy was hit and is awake now (the overworld's HordeDirector alerts its horde).
+signal woken(enemy: Enemy)
+## A returning enemy reached `home`: it is healed to full and dormant.
+signal arrived_home(enemy: Enemy)
+
+## CHASE is the arena behaviour (the brain runs). The overworld's HordeDirector also uses DORMANT (stands at its post,
+## idles, does nothing) and RETURNING (walks home, harmless).
+enum State { CHASE, DORMANT, RETURNING }
 
 const SEPARATION_RADIUS := 12.0
 const SEPARATION_WEIGHT := 0.8
@@ -30,6 +38,7 @@ const MAX_STEP := 5.0  # px an enemy moves between two push-outs
 const STUCK_TIME := 3.0  # asked to move but moved under STUCK_MOVE for this long: recycled
 const STUCK_MOVE := 2.0
 const STUCK_MIN_TARGET := 60.0
+const HOME_REACHED := 8.0  # px from home that counts as arrived
 ## Drawn art (MonsterVariant.sprite_frames): 32x32 frames with the feet on row 29, so the bottom centre sits at the
 ## origin. The slimes look a little to their left, so a target on the right flips them.
 const ART_OFFSET := Vector2(-16.0, -30.0)
@@ -43,6 +52,11 @@ var obstacles: ObstacleMap
 var active := false
 var facing := Vector2.RIGHT
 var brain: EnemyBrain
+var state := State.CHASE
+## The post a DORMANT enemy stands at and a RETURNING one walks to (set by the director; `activate` sets it to its spot).
+var home := Vector2.ZERO
+## RETURNING speed is `data.speed` times this (the director sets it from its tuning data).
+var return_speed_mult := 1.2
 
 var _contact_cd := 0.0
 var _flash_left := 0.0
@@ -57,6 +71,8 @@ var _flow_until := 0
 var _flow_dir := Vector2.ZERO
 var _stuck_anchor := Vector2.ZERO
 var _stuck_t := 0.0
+var _home_anchor := Vector2.ZERO
+var _home_stuck_t := 0.0
 var status := EnemyStatus.new()  # slow, freeze, vulnerable, burn (spec 1.0 section 2)
 var _anim: AnimatedSprite2D  # only when the type or the applied variant has sprite_frames
 var _art_offset := ART_OFFSET
@@ -209,6 +225,9 @@ func activate(pos: Vector2, hp_multiplier: float) -> void:
 	_on_flow = false
 	_stuck_t = 0.0
 	_stuck_anchor = pos
+	state = State.CHASE
+	home = pos
+	_home_stuck_t = 0.0
 	active = true
 	visible = true
 	process_mode = Node.PROCESS_MODE_INHERIT
@@ -237,6 +256,9 @@ func take_damage(amount: float, quiet := false) -> void:
 	if status.any_active:
 		amount *= status.damage_multiplier()
 	health.take_damage(amount)
+	if state != State.CHASE and health.current > 0.0:
+		wake()
+		woken.emit(self)
 	var fx := Effects.get_for(self)
 	if fx:
 		fx.damage_number(global_position + Vector2(0, -data.body_size.y - 6.0), amount)
@@ -258,6 +280,30 @@ func take_damage(amount: float, quiet := false) -> void:
 		else:
 			_flash_left = FLASH_TIME
 			sprite.flash = true
+
+
+## Awake and chasing: a dormant or returning enemy becomes CHASE with a fresh brain (a ranged one keeps no hold state
+## or wind-up). Does not emit `woken`: that is for a hit, so the director can alert the horde.
+func wake() -> void:
+	if state == State.CHASE:
+		return
+	state = State.CHASE
+	brain.reset()
+	_los_clear = true
+	_on_flow = false
+	_stuck_t = 0.0
+	_stuck_anchor = global_position
+
+
+## Gives up the chase and walks home, harmless. Arriving heals it to full and makes it DORMANT.
+func send_home() -> void:
+	if state == State.RETURNING:
+		return
+	state = State.RETURNING
+	cancel_attack()
+	brain.cancel()
+	_home_anchor = global_position
+	_home_stuck_t = 0.0
 
 
 func stun(seconds: float) -> void:
@@ -378,6 +424,9 @@ func _physics_process(delta: float) -> void:
 	if _recoil_left > 0.0:
 		_recoil_left = maxf(_recoil_left - delta, 0.0)
 		sprite.position = _recoil_dir * RECOIL_DISTANCE * (_recoil_left / RECOIL_TIME)
+	if state != State.CHASE:
+		_tick_passive(delta)
+		return
 	var target := PlayerRegistry.nearest(global_position)
 	if target == null:
 		return
@@ -412,6 +461,8 @@ func _physics_process(delta: float) -> void:
 		# The last position change of the frame: shortest way out of any wall or pillar, so it slides along them.
 		global_position = obstacles.push_out(global_position, data.hitbox_radius)
 		_check_stuck(delta, asked, target)
+		if state != State.CHASE:
+			return  # the director sent it home from the stuck check
 	sprite.facing = facing
 	if _anim:
 		var flip := _flips(facing)
@@ -434,6 +485,78 @@ func _physics_process(delta: float) -> void:
 			global_position = ring_pos
 
 
+## DORMANT and RETURNING frames. Dormant: stands and idles (no brain, steering, stuck check or push-out). Returning:
+## walks to `home` (straight, or along the flow field when the way is not clear), no brain, no contact hits.
+func _tick_passive(delta: float) -> void:
+	if status.any_active:
+		var burn := status.advance(delta)
+		if burn > 0.0:
+			take_damage(burn, true)
+			if not active:
+				return
+			if state == State.CHASE:
+				return
+		_refresh_tint()
+	var velocity := Vector2.ZERO
+	if _stun_left > 0.0:
+		_stun_left -= delta
+		if _stun_left <= 0.0:
+			_refresh_tint()
+	if state == State.RETURNING:
+		var to_home := home - global_position
+		if to_home.length() <= HOME_REACHED:
+			global_position = home
+			health.setup(health.max_health)
+			state = State.DORMANT
+			arrived_home.emit(self)
+		elif _stun_left <= 0.0 and status.freeze_left <= 0.0:
+			velocity = _home_velocity(to_home)
+			var step := velocity * delta
+			if obstacles == null:
+				global_position += step
+			else:
+				var steps := clampi(ceili(step.length() / MAX_STEP), 1, 8)
+				for i in steps:
+					global_position = obstacles.push_out(global_position + step / steps, data.hitbox_radius)
+			_check_home_stuck(delta)
+	sprite.facing = facing
+	if _anim:
+		var flip := _flips(facing)
+		if _anim.flip_h != flip:
+			_anim.flip_h = flip
+		var moving := velocity.length_squared() > 1.0
+		if moving != _moving:
+			_moving = moving
+			if not _one_shot:
+				_play_base()
+
+
+func _home_velocity(to_home: Vector2) -> Vector2:
+	var dir := to_home.normalized()
+	if obstacles != null and obstacles.has_obstacles():
+		var frame := Engine.get_physics_frames()
+		if (frame + get_instance_id()) % LOS_REFRESH == 0:
+			_los_clear = obstacles.segment_clear(global_position, home, data.hitbox_radius + LOS_MARGIN)
+			if not _los_clear:
+				_flow_dir = obstacles.flow_direction(global_position)
+		if not _los_clear and _flow_dir != Vector2.ZERO:
+			dir = _flow_dir
+	facing = dir
+	return dir * data.speed * return_speed_mult * status.slow_factor
+
+
+## A RETURNING enemy that covered under STUCK_MOVE in STUCK_TIME is handed to the director (`on_stuck`), if it has it.
+func _check_home_stuck(delta: float) -> void:
+	_home_stuck_t += delta
+	if _home_stuck_t < STUCK_TIME:
+		return
+	var moved := global_position.distance_to(_home_anchor)
+	_home_anchor = global_position
+	_home_stuck_t = 0.0
+	if moved < STUCK_MOVE and director != null and director.has_method("on_stuck"):
+		director.on_stuck(self)
+
+
 ## An enemy that asked to move (at least half its speed) but covered under 2 px in a 3 s window, far from its
 ## target, is recycled through the teleport-back. Covers whatever the flow field misses.
 func _check_stuck(delta: float, asked: Vector2, target: Player) -> void:
@@ -450,6 +573,9 @@ func _check_stuck(delta: float, asked: Vector2, target: Player) -> void:
 	_stuck_anchor = global_position
 	_stuck_t = 0.0
 	if moved < STUCK_MOVE:
+		if director.has_method("on_stuck"):
+			director.on_stuck(self)  # the overworld: send it home instead of teleporting into view
+			return
 		var ring_pos: Variant = director.ring_position(target.global_position)
 		if ring_pos != null:
 			global_position = ring_pos

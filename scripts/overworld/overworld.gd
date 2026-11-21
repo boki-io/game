@@ -178,10 +178,12 @@ func _enter(m: OverworldMarker) -> void:
 	GameSession.enter_dungeon(m.data)
 
 
-## Copies what the scene knows into the journey (position, fog, checkpoints list is shared).
+## Copies what the scene knows into the journey (position, fog, progress; the checkpoints list is shared).
 func _sync_journey() -> void:
 	journey.position = player.global_position if is_instance_valid(player) else journey.position
 	journey.fog = fog.bytes()
+	if is_instance_valid(player):
+		journey.progress = RunProgress.capture(player, false)  # levels gained here are saved (granted relics left out)
 
 
 func save_now() -> void:
