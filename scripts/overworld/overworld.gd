@@ -92,8 +92,13 @@ func _start_hordes() -> void:
 	director.prewarm(8)
 
 
-func _on_den_cleared(_kind: String, _marker: int) -> void:
-	pass  # banner and loot for a cleared den are the director's change (spec 1.8, section 9)
+## A den's last member died: a banner, and a burst of coins around the marker (`HordeRules.den_bonus_coins`).
+func _on_den_cleared(kind: String, marker: int) -> void:
+	show_banner("%s cleared" % kind.capitalize())
+	var rules: HordeRules = load("res://content/overworld/hordes.tres")
+	var centre := WorldData.marker_world(world.markers[marker])
+	for i in rules.den_bonus_coins:
+		pickups.spawn_coin(centre + Vector2.from_angle(randf() * TAU) * randf_range(8.0, 44.0))
 
 
 func _build_markers() -> void:

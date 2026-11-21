@@ -126,6 +126,8 @@ func ring_position(_around: Vector2) -> Variant:
 
 
 func _physics_process(delta: float) -> void:
+	if rules == null or world == null:
+		return  # not set up (a scene that runs without hordes)
 	for i in mini(PREWARM_PER_FRAME, _prewarm.size()):
 		var job: Dictionary = _prewarm.pop_back()
 		_pool(job.type, job.zone).append(_make(job.type, job.zone))

@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/overworld/horde_director.gd" id="23"]
 [ext_resource type="Script" path="res://scripts/overworld/overworld.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/systems/arena.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/overworld/world_terrain.gd" id="3"]
@@ -74,6 +75,9 @@ magnet_scene = ExtResource("16")
 loot = ExtResource("17")
 item_drop_scene = ExtResource("18")
 pickup_lifetime = 60.0
+
+[node name="HordeDirector" type="Node" parent="."]
+script = ExtResource("23")
 
 [node name="WorldObstacles" type="Node" parent="."]
 script = ExtResource("21")
