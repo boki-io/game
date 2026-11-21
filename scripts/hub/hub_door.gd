@@ -1,6 +1,6 @@
 class_name HubDoor
 extends Node2D
-## The doorway in the hub's north wall: a dark archway that lights up once a character is chosen, with
+## A doorway in the hub's north wall (the gold door to the overworld, the blue door to the stages): a dark archway that lights up once a character is chosen, with
 ## a trigger just inside it. The trigger only detects the Player body, and only while open.
 
 signal player_entered
@@ -8,6 +8,10 @@ signal player_entered
 const SIZE := Vector2(48, 24)
 ## The rock band the doorway is carved into: the trigger sits just inside it, on the walkable floor.
 @export var wall_band := 0.0
+## The colours of the lit doorway: the glow, the inner light and the rim (gold by default; the stage door is blue).
+@export var lit_color := Color("ffd866")
+@export var inner_color := Color("fff2b8")
+@export var rim_color := Color("e0c060")
 ## Ignores the Player for this long after the scene loads, so a return from a run cannot re-trigger it.
 const GRACE_TIME := 1.0
 
@@ -55,7 +59,7 @@ func _draw() -> void:
 	var frame := Rect2(-w / 2.0 - 3.0, 0, w + 6.0, SIZE.y + 3.0)  # carved into the band, so no taller with it
 	draw_rect(frame, Color("2a2833"))
 	var inner := Rect2(-w / 2.0, 0, w, SIZE.y)
-	draw_rect(inner, Color("ffd866", 0.9) if is_open else Color("0c0b10"))
+	draw_rect(inner, Color(lit_color, 0.9) if is_open else Color("0c0b10"))
 	if is_open:
-		draw_rect(Rect2(inner.position + Vector2(6, 0), inner.size - Vector2(12, 6)), Color("fff2b8", 0.7))
-	draw_rect(frame, Color("e0c060") if is_open else Color("4a4658"), false, 1.0)
+		draw_rect(Rect2(inner.position + Vector2(6, 0), inner.size - Vector2(12, 6)), Color(inner_color, 0.7))
+	draw_rect(frame, rim_color if is_open else Color("4a4658"), false, 1.0)
