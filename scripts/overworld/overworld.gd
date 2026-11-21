@@ -29,6 +29,7 @@ var _banner_id := 0
 var _entering := false
 
 @onready var terrain: WorldTerrain = $World/Terrain
+@onready var props: WorldProps = $World/Props
 @onready var markers_root: Node2D = $World/Markers
 @onready var players_root: Node2D = $World/Players
 @onready var hud: Hud = $UI/Hud
@@ -47,6 +48,7 @@ func _ready() -> void:
 	fog = FogMap.new(journey.fog)
 	$Arena.visible = false  # hides the debug border, keeps the wall bodies
 	terrain.setup(world)
+	props.setup(world, load("res://content/overworld/nature/mossy_hollow.tres"), terrain)
 	_build_markers()
 	_spawn_player()
 	_build_ui()

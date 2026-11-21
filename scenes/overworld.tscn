@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/systems/player_projectiles.gd" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/player_projectile.tscn" id="9"]
 [ext_resource type="Script" path="res://scripts/systems/effects.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/overworld/world_props.gd" id="11"]
 
 [node name="Overworld" type="Node2D"]
 y_sort_enabled = true
@@ -24,6 +25,10 @@ y_sort_enabled = true
 
 [node name="Terrain" type="Node2D" parent="World"]
 script = ExtResource("3")
+
+[node name="Props" type="Node2D" parent="World"]
+y_sort_enabled = true
+script = ExtResource("11")
 
 [node name="Markers" type="Node2D" parent="World"]
 y_sort_enabled = true
