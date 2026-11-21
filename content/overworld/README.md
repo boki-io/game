@@ -10,16 +10,27 @@ The world is **one fixed, hand-authored map** (the guide in `art/source/overworl
 | `zones.png` | the zone index of every tile is the pixel value divided by 30 (0 to 7), blended biomes |
 | `world_map.png` | the map art, used by the minimap and the world map |
 | `markers.json` | the 108 markers (`kind`, `x`, `y`, `world_x`, `world_y`, `zone`, `name`, `map_id`, ...), the zones and the main path |
+| `path_mask.png` | derived: 255 where the guide's paths layer marks a dirt path, on walkable tiles only (`WorldData.is_path`) |
+| `blocker_material.png` | derived: on blocked tiles 1 forest, 2 rock (decided from the colours of the guide's blockers layer), 0 elsewhere (`WorldData.material_at`) |
 | `edge_depth.png` | derived: for a blocked tile the distance in tiles to the nearest walkable one (capped at 15). Rebuild with `python3 tools/overworld/build_edge_depth.py` (`--check` compares) |
 
 `WorldData` (`scripts/overworld/world_data.gd`) loads them. To change the world, change the generator's output, copy the files
-here and rebuild `edge_depth.png`; `tests/overworld/world_data.gd` checks the data (every marker walkable and reachable).
+here and rebuild `edge_depth.png`, `path_mask.png` and `blocker_material.png` (`python3 tools/overworld/build_terrain_masks.py [layers_dir]`,
+`--check` compares; it reads the guide's `04_paths.png` and `02_blockers.png` from `layers_v3/`, outside this repo, so the masks are committed); `tests/overworld/world_data.gd` checks the data (every marker walkable and reachable).
 
 ## Terrain (`terrain/`)
 `terrain/<zone id>.tres` (a `ZoneTerrain`) names, per zone, the atlas cells of its sheet `assets/tilesets/<zone id>.png` for the
 roles `ground` (variants), `blocker`, `blocker_deep`, `edge` and `shadow`, and a fallback colour for each. The eight sheets are
 floor-tile sheets with the same layout: ground and blocker are real tiles; `blocker_deep`, `edge` and `shadow` have no tile in the
 sheets and use flat fallback colours in every zone. Drawing real tiles for those three roles is a matter of changing the catalog.
+
+Zone 0 (`mossy_hollow.tres`) is the exception: it is `generated`, so it has no sheet. `TerrainArt` (`scripts/overworld/terrain_art.gd`)
+draws its 16 x 16 atlas at runtime from `art_seed` (the same atlas every run), with the map's own colours: grass (8 variants, the
+clearing of the map), dirt path (6 variants plus 16 ragged-rim tiles by which sides touch grass), forest canopy (4 variants plus a
+darker deep one), rock (4 variants plus a deep one), and a speckle edge and a dithered shadow. `WorldTerrain` draws a path tile
+(`WorldData.is_path`) from the path cells, other walkable tiles from the grass cells, blocked tiles of material rock from the rock
+cells (`blocker_rock`, `blocker_rock_deep` past depth 3), the other blocked tiles from the forest cells. The roles `path`, `path_edges`,
+`blocker_rock` and `blocker_rock_deep` are empty in the other seven zones, which draw as before.
 
 ## Dungeons (`dungeon_rules.tres`)
 `DungeonRules`: stages per kind (cave 1, dungeon 3, final vault 3), the tier offset, the population bonus and step, per-zone values,

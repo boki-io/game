@@ -8,13 +8,24 @@ extends Node2D
 
 const CHUNKS := ceili(float(WorldData.SIZE) / OverworldRules.CHUNK_TILES)
 const CHUNK_PX := OverworldRules.CHUNK_TILES * WorldData.TILE_PX
-## Blocked tiles deeper than this draw `blocker_deep`.
+## Blocked tiles deeper than this draw `blocker_deep` (or `blocker_rock_deep`).
 const DEEP_FROM := 4
 const WALL_LAYER := 1
+## The order of `_role_cells[zone]`.
+const _R_BLOCKER := 0
+const _R_DEEP := 1
+const _R_EDGE := 2
+const _R_SHADOW := 3
+const _R_PATH := 4
+const _R_ROCK := 5
+const _R_ROCK_DEEP := 6
+const _R_PATH_EDGE := 7
+const _ROLE_ORDER: Array[StringName] = [&"blocker", &"blocker_deep", &"edge", &"shadow", &"path", &"blocker_rock", &"blocker_rock_deep", &"path_edge"]
 
 var world: WorldData
 var _terrains: Array[ZoneTerrain] = []
-## Per zone: the ground cells (Vector3i of atlas x, y and source id), and `_role_cells[zone][role]` for the others.
+## Per zone: the ground cells (Vector3i of atlas x, y and source id), and `_role_cells[zone][role]` for the others
+## (one list of variant cells per role in `_ROLE_ORDER`; empty for an optional role the zone does not have).
 var _ground_cells: Array = []
 var _role_cells: Array = []
 var _tile_set: TileSet
@@ -37,9 +48,15 @@ func setup(world_data: WorldData) -> void:
 		for v in maxi(t.ground.size(), 1):
 			ground.append(t.source_cell(&"ground", v, slot))
 		_ground_cells.append(ground)
-		var roles: Array[Vector3i] = []
-		for r in [&"blocker", &"blocker_deep", &"edge", &"shadow"]:
-			roles.append(t.source_cell(r, 0, slot))
+		var roles: Array = []
+		for r in _ROLE_ORDER:
+			var cells: Array[Vector3i] = []
+			if t.has_role(r):
+				for v in t.variants_of(r).size():
+					cells.append(t.source_cell(r, v, slot))
+			roles.append(cells)
+		if (roles[_R_ROCK_DEEP] as Array).is_empty():
+			roles[_R_ROCK_DEEP] = roles[_R_ROCK]
 		_role_cells.append(roles)
 
 
@@ -119,12 +136,33 @@ func _blocked(x: int, y: int) -> bool:
 	return x < 0 or y < 0 or x >= WorldData.SIZE or y >= WorldData.SIZE or world.collision[y * WorldData.SIZE + x] <= 127
 
 
-## A stable hash of a tile (the same after unload and reload): picks the ground variant.
+## A stable hash of a tile (the same after unload and reload): picks the ground, path and wall variants.
 static func tile_hash(x: int, y: int) -> int:
 	var h := x * 374761393 + y * 668265263
 	h = (h ^ (h >> 13)) * 1274126177
 	h = h ^ (h >> 16)
 	return h & 0x7fffffff
+
+
+## The sides of a path tile that touch walkable ground that is no path (1 north, 2 east, 4 south, 8 west).
+func _path_rim(x: int, y: int) -> int:
+	var m := 0
+	if _grass_side(x, y - 1):
+		m |= 1
+	if _grass_side(x + 1, y):
+		m |= 2
+	if _grass_side(x, y + 1):
+		m |= 4
+	if _grass_side(x - 1, y):
+		m |= 8
+	return m
+
+
+func _grass_side(x: int, y: int) -> bool:
+	if x < 0 or y < 0 or x >= WorldData.SIZE or y >= WorldData.SIZE:
+		return false
+	var j := y * WorldData.SIZE + x
+	return world.collision[j] > 127 and world.path_mask[j] <= 127
 
 
 func build_chunk_now(chunk: Vector2i) -> void:
@@ -156,23 +194,36 @@ func build_chunk_now(chunk: Vector2i) -> void:
 			var i := y * size + x
 			var zone := clampi(world.zone_values[i] / 30, 0, 7)
 			var at := Vector2i(tx, ty)
+			var roles: Array = _role_cells[zone]
 			if world.collision[i] > 127:
 				var variants: Array = _ground_cells[zone]
-				var cell: Vector3i = variants[tile_hash(x, y) % variants.size()]
+				var cell: Vector3i
+				if world.path_mask[i] > 127 and not (roles[_R_PATH] as Array).is_empty():
+					var rim := _path_rim(x, y) if not (roles[_R_PATH_EDGE] as Array).is_empty() else 0
+					if rim > 0:
+						cell = roles[_R_PATH_EDGE][rim]
+					else:
+						variants = roles[_R_PATH]
+						cell = variants[tile_hash(x, y) % variants.size()]
+				else:
+					cell = variants[tile_hash(x, y) % variants.size()]
 				ground.set_cell(at, cell.z, Vector2i(cell.x, cell.y))
 				if _blocked(x - 1, y) or _blocked(x, y - 1):
-					var s: Vector3i = _role_cells[zone][3]
+					var s: Vector3i = roles[_R_SHADOW][0]
 					overlay.set_cell(at, s.z, Vector2i(s.x, s.y))
 				continue
 			var d: int = world.depth[i]
 			if d < 1 or d > draw_depth:
 				continue
-			var b: Vector3i = _role_cells[zone][1 if d >= DEEP_FROM else 0]
+			var walls: Array = roles[_R_DEEP if d >= DEEP_FROM else _R_BLOCKER]
+			if world.materials[i] == WorldData.MATERIAL_ROCK and not (roles[_R_ROCK] as Array).is_empty():
+				walls = roles[_R_ROCK_DEEP if d >= DEEP_FROM else _R_ROCK]
+			var b: Vector3i = walls[tile_hash(x, y) % walls.size()]
 			ground.set_cell(at, b.z, Vector2i(b.x, b.y))
 			if d <= collider_depth:
 				solid[ty * w + tx] = 1
 			if not (_blocked(x - 1, y) and _blocked(x + 1, y) and _blocked(x, y - 1) and _blocked(x, y + 1)):
-				var e: Vector3i = _role_cells[zone][2]
+				var e: Vector3i = roles[_R_EDGE][0]
 				overlay.set_cell(at, e.z, Vector2i(e.x, e.y))
 
 	node.add_child(_body(solid, w, h))

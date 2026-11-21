@@ -22,6 +22,7 @@ func _init() -> void:
 	_markers(w)
 	_reach(w)
 	_depth(w)
+	_terrain_masks(w)
 	_gates(w)
 	print("FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
@@ -104,6 +105,50 @@ func _reach(w) -> void:
 				tail += 1
 	for m in w.markers:
 		_check(seen[int(m.y) * 2000 + int(m.x)] == 1, "marker %s is reachable from the start camp" % m.name)
+
+
+## path_mask.png marks walkable tiles only (a sensible share, some in zone 0); blocker_material.png blocked tiles only.
+func _terrain_masks(w) -> void:
+	_check(w.path_mask.size() == 4_000_000 and w.materials.size() == 4_000_000, "the path and material masks are 2000 x 2000 bytes")
+	var paths := 0
+	var zone0_paths := 0
+	var on_blocked := 0
+	var material_on_walkable := 0
+	var forest := 0
+	var rock := 0
+	var bad_value := 0
+	var blocked := 0
+	for i in 4_000_000:
+		var walk: bool = w.collision[i] > 127
+		if not walk:
+			blocked += 1
+		if w.path_mask[i] > 127:
+			paths += 1
+			if not walk:
+				on_blocked += 1
+			if w.zone_values[i] / 30 == 0:
+				zone0_paths += 1
+		if w.materials[i] != 0:
+			if walk:
+				material_on_walkable += 1
+			elif w.materials[i] == 1:
+				forest += 1
+			elif w.materials[i] == 2:
+				rock += 1
+			else:
+				bad_value += 1
+	_check(on_blocked == 0, "no path tile is blocked (%d)" % on_blocked)
+	_check(paths > 20_000 and paths < 600_000, "the paths cover a sensible share of the world (%d tiles)" % paths)
+	_check(zone0_paths > 1000, "zone 0 has dirt path tiles (%d)" % zone0_paths)
+	_check(material_on_walkable == 0 and bad_value == 0, "materials are 1 or 2 and only on blocked tiles (%d on walkable, %d odd)" % [material_on_walkable, bad_value])
+	_check(forest > 100_000 and rock > 100_000, "both forest and rock exist (%d, %d of %d blocked)" % [forest, rock, blocked])
+	var start: Dictionary = w.start_marker()
+	var near_path := false
+	for dy in range(-40, 41):
+		for dx in range(-40, 41):
+			near_path = near_path or w.is_path(Vector2i(int(start.x) + dx, int(start.y) + dy))
+	_check(near_path, "a dirt path starts within 40 tiles of the start camp")
+	_check(not w.is_path(Vector2i(-1, 0)) and w.material_at(Vector2i(2000, 5)) == 0, "outside the map is no path and no material")
 
 
 ## edge_depth.png is 0 on walkable tiles, 1 beside them, and equals the Chebyshev distance (capped at 15) on a sample.
