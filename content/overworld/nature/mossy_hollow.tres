@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="NatureRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/nature_rules.gd" id="1_nr"]
+
+[resource]
+script = ExtResource("1_nr")
+seed = 1707
+zone = 0
+cell_tiles = 32
+wood_chance = 1.5
+wood_trees = Vector2i(5, 12)
+wood_radius_tiles = Vector2i(3, 6)
+tree_spacing_px = 28.0
+centre_bias = 1.5
+wood_throws_per_tree = 14
+wood_shrubs = Vector2i(2, 6)
+wood_rocks = Vector2i(0, 2)
+wood_groups = Array[Dictionary]([{
+"tags": ["green"],
+"weight": 6.0
+}, {
+"tags": ["fir"],
+"weight": 2.0
+}, {
+"tags": ["green", "fir"],
+"weight": 2.0
+}])
+autumn_weight = 0.08
+centre_tries = 6
+loner_trees = Vector2i(0, 28)
+loner_clear_tiles = 4
+loner_groups = Array[Dictionary]([{
+"tags": ["green"],
+"weight": 7.0
+}, {
+"tags": ["fir"],
+"weight": 3.0
+}])
+loner_rocks = Vector2i(0, 8)
+rock_pile_chance = 0.9
+pile_rocks = Vector2i(2, 5)
+pile_radius_tiles = 2
+pile_edge_tiles = 3
+shrub_patches = Vector2i(0, 4)
+patch_shrubs = Vector2i(2, 5)
+patch_radius_tiles = 2
+path_shrub_chance = 1.0
+path_shrub_reach_tiles = 3
+shrub_colours = {
+"green": 0.62,
+"yellow": 0.05,
+"yellowish": 0.33
+}
+path_clear_tiles = 2
+wall_clear_tiles = 2
+wall_clear_small_tiles = 1
+marker_clear_tiles = 14
+marker_clear_minor_tiles = 7
+trunk_clear_px = 8.0
+max_props_per_chunk = 160
+trunk_radius_px = 4.0
+big_rock_radius_factor = 0.6
