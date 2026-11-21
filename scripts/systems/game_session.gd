@@ -44,6 +44,9 @@ signal attributes_changed
 ## Test seam: when valid, scene changes call it with the scene path instead of fading to the scene.
 var scene_hook: Callable
 
+## The items the player has unlocked and what each character wears (spec 1.4). Saved by InventorySave on every change.
+var inventory := Inventory.new()
+
 
 func _ready() -> void:
 	# Default so the run scene also runs directly from the editor.
@@ -51,6 +54,14 @@ func _ready() -> void:
 	var saved := SaveGame.load_data()
 	gold = saved.gold
 	attribute_levels = saved.levels
+	load_inventory()
+	inventory.changed.connect(func() -> void: InventorySave.save(inventory))
+
+
+## Replaces the inventory with the saved one (without saving it again). `_ready` calls it; tests call it after pointing
+## SaveGame.override_path at their own file.
+func load_inventory() -> void:
+	InventorySave.load_into(inventory)
 
 
 ## The camp level of attribute `id` (0 if never bought).

@@ -16,6 +16,9 @@ var hub_mode := false
 ## Set before adding to the tree: camp attribute levels (id -> level). Written to `stats` once, in
 ## `_apply_character`, before max HP and mana are read. Empty means no bonuses.
 var attribute_levels: Dictionary = {}
+## Set before adding to the tree: the items this character wears (spec 1.4). Their adds and scales are written to `stats`
+## in `_apply_character` right after the attributes. Empty means no bonuses.
+var equipment: Array[ItemData] = []
 
 var facing := Vector2.RIGHT
 var dead := false
@@ -94,6 +97,7 @@ func _ready() -> void:
 func _apply_character() -> void:
 	max_hp = character.max_hp
 	CampAttributes.apply(stats, attribute_levels)
+	ItemEffects.apply(stats, equipment)
 	mana.configure(character.max_mana, character.mana_regen)
 	mana.infinite = hub_mode
 	move_speed = character.move_speed
