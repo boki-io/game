@@ -22,7 +22,7 @@ func _ready() -> void:
 	_continue.pressed.connect(_resume)
 	box.add_child(_continue)
 	if not hub_mode:
-		_return = UiKit.button("Return to Hub")
+		_return = UiKit.button("Return to Hub" if GameSession.dungeon == null else "Leave the dungeon")
 		_return.pressed.connect(func() -> void: _prompt.open())
 		box.add_child(_return)
 	var exit := UiKit.button("Exit")

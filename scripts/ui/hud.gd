@@ -42,7 +42,9 @@ func bind(p: Player, rm: RunManager = null) -> void:
 	run_manager = rm
 	_stage_text = ""
 	var stage := GameSession.current_stage
-	if rm != null and stage != null and GameSession.path != null:
+	if rm != null and stage != null and GameSession.dungeon != null:
+		_stage_text = GameSession.dungeon.stage_text()
+	elif rm != null and stage != null and GameSession.path != null:
 		_stage_text = "Stage %d/%d - %s" % [GameSession.current_column + 1, GameSession.path.column_count(), stage.name]
 	_hurt_pulse = 0.0
 	player.caster.cast_failed.connect(_on_cast_failed)

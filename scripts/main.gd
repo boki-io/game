@@ -77,7 +77,8 @@ func _on_item_collected(item_id: StringName) -> void:
 
 
 ## Death shows the end screen. A win waits for the level-up menu to close (so no level is lost and the banner never
-## covers it); then the last stage shows victory and any other stage shows "Stage cleared" and loads the next select.
+## covers it); then the last stage shows victory and any other stage shows "Stage cleared" and loads the next select (in a
+## cave or dungeon run, the next stage of it).
 func _on_run_ended(won: bool) -> void:
 	if not won:
 		SceneFader.iris_hold(70.0, 0.7)  # the screen closes to a small hole around the body, behind the death screen
