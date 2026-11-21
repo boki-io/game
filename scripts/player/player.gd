@@ -84,7 +84,13 @@ var _face_time := 0.0
 func _ready() -> void:
 	if character:
 		_apply_character()
+	collector.refresh()  # pickup_radius from items
 	PlayerRegistry.register(self)
+	for item in equipment:
+		if item.relic_id != &"":
+			var granted_relic := RelicRegistry.find(item.relic_id)
+			if granted_relic != null:
+				relics.grant(granted_relic)
 	_last_pos = global_position
 	if character and character.sprite_frames:
 		_setup_animation()

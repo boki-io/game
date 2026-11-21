@@ -31,6 +31,9 @@
 [ext_resource type="Resource" path="res://content/pickups/vacuum_magnet.tres" id="vacuum_data"]
 [ext_resource type="PackedScene" path="res://scenes/vacuum_magnet.tscn" id="magnet_scene"]
 
+[ext_resource type="Resource" path="res://content/items/loot.tres" id="loot_data"]
+[ext_resource type="PackedScene" path="res://scenes/item_drop.tscn" id="item_drop_scene"]
+
 [sub_resource type="Gradient" id="vignette_gradient"]
 offsets = PackedFloat32Array(0.5, 1.0)
 colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.62)
@@ -55,6 +58,8 @@ gem_scene = ExtResource("12")
 coin_scene = ExtResource("31")
 vacuum_data = ExtResource("vacuum_data")
 magnet_scene = ExtResource("magnet_scene")
+loot = ExtResource("loot_data")
+item_drop_scene = ExtResource("item_drop_scene")
 
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -160,6 +165,29 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("17")
+
+[node name="ItemBanner" type="Label" parent="UI"]
+process_mode = 3
+visible = false
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 44.0
+offset_bottom = 58.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Hint" type="Label" parent="UI/ItemBanner"]
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 14.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(0.62, 0.62, 0.65, 1)
+theme_override_font_sizes/font_size = 8
+text = "Wear it at the chest in the hub"
+horizontal_alignment = 1
+mouse_filter = 2
 
 [node name="StageBanner" type="Control" parent="UI"]
 process_mode = 3

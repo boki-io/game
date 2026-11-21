@@ -8,12 +8,12 @@ extends Control
 
 signal closed(changed: bool)
 
-const CELL := 28.0
+const CELL := 36.0  # a 32x32 icon at 1:1 with a 2 px margin
 const GAP := 4.0
 const COLUMNS := 6
-const VISIBLE_ROWS := 5
+const VISIBLE_ROWS := 4
+const GRID_PAD := 2.0  # the margin around the grid inside the scroll area
 const FRAME := Color("6b4a2b")
-const FRAME_FULL := Color("c8a15a")
 const CURSOR := Color("ffd866")
 const SLOT_LABELS := {&"helmet": "Helm", &"chestplate": "Chest", &"necklace": "Neck", &"ring_1": "Ring", &"ring_2": "Ring", &"pants": "Pants", &"shoes": "Shoes"}
 const TYPE_NAMES := {&"helmet": "Helmet", &"chestplate": "Chestplate", &"necklace": "Necklace", &"ring": "Ring", &"pants": "Pants", &"shoes": "Shoes"}
@@ -115,16 +115,20 @@ func _ready() -> void:
 	var grid_width := COLUMNS * CELL + (COLUMNS - 1) * GAP
 	var grid_height := VISIBLE_ROWS * CELL + (VISIBLE_ROWS - 1) * GAP
 	_scroll = ScrollContainer.new()
-	_scroll.custom_minimum_size = Vector2(grid_width + 8.0, grid_height)
+	_scroll.custom_minimum_size = Vector2(grid_width + 8.0, grid_height + 2.0 * GRID_PAD)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.focus_mode = Control.FOCUS_NONE
 	_grid = GridContainer.new()
 	_grid.columns = COLUMNS
 	_grid.add_theme_constant_override("h_separation", int(GAP))
 	_grid.add_theme_constant_override("v_separation", int(GAP))
-	_scroll.add_child(_grid)
+	var pad := MarginContainer.new()  # room for the frames' outer pixels, which the scroll area would clip
+	for side in ["left", "top", "right", "bottom"]:
+		pad.add_theme_constant_override("margin_" + side, int(GRID_PAD))
+	pad.add_child(_grid)
+	_scroll.add_child(pad)
 	_empty_label = UiKit.label("No items yet", UiKit.FONT_SIZE, Color("888888"))
-	_empty_label.custom_minimum_size = Vector2(grid_width + 8.0, grid_height)
+	_empty_label.custom_minimum_size = Vector2(grid_width + 8.0, grid_height + 2.0 * GRID_PAD)
 	_empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var stack := Control.new()
 	stack.custom_minimum_size = _scroll.custom_minimum_size
@@ -141,7 +145,7 @@ func _ready() -> void:
 	_desc_label = UiKit.label("", UiKit.FONT_SIZE, Color("dddddd"))
 	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc_label.custom_minimum_size = Vector2(grid_width, 22.0)  # two lines
+	_desc_label.custom_minimum_size = Vector2(grid_width, 33.0)  # three lines: the stat line (may wrap) and the flavour line
 	_desc_label.clip_text = true
 	right.add_child(_desc_label)
 
@@ -258,10 +262,44 @@ func _redraw() -> void:
 		cell.queue_redraw()
 	var item := _cursor_item()
 	_name_label.text = "" if item == null else item.display_name
-	_type_label.text = "" if item == null else TYPE_NAMES.get(item.slot, "")
-	_desc_label.text = "" if item == null else item.description
+	_name_label.add_theme_color_override("font_color", Color.WHITE if item == null else ItemData.rating_color(item.rating))
+	_type_label.text = "" if item == null else _type_text(item)
+	_desc_label.text = "" if item == null else _desc_text(item)
 	if zone == Zone.SLOTS and item == null:
 		_type_label.text = _slot_name(Inventory.SLOTS[slot_cursor])
+
+
+## "Epic Helmet", or "Legendary Shoes - Fire Trail" for a legendary that grants a relic.
+func _type_text(item: ItemData) -> String:
+	var text := "%s %s" % [ItemData.rating_name(item.rating), TYPE_NAMES.get(item.slot, "")]
+	if item.relic_id != &"":
+		var relic := RelicRegistry.find(item.relic_id)
+		text += " - %s" % (relic.display_name if relic != null else String(item.relic_id))
+	return text
+
+
+## The stat line, and under it the flavour line when there is one.
+func _desc_text(item: ItemData) -> String:
+	return item.stat_text() if item.description.is_empty() else "%s\n%s" % [item.stat_text(), item.description]
+
+
+## The frame colour of a cell: gold for the cursor, else the rating colour of the item it holds (brighter for an item worn
+## here), else the plain frame.
+func frame_color(cell: Cell) -> Color:
+	var item: ItemData = null
+	var worn_here := false
+	if cell.zone == Zone.SLOTS:
+		item = GameSession.inventory.worn(_character.id, Inventory.SLOTS[cell.index])
+	else:
+		item = items[cell.index]
+		worn_here = GameSession.inventory.wearer_of(item.id) == _character.id
+	var active: bool = is_open and zone == cell.zone and (slot_cursor if cell.zone == Zone.SLOTS else grid_cursor) == cell.index
+	if active:
+		return CURSOR
+	if item == null:
+		return FRAME
+	var rated := ItemData.rating_color(item.rating)
+	return rated.lightened(0.3) if (cell.zone == Zone.SLOTS or worn_here) else rated
 
 
 ## The item under the cursor: the one in the slot, or the grid's. Null when there is none.
@@ -292,7 +330,7 @@ func draw_cell(cell: Cell) -> void:
 			elsewhere = wearer
 	var active: bool = is_open and zone == cell.zone and (slot_cursor if cell.zone == Zone.SLOTS else grid_cursor) == cell.index
 	cell.draw_rect(rect, Color(0.16, 0.14, 0.18))
-	var frame: Color = CURSOR if active else (FRAME_FULL if (item != null and (cell.zone == Zone.SLOTS or worn_here)) else FRAME)
+	var frame := frame_color(cell)
 	cell.draw_rect(rect, frame, false, 2.0 if active else 1.0)
 	var font := ThemeDB.fallback_font
 	if item == null:

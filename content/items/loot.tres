@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LootData" format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/loot_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+weights = {
+&"standard": 70.0,
+&"epic": 25.0,
+&"legendary": 5.0
+}
+pick_distance = 14.0
+max_lying = 6

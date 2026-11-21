@@ -148,6 +148,15 @@ func _init() -> void:
 		attr_paths[a.resource_path] = true
 	for path: String in by_class.get("AttributeData", []):
 		_check(attr_paths.has(path), "orphan attribute %s is not in AttributeRegistry" % path)
+	var item_paths: Dictionary = {}
+	for it in ItemRegistry.all():
+		item_paths[it.resource_path] = true
+	for path: String in by_class.get("ItemData", []):
+		_check(item_paths.has(path), "orphan item %s is not in ItemRegistry" % path)
+	for i_path: String in item_paths:
+		_check(FileAccess.file_exists(i_path), "registered item %s exists" % i_path)
+	for path: String in by_class.get("LootData", []):
+		_check(load(path) != null, "loot table %s loads" % path)
 	for path: String in by_class.get("SpriteFrames", []):
 		_check(frames_paths.has(path), "orphan frames %s is used by no registered character" % path)
 	for r_path: String in relic_paths:

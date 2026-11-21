@@ -29,6 +29,10 @@ extends Resource
 ## True when the art looks left in the frames (the slimes do); false when it looks right.
 @export var art_faces_left := false
 
+@export_group("Loot")
+## The chance that a kill drops an item (spec 1.5). Only the charger sets it.
+@export_range(0.0, 1.0) var item_drop_chance := 0.0
+
 @export_group("Spawning")
 @export var spawn_weight: float = 70.0  # relative weight once fully phased in
 @export var unlock_time: float = 0.0  # seconds into the run before it can spawn

@@ -7,6 +7,11 @@ extends Node2D
 @export var coin_scene: PackedScene
 @export var vacuum_data: VacuumData
 @export var magnet_scene: PackedScene
+@export var loot: LootData
+@export var item_drop_scene: PackedScene
+
+## An item was taken from the ground (spec 1.5); main.gd unlocks it and shows the banner.
+signal item_collected(item_id: StringName)
 
 ## A pickup hops out of the dead enemy before it can be pulled in: 150 to 170 px/s, slowing at 1000 px/s^2 (11 to 15 px).
 const POP_SPEED := Vector2(150.0, 170.0)
@@ -18,11 +23,16 @@ var _coin_pool: Array[Coin] = []
 var vacuum_target: Player
 var vacuum_left := 0.0
 var _magnet: VacuumMagnet  # the one magnet, made on the first drop
+## The player's items, set by main.gd. Null means no item ever drops.
+var inventory: Inventory
+var _item_drops: Array[ItemDrop] = []  # every item drop node made, active or not
 
 
 func _ready() -> void:
 	if vacuum_data == null:
 		vacuum_data = VacuumData.new()
+	if loot == null:
+		loot = LootData.new()
 
 
 func _physics_process(delta: float) -> void:
@@ -69,6 +79,59 @@ func place_magnet(pos: Vector2) -> void:
 
 func release_magnet() -> void:
 	_magnet.deactivate()
+
+
+## A killed mob's chance (`chance`, 0 to 1) to drop an item no one owns and none lies on the ground. Nothing drops
+## without an inventory, at the cap of `loot.max_lying`, or when every item is owned or lying. `rng` is for tests
+## (the global RNG when null). Returns whether one was placed.
+func roll_item_drop(pos: Vector2, chance: float, rng: RandomNumberGenerator = null) -> bool:
+	if inventory == null or lying_item_ids().size() >= loot.max_lying:
+		return false
+	if rng == null:
+		rng = RandomNumberGenerator.new()
+		rng.randomize()
+	if rng.randf() >= chance:
+		return false
+	var id := ItemLoot.pick(inventory.unlocked, lying_item_ids(), loot, rng)
+	if id == &"":
+		return false
+	place_item_drop(pos, id)
+	return true
+
+
+## Puts the item `item_id` on the ground at `pos` (it hops out like a coin).
+func place_item_drop(pos: Vector2, item_id: StringName) -> void:
+	var drop: ItemDrop = null
+	for d in _item_drops:
+		if not d.active:
+			drop = d
+			break
+	if drop == null:
+		drop = item_drop_scene.instantiate()
+		drop.pool = self
+		add_child(drop)
+		_item_drops.append(drop)
+	drop.activate(pos, item_id)
+
+
+func release_item_drop(drop: ItemDrop) -> void:
+	drop.deactivate()
+
+
+## A player took the drop: clear the spot and tell main.gd which item it was.
+func take_item_drop(drop: ItemDrop) -> void:
+	var id := drop.item_id
+	release_item_drop(drop)
+	item_collected.emit(id)
+
+
+## The items lying on the ground, a hopping one included.
+func lying_item_ids() -> Array[StringName]:
+	var out: Array[StringName] = []
+	for d in _item_drops:
+		if d.active:
+			out.append(d.item_id)
+	return out
 
 
 func vacuuming() -> bool:

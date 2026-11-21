@@ -31,8 +31,10 @@ static func restore(player: Player, progress: Dictionary) -> void:
 		var relic := RelicRegistry.find(id)
 		if relic == null:
 			continue
-		for i in relic_levels[id]:
-			player.relics.add_or_raise(relic, false)
+		# A granted relic already stands at level 1: raise to the saved level, never past it.
+		while player.relics.level_of(relic) < relic_levels[id]:
+			if not player.relics.add_or_raise(relic, false):
+				break
 	# Full HP and mana at the upgraded maximums.
 	player.health.setup(player.stats.value(&"max_hp", player.max_hp))
 	player.mana.configure(player.mana.base_max, player.mana.base_regen)

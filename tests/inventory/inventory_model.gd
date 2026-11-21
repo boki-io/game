@@ -1,15 +1,13 @@
 extends SceneTree
 ## The inventory model (spec 1.4): the slot table, the pool, equipping rules (own slot, rings, replacing, moving, taking
-## an item from another character, the no-ops), unequipping, the `changed` signal, per-character loadouts, ItemEffects, and
-## the checks every shipped item must pass (none today). Nothing here is seeded.
+## an item from another character, the no-ops), unequipping, the `changed` signal, per-character loadouts and ItemEffects.
+## The shipped items are checked by item_content.gd. Nothing here is seeded.
 ## Run: godot --headless --path . --script tests/inventory/inventory_model.gd
 
 const ItemDataS := preload("res://scripts/inventory/item_data.gd")
 const Reg := preload("res://scripts/inventory/item_registry.gd")
 const InventoryS := preload("res://scripts/inventory/inventory.gd")
 const Effects := preload("res://scripts/inventory/item_effects.gd")
-## Stat keys items may use (Stats has no registry of its own).
-const STAT_KEYS := [&"max_hp", &"damage", &"move_speed", &"pickup_radius", &"hp_regen", &"mana_regen", &"max_mana", &"auto_speed", &"cooldown"]
 
 var _failed := false
 var _changes := 0
@@ -33,8 +31,6 @@ func _item(id: String, slot: String, adds := {}, scales := {}) -> Resource:
 
 func _init() -> void:
 	await process_frame
-	var shipped := Reg.all().size()
-	_content(shipped)
 	for it in [_item("cap", "helmet"), _item("mail", "chestplate"), _item("pendant", "necklace"), _item("band", "ring"),
 			_item("loop", "ring"), _item("stud", "ring"), _item("greaves", "pants"), _item("boots", "shoes"), _item("crown", "helmet")]:
 		Reg.test_items.append(it)
@@ -57,18 +53,6 @@ func _fresh():
 	_changes = 0
 	inv.changed.connect(func() -> void: _changes += 1)
 	return inv
-
-
-## Every item in the registry (none ships in 1.4) passes these; the next PR's items are checked by them.
-func _content(count: int) -> void:
-	for it in Reg.all():
-		_check(it.id != &"" and it.slot in InventoryS.TYPES, "item %s has an id and a valid slot type" % it.id)
-		_check(it.description.length() <= 80, "item %s: description at most 80 characters" % it.id)
-		for key in it.adds:
-			_check(key in STAT_KEYS, "item %s: add key %s is a known stat" % [it.id, key])
-		for key in it.scales:
-			_check(key in STAT_KEYS, "item %s: scale key %s is a known stat" % [it.id, key])
-	_check(count == 0, "no item ships in 1.4 (the next PR adds them): %d" % count)
 
 
 func _slots() -> void:
