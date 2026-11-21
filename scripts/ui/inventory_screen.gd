@@ -1,9 +1,8 @@
 class_name InventoryScreen
 extends Control
 ## The inventory screen opened from the hub chest (spec 1.4), drawn on the "Character" menu art (assets/ui/character_menu.png,
-## 320 x 200, shown at 1.5x): the character's seven equipment slots on the left (the art has six; the chestplate slot is drawn
-## next to the necklace), the pool of unlocked items as a 6 x 6 grid on the right, and the description of the item under the
-## cursor in a strip below. Pauses the tree while open. Click or Enter on a grid item wears it, on a worn slot takes it off; Esc
+## 320 x 234, shown at 1.5x): the character's seven equipment slots on the left, the pool of unlocked items as a 6 x 7 grid on
+## the right, and the description of the item under the cursor in a panel beside the art. Pauses the tree while open. Click or Enter on a grid item wears it, on a worn slot takes it off; Esc
 ## closes. `closed(changed)` says whether the character's loadout differs from when the screen opened, so the hub knows to
 ## rebuild its Player. Cells are plain Controls placed on the art (not Buttons, no focus), as CampScreen's rows are; Esc is read
 ## in _input, the cursor keys in _unhandled_input.
@@ -12,19 +11,18 @@ signal closed(changed: bool)
 
 const ART := preload("res://assets/ui/character_menu.png")
 const ART_SCALE := 1.5
-## Where the art's top-left corner sits in the 640 x 360 view: centred across, near the top (the strip below holds the text).
-const ART_POS := Vector2(80, 4)
+## Where the art's top-left corner sits in the 640 x 360 view: at the left, the description panel takes the space to its right.
+const ART_POS := Vector2(3, 4)
+const PANEL_WIDTH := 148.0
 const COLUMNS := 6
-const VISIBLE_ROWS := 6
+const VISIBLE_ROWS := 7
 const ICON := 32.0
 const FRAME := Color("6b4a2b")
 const CURSOR := Color("ffd866")
 const TYPE_NAMES := {&"helmet": "Helmet", &"chestplate": "Chestplate", &"necklace": "Necklace", &"ring": "Ring", &"pants": "Pants", &"shoes": "Shoes"}
 ## Each slot's interior in the art's pixels (Inventory.SLOTS order: helmet, chestplate, necklace, ring_1, ring_2, pants, shoes).
-## The chestplate's is not in the art: it is drawn here, to the right of the necklace.
-const SLOT_RECTS := [Rect2(66, 49, 24, 24), Rect2(108, 84, 24, 24), Rect2(66, 84, 24, 24), Rect2(24, 119, 24, 24),
-	Rect2(108, 119, 24, 24), Rect2(66, 119, 24, 24), Rect2(66, 154, 24, 24)]
-const CHEST_SLOT := 1
+const SLOT_RECTS := [Rect2(66, 49, 24, 24), Rect2(66, 119, 24, 24), Rect2(66, 84, 24, 24), Rect2(24, 119, 24, 24),
+	Rect2(108, 119, 24, 24), Rect2(66, 154, 24, 24), Rect2(66, 189, 24, 24)]
 ## The grid's first cell interior in the art's pixels and the step between cells (22 x 22 cells, 24 apart).
 const GRID_ORIGIN := Vector2(163, 46)
 const GRID_STEP := 24.0
@@ -32,11 +30,11 @@ const GRID_CELL := 22.0
 ## Cursor moves between the slots: slot index -> {direction -> slot index}. A slot with no "right" goes to the grid.
 const SLOT_MOVES := {
 	0: {&"down": 2},
-	2: {&"up": 0, &"down": 5, &"right": 1},
-	1: {&"left": 2, &"down": 4},
-	3: {&"up": 2, &"right": 5, &"down": 6},
-	5: {&"up": 2, &"left": 3, &"right": 4, &"down": 6},
-	4: {&"up": 1, &"left": 5, &"down": 6},
+	2: {&"up": 0, &"down": 1},
+	1: {&"up": 2, &"down": 5, &"left": 3, &"right": 4},
+	3: {&"up": 2, &"right": 1, &"down": 5},
+	4: {&"up": 2, &"left": 1, &"down": 5},
+	5: {&"up": 1, &"down": 6},
 	6: {&"up": 5},
 }
 
@@ -44,7 +42,7 @@ enum Zone { SLOTS, GRID }
 
 
 ## One slot or grid cell. Draws through the screen, which knows what it holds. `index` is the slot number, or the place in the
-## visible 6 x 6 window for the grid.
+## visible 6 x 7 window for the grid.
 class Cell extends Control:
 	var screen: InventoryScreen
 	var zone := Zone.SLOTS
@@ -74,10 +72,10 @@ var zone := Zone.GRID
 var slot_cursor := 0
 ## The cursor's place in `items` (not in the window).
 var grid_cursor := 0
-## The first row of items the grid window shows (the art holds 6 rows; more items scroll).
+## The first row of items the grid window shows (the art holds 7 rows; more items scroll).
 var scroll_row := 0
 var slot_cells: Array[Cell] = []
-var grid_cells: Array[Cell] = []  # the 36 cells of the window
+var grid_cells: Array[Cell] = []  # the 42 cells of the window
 var items: Array[ItemData] = []  # the pool, in unlock order
 
 var _character: CharacterData
@@ -115,14 +113,6 @@ func _ready() -> void:
 		_place(cell, SLOT_RECTS[i])
 		add_child(cell)
 		slot_cells.append(cell)
-	# The art has no chestplate slot: a label under the extra one, in the art's colours.
-	var chest_label := UiKit.label("CHEST", 8, Color("b4a98f"))
-	var chest_rect: Rect2 = SLOT_RECTS[CHEST_SLOT]
-	chest_label.position = _to_view(chest_rect.position + Vector2(-8, 26))
-	chest_label.custom_minimum_size = Vector2(chest_rect.size.x + 16, 0) * ART_SCALE
-	chest_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(chest_label)
-
 	for i in COLUMNS * VISIBLE_ROWS:
 		var cell := Cell.new()
 		cell.screen = self
@@ -133,39 +123,50 @@ func _ready() -> void:
 		grid_cells.append(cell)
 
 	_empty_label = UiKit.label("No items yet", UiKit.FONT_SIZE, Color("8a8070"))
-	_empty_label.position = _to_view(GRID_ORIGIN + Vector2(0, 54))
+	_empty_label.position = _to_view(GRID_ORIGIN + Vector2(0, 72))
 	_empty_label.custom_minimum_size = Vector2(GRID_STEP * COLUMNS - 2.0, 0) * ART_SCALE
 	_empty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_empty_label)
 
-	# The text strip under the art: name and type on the left, the stat line and flavour on the right.
-	var strip_y := ART_POS.y + ART.get_height() * ART_SCALE + 4.0
-	var strip := ColorRect.new()  # hides the hub's ability icons, which show through the dim
-	strip.color = Color(0.06, 0.05, 0.07, 0.95)
-	strip.position = Vector2(ART_POS.x, strip_y - 3.0)
-	strip.size = Vector2(ART.get_width() * ART_SCALE, 360.0 - strip_y + 3.0)
-	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(strip)
-	_name_label = _strip_label(Vector2(ART_POS.x + 4.0, strip_y), 230.0, UiKit.FONT_SIZE, Color.WHITE)
-	_type_label = _strip_label(Vector2(ART_POS.x + 4.0, strip_y + 11.0), 230.0, UiKit.FONT_SIZE, Color("9fd3ff"))
-	_title = _strip_label(Vector2(ART_POS.x + 4.0, strip_y + 36.0), 230.0, UiKit.FONT_SIZE, Color("ffd866"))
-	_desc_label = _strip_label(Vector2(ART_POS.x + 240.0, strip_y), 236.0, UiKit.FONT_SIZE, Color("dddddd"))
-	_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc_label.custom_minimum_size.y = 33.0  # three lines: the stat line (may wrap) and the flavour line
-	_desc_label.clip_text = true
-	var footer := _strip_label(Vector2(ART_POS.x + 240.0, strip_y + 36.0), 236.0, 7, Color(1, 1, 1, 0.4))
-	footer.text = "Click or Enter: wear / take off      Esc: close"
+	# The description panel beside the art: the character, then the item under the cursor.
+	var panel_x := ART_POS.x + ART.get_width() * ART_SCALE + 3.0
+	var panel := ColorRect.new()  # hides the hub's HUD, which shows through the dim
+	panel.color = Color(0.1, 0.09, 0.11, 0.97)
+	panel.position = Vector2(panel_x, ART_POS.y)
+	panel.size = Vector2(PANEL_WIDTH, ART.get_height() * ART_SCALE)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(panel)
+	var box := VBoxContainer.new()
+	box.position = Vector2(panel_x + 6.0, ART_POS.y + 8.0)
+	box.custom_minimum_size = Vector2(PANEL_WIDTH - 12.0, 0)
+	box.add_theme_constant_override("separation", 3)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(box)
+	_title = _panel_label(box, 12, Color("ffd866"))
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 10)
+	box.add_child(gap)
+	_name_label = _panel_label(box, UiKit.FONT_SIZE, Color.WHITE)
+	_type_label = _panel_label(box, UiKit.FONT_SIZE, Color("9fd3ff"))
+	_desc_label = _panel_label(box, UiKit.FONT_SIZE, Color("dddddd"))
+	var footer := _panel_label(null, 7, Color(1, 1, 1, 0.4))
+	footer.position = Vector2(panel_x + 6.0, ART_POS.y + ART.get_height() * ART_SCALE - 30.0)
+	footer.custom_minimum_size = Vector2(PANEL_WIDTH - 12.0, 0)
+	footer.text = "Click or Enter: wear / take off\nEsc: close"
+	add_child(footer)
 
 	GameSession.inventory.changed.connect(_refresh)
 
 
-func _strip_label(pos: Vector2, width: float, size: int, color: Color) -> Label:
+## A wrapping, left-aligned label of the panel (in `box` when given).
+func _panel_label(box: Control, size: int, color: Color) -> Label:
 	var label := UiKit.label("", size, color)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	label.position = pos
-	label.custom_minimum_size = Vector2(width, 0)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size = Vector2(PANEL_WIDTH - 12.0, 0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(label)
+	if box != null:
+		box.add_child(label)
 	return label
 
 
@@ -305,13 +306,10 @@ func _slot_name(slot: StringName) -> String:
 	return "%s slot" % TYPE_NAMES.get(&"ring" if slot in [&"ring_1", &"ring_2"] else slot, "")
 
 
-## Draws one cell on the art: the extra chestplate slot's own box, the rating frame (gold for the cursor) when it holds
+## Draws one cell on the art: the rating frame (gold for the cursor) when it holds
 ## something or has the cursor, the item's icon or letter, and the marks. Empty cells show the art's own slot.
 func draw_cell(cell: Cell) -> void:
 	var rect := Rect2(Vector2.ZERO, cell.size)
-	if cell.zone == Zone.SLOTS and cell.index == CHEST_SLOT:
-		cell.draw_rect(rect.grow(2.0), Color("3a352f"))  # the bevel the art draws round its slots
-		cell.draw_rect(rect, Color.BLACK)
 	var inv := GameSession.inventory
 	var item := cell_item(cell)
 	var active := _is_cursor(cell)
@@ -398,7 +396,7 @@ func _max_scroll_row() -> int:
 	return maxi(rows - VISIBLE_ROWS, 0)
 
 
-## The window follows the cursor: scroll so the cursor's row is one of the six shown.
+## The window follows the cursor: scroll so the cursor's row is one of the seven shown.
 func _scroll_to_cursor() -> void:
 	var row := grid_cursor / COLUMNS
 	if row < scroll_row:

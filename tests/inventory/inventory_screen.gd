@@ -101,13 +101,17 @@ func _layout() -> void:
 		for other in rects:
 			_check(not r.intersects(other), "cell %s overlaps another" % [r])
 		rects.append(r)
-	_check(_screen.grid_cells.size() == 36 and _screen.grid_cells[7].position.x == _screen.grid_cells[1].position.x and _screen.grid_cells[7].position.y == _screen.grid_cells[6].position.y, "the grid is a regular 6 x 6")
+	_check(_screen.grid_cells.size() == 42 and _screen.grid_cells[7].position.x == _screen.grid_cells[1].position.x and _screen.grid_cells[7].position.y == _screen.grid_cells[6].position.y, "the grid is a regular 6 x 7")
 	var neck: Control = _screen.slot_cells[2]
 	var chest: Control = _screen.slot_cells[1]
-	_check(chest.position.y == neck.position.y and chest.position.x > neck.position.x + neck.size.x, "the chestplate slot sits right of the necklace")
+	var ring1: Control = _screen.slot_cells[3]
+	var ring2: Control = _screen.slot_cells[4]
+	_check(chest.position.x == neck.position.x and chest.position.y > neck.position.y + neck.size.y, "the chestplate slot sits below the necklace")
+	_check(ring1.position.y == chest.position.y and ring2.position.y == chest.position.y and ring1.position.x < chest.position.x and ring2.position.x > chest.position.x, "the rings sit either side of the chestplate")
 	_check(_screen.ICON <= _screen.grid_cells[0].size.x and _screen.ICON <= _screen.slot_cells[0].size.x, "a 32 px icon fits every cell")
 	var view := Rect2(Vector2.ZERO, Vector2(640, 360))
 	_check(view.encloses(art), "the art fits the 640 x 360 view")
+	_check(art.end.x + 3.0 + _screen.PANEL_WIDTH <= 640.0, "the description panel fits beside the art")
 
 
 func _items() -> void:
@@ -120,11 +124,11 @@ func _items() -> void:
 	var closed_flags := []
 	_screen.closed.connect(func(changed: bool) -> void: closed_flags.append(changed))
 	_screen.open(knight)
-	_check(_screen.grid_cells.size() == 36 and _screen.items.size() == 6 and not _screen._empty_label.visible, "the 6 x 6 window holds the six items")
+	_check(_screen.grid_cells.size() == 42 and _screen.items.size() == 6 and not _screen._empty_label.visible, "the 6 x 7 window holds the six items")
 	_check(_screen.zone == _screen.Zone.GRID and _screen.grid_cursor == 0, "the cursor starts on the first item")
 	_check(_screen._name_label.text == "Iron Cap" and _screen._type_label.text == "Standard Helmet" and _screen._desc_label.text == "\nA plain cap.", "the labels show the item under the cursor (type '%s', text '%s')" % [_screen._type_label.text, _screen._desc_label.text])
 	_check(_screen._name_label.get_theme_color("font_color") == ItemDataS.rating_color(&"standard"), "the name is in the rating colour")
-	_check(_screen._desc_label.custom_minimum_size.y == 33.0, "the description label is three lines high")
+	_check(_screen._desc_label.autowrap_mode != TextServer.AUTOWRAP_OFF and _screen._desc_label.custom_minimum_size.x <= _screen.PANEL_WIDTH, "the description wraps inside the panel")
 
 	# Click wears; the slot shows it; a second click does nothing; a click on the slot takes it off.
 	_screen.click(_screen.Zone.GRID, 0)
@@ -236,9 +240,9 @@ func _keyboard() -> void:
 	await _key(&"ui_down")
 	_check(_screen.slot_cursor == 2, "down from the helmet goes to the necklace")
 	await _key(&"ui_down")
-	_check(_screen.slot_cursor == 5, "down again reaches the pants slot")
+	_check(_screen.slot_cursor == 1, "down again reaches the chestplate")
 	await _key(&"ui_right")
-	_check(_screen.slot_cursor == 4, "right from the pants reaches ring_2")
+	_check(_screen.slot_cursor == 4, "right from the chestplate reaches ring_2")
 	await _key(&"ui_accept")
 	_check(_gs.inventory.worn(&"knight", &"ring_2") == null, "Enter on a worn slot takes it off")
 	await _key(&"ui_right")
@@ -263,33 +267,33 @@ func _other_character_and_close() -> void:
 func _many() -> void:
 	Reg.test_items.clear()
 	_gs.inventory.set_state([], {})
-	for i in 40:
+	for i in 50:
 		Reg.test_items.append(_item("it%d" % i, "Item %d" % i, "ring"))
 	for it in Reg.test_items:
 		_gs.inventory.unlock(it.id)
 	_screen.open(_character(&"knight"))
-	_check(_screen.items.size() == 40 and _screen.grid_cells.size() == 36, "forty items, a window of 36 cells")
-	for i in 7:
+	_check(_screen.items.size() == 50 and _screen.grid_cells.size() == 42, "fifty items, a window of 42 cells")
+	for i in 9:
 		await _key(&"ui_down")
-	_check(_screen.grid_cursor == 36, "down walks to the last row, same column (%d)" % _screen.grid_cursor)
+	_check(_screen.grid_cursor == 48, "down walks to the last row, same column (%d)" % _screen.grid_cursor)
 	await _physics_wait(2)
-	_check(_screen.scroll_row == 1, "the window follows the cursor to the last row (scroll_row %d)" % _screen.scroll_row)
-	_check(_screen.item_index(_screen.grid_cells[0]) == 6 and _screen.cell_item(_screen.grid_cells[0]).id == &"it6", "after scrolling, the first cell stands for item 6")
-	_check(_screen.cell_item(_screen.grid_cells[33]).id == &"it39" and _screen.cell_item(_screen.grid_cells[34]) == null, "the last row shows items 36 to 39, then empty places")
-	_screen.click(_screen.Zone.GRID, 36)
-	_check(_gs.inventory.wearer_of(&"it36") == &"knight", "a click on a scrolled cell wears the item it stands for")
-	_screen.click(_screen.Zone.GRID, 36)
+	_check(_screen.scroll_row == 2, "the window follows the cursor to the last row (scroll_row %d)" % _screen.scroll_row)
+	_check(_screen.item_index(_screen.grid_cells[0]) == 12 and _screen.cell_item(_screen.grid_cells[0]).id == &"it12", "after scrolling, the first cell stands for item 12")
+	_check(_screen.cell_item(_screen.grid_cells[37]).id == &"it49" and _screen.cell_item(_screen.grid_cells[38]) == null, "the last row shows items 48 and 49, then empty places")
+	_screen.click(_screen.Zone.GRID, 48)
+	_check(_gs.inventory.wearer_of(&"it48") == &"knight", "a click on a scrolled cell wears the item it stands for")
+	_screen.click(_screen.Zone.GRID, 48)
 	_gs.inventory.unequip(&"knight", &"ring_1")
-	for i in 7:
+	for i in 9:
 		await _key(&"ui_up")
 	_check(_screen.grid_cursor == 0 and _screen.scroll_row == 0, "up scrolls back to the top (%d, %d)" % [_screen.grid_cursor, _screen.scroll_row])
 	# From a column the last row has, down lands on the last cell of the shorter row.
 	_screen.grid_cursor = 4
 	await _key(&"ui_down")
 	_check(_screen.grid_cursor == 10, "plain down moves one row (%d)" % _screen.grid_cursor)
-	_screen.grid_cursor = 34
+	_screen.grid_cursor = 46
 	await _key(&"ui_down")
-	_check(_screen.grid_cursor == 39, "down from a column the last row lacks lands on its last cell (%d)" % _screen.grid_cursor)
+	_check(_screen.grid_cursor == 49, "down from a column the last row lacks lands on its last cell (%d)" % _screen.grid_cursor)
 	_screen.grid_cursor = 0
 	# A third ring when both are worn replaces ring_1.
 	_screen.click(_screen.Zone.GRID, 0)
