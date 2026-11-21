@@ -233,13 +233,11 @@ func _pickup() -> void:
 	p.global_position = drop.global_position - _ID.BODY_POINT
 	await _F.frames(self, 14)
 	_check(drop.active and _taken.is_empty(), "a dead player takes nothing")
+	p.global_position = Vector2(60, 60)  # away first: the living player standing on it would take it
 	p.dead = false
 	# No expiry.
 	drop._age = 120.0
-	await _F.seconds(self, 0.0)
-	await _F.frames(self, 1)
-	p.global_position = Vector2(60, 60)
-	await _F.frames(self, 10)
+	await _F.frames(self, 12)
 	_check(drop.active, "no expiry after 120 s of age")
 	p.global_position = drop.global_position - _ID.BODY_POINT + Vector2(13.0, 0)
 	await _F.frames(self, 14)
