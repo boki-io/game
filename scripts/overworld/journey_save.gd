@@ -27,6 +27,7 @@ static func save(j: Journey) -> bool:
 		progress.relics[str(id)] = int(j.progress.relics[id])
 	var text := JSON.stringify({version = VERSION, position = [j.position.x, j.position.y], respawn = j.respawn,
 		checkpoints = j.checkpoints, cleared = j.cleared, opened_gates = j.opened_gates,
+		cleared_dens = j.cleared_dens,
 		fog = Marshalls.raw_to_base64(j.fog), progress = progress, playtime = j.playtime,
 		markers_version = j.markers_version}, "\t")
 	var tmp := file_path + ".tmp"
@@ -96,6 +97,9 @@ static func _parse(text: String, character_id: StringName, world: WorldData) -> 
 	for value in root.get("opened_gates", []):
 		if value is String and not value in j.opened_gates:
 			j.opened_gates.append(value)
+	for value in root.get("cleared_dens", []) if root.get("cleared_dens") is Array else []:
+		if value is String and not value in j.cleared_dens:
+			j.cleared_dens.append(value)
 	j.respawn = root.respawn if root.respawn in j.checkpoints else j.checkpoints[0]
 	# The position: on a walkable tile, else the respawn checkpoint.
 	var pos := Vector2(float(root.position[0]), float(root.position[1]))

@@ -17,6 +17,8 @@ var checkpoints: Array[String] = []
 var cleared: Array[String] = []
 ## Gates opened by a later spec's flag (spec 1.6 has none: every gate is open).
 var opened_gates: Array[String] = []
+## Cleared horde dens (spec 1.8), keys like "camp:12" or "cache:3": the marker kind and its index in the world's markers.
+var cleared_dens: Array[String] = []
 var fog := PackedByteArray()
 ## A RunProgress snapshot: level, xp, upgrades (StringName -> int), relics (StringName -> int). Never null.
 var progress: Dictionary = default_progress()
@@ -57,6 +59,20 @@ func is_cleared(marker_name: String) -> bool:
 func mark_cleared(marker_name: String) -> void:
 	if not marker_name in cleared:
 		cleared.append(marker_name)
+
+
+static func _den_key(kind: String, index: int) -> String:
+	return "%s:%d" % [kind, index]
+
+
+func is_den_cleared(kind: String, index: int) -> bool:
+	return _den_key(kind, index) in cleared_dens
+
+
+func mark_den_cleared(kind: String, index: int) -> void:
+	var key := _den_key(kind, index)
+	if not key in cleared_dens:
+		cleared_dens.append(key)
 
 
 ## False when a lock is on and no flag has opened the gate. Always true in spec 1.6 (OverworldRules.gate_locked is false).

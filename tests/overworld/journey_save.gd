@@ -62,6 +62,9 @@ func _init() -> void:
 	j.position = w.marker_world(cp)
 	j.activate_checkpoint(cp.name)
 	j.mark_cleared(cave.name)
+	j.mark_den_cleared("camp", 12)
+	j.mark_den_cleared("camp", 12)
+	j.mark_den_cleared("cache", 3)
 	j.fog[1234] = 1
 	j.fog[62499] = 1
 	j.progress = {level = 7, xp = 12, upgrades = {&"damage": 2}, relics = {&"fire_trail": 2}}
@@ -72,6 +75,7 @@ func _init() -> void:
 	var back = JSave.load_for(&"knight", w)
 	_check(back.position == j.position and back.respawn == cp.name and back.checkpoints == [start.name, cp.name] and back.cleared == [cave.name], "position, respawn, checkpoints and cleared round-trip")
 	_check(back.fog == j.fog, "the fog round-trips")
+	_check(back.cleared_dens == ["camp:12", "cache:3"] and back.is_den_cleared("camp", 12) and back.is_den_cleared("cache", 3) and not back.is_den_cleared("camp", 3), "cleared dens round-trip once each: %s" % [back.cleared_dens])
 	_check(back.progress.level == 7 and back.progress.xp == 12, "level and xp round-trip")
 	var upgrade_key = back.progress.upgrades.keys()[0] if not back.progress.upgrades.is_empty() else null
 	_check(upgrade_key == null or typeof(upgrade_key) == TYPE_STRING_NAME, "upgrade keys come back as StringName")
@@ -123,6 +127,7 @@ func _init() -> void:
 		progress = {level = 3, xp = 1, upgrades = {}, relics = {}}}))
 	var rec = JSave.load_for(&"knight", w)
 	_check(rec.progress.level == 3 and rec.respawn == cp.name, "an interrupted write is recovered from the tmp file")
+	_check(rec.cleared_dens.is_empty(), "an old file without cleared_dens loads with none")
 	DirAccess.remove_absolute(file + ".tmp")
 
 	# Journey helpers.
