@@ -89,6 +89,7 @@ func _basics() -> void:
 	var w = WorldDataS.shared()
 	var ow = await _load(&"knight")
 	var start = w.start_marker()
+	_check(ow.hud.overworld_mode and ow.hud.run_manager == null and ow.hud.player == ow.player, "the HUD is bound in overworld mode: HP, mana, XP and relic slots show without a run timer")
 	_check(ow.player != null and ow.player.global_position.distance_to(w.marker_world(start)) < 2.0, "a new journey stands at the start camp (%s)" % [ow.player.global_position])
 	_check(not ow.player.hub_mode, "the overworld player is not in hub mode (mana is limited, relics work)")
 	_check(ow.journey.respawn == start.name and ow.journey.checkpoints == [start.name], "the journey starts with the start camp lit")
