@@ -1,5 +1,5 @@
 extends Control
-## Esc / Start pauses. In a run: Continue, Return to Hub (asks "Abandon this run?"), Exit. In the hub: Continue, Exit. In the
+## Esc / Start pauses. In a run: Continue, Settings (sound levels), Return to Hub (asks "Abandon this run?"), Exit. In the hub: Continue, Exit. In the
 ## overworld (`overworld_mode`): Continue, Return to Hub and Exit, which only ask the overworld to save and leave (signals).
 ## Ignored while the level-up or end screen is up (absent in the hub) and during a scene fade.
 
@@ -16,6 +16,8 @@ signal exit_requested
 var _continue: Button
 var _return: Button
 var _prompt: AbandonPrompt
+var _settings: SettingsPanel
+var _settings_button: Button
 
 
 func _ready() -> void:
@@ -27,6 +29,9 @@ func _ready() -> void:
 	_continue = UiKit.button("Continue")
 	_continue.pressed.connect(_resume)
 	box.add_child(_continue)
+	_settings_button = UiKit.button("Settings")
+	_settings_button.pressed.connect(func() -> void: _settings.open())
+	box.add_child(_settings_button)
 	if overworld_mode:
 		_return = UiKit.button("Return to Hub")
 		_return.pressed.connect(func() -> void: return_to_hub_requested.emit())
@@ -39,6 +44,10 @@ func _ready() -> void:
 	exit.pressed.connect(func() -> void: exit_requested.emit() if overworld_mode else get_tree().quit())
 	box.add_child(exit)
 	add_child(UiKit.centered(box))
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	_settings.dismissed.connect(func() -> void: _settings_button.grab_focus.call_deferred())
+	add_child(_settings)
 	if not hub_mode and not overworld_mode:
 		_prompt = AbandonPrompt.new()
 		_prompt.name = "AbandonPrompt"

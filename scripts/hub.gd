@@ -61,6 +61,7 @@ var _entering_run := false
 
 
 func _ready() -> void:
+	Audio.music(&"menu")
 	EnemyGrid.clear()
 	characters = CharacterRegistry.all()
 	_build_pedestals()

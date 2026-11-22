@@ -56,6 +56,12 @@ func set_base_offset(value: Vector2, time: float = 0.0) -> void:
 	_offset_tween.tween_property(self, "base_offset", value, time)
 
 
+## Jumps to the player on the next frame instead of easing (a respawn far from where the player died).
+func snap() -> void:
+	_had_target = false
+	_blend_from = Vector2.ZERO
+
+
 ## Moves the camera to a world position over BROWSE_TIME. Only used while no player exists.
 func browse_to(pos: Vector2, instant: bool = false) -> void:
 	if _browse_tween:

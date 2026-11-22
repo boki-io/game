@@ -26,24 +26,62 @@ const PITCH_SPREAD := {
 }
 const RECENT_MAX := 32
 
+## Music: playlists of tracks (`assets/music/`). `menu` plays before a run (the hub and the stage select); `world` plays in the
+## overworld. The arena (a stage, a cave, a dungeon) has no music. A playlist plays its tracks in a shuffled order, one after
+## the other, and starts again when it ends; asking for the playlist that is already playing changes nothing, so the music
+## carries on across scene changes (the hub to the select screen).
+const PLAYLISTS := {
+	&"menu": ["menu-area-1", "menu-area-2"],
+	&"world": ["song-1", "song-2", "song-3", "song-4-dark-theme"],
+}
+const MUSIC_DB := -12.0  # music sits under the effects
+const MUSIC_SILENT_DB := -60.0
+const MUSIC_FADE := 0.8  # seconds, in and out
+## Two buses under Master, made in code (there is no bus layout file): the music and the effects (gameplay sounds, menus).
+const BUS_MUSIC := &"Music"
+const BUS_SFX := &"SFX"
+const SETTINGS_VERSION := 1
+
+## The volume sliders, 0 to 1 (1 is full, 0 is silent). Saved next to the camp save (`<save path>.settings`), see `load_settings`.
+var music_volume := 1.0
+var effects_volume := 1.0
+
 ## The last RECENT_MAX voices started, {name, pitch, ms}, newest last. Tests read this instead of polling the voices.
 var recent: Array[Dictionary] = []
 var _streams: Dictionary = {}
 var _last_ms: Dictionary = {}
 var _players: Array[AudioStreamPlayer] = []
 var _next := 0
+## The playlist playing (`&""` when none) and the track of it (a file name without the extension).
+var music_playlist := &""
+var music_track := ""
+var _music: AudioStreamPlayer
+var _music_tween: Tween
+var _order: Array[String] = []
+var _order_pos := 0
+var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # menus play clicks while the tree is paused
+	_make_bus(BUS_MUSIC)
+	_make_bus(BUS_SFX)
 	for sound: StringName in SOUNDS:
 		var path := "res://assets/audio/%s.wav" % sound
 		if ResourceLoader.exists(path):
 			_streams[sound] = load(path)
 	for i in POOL_SIZE:
 		var p := AudioStreamPlayer.new()
+		p.bus = BUS_SFX
 		add_child(p)
 		_players.append(p)
+	_rng.randomize()
+	_music = AudioStreamPlayer.new()
+	_music.bus = BUS_MUSIC
+	_music.volume_db = MUSIC_SILENT_DB
+	add_child(_music)
+	_music.finished.connect(_next_track)
+	load_settings()
 
 
 func play(sound: StringName, volume_db: float = 0.0) -> void:
@@ -99,3 +137,145 @@ func play_stream(stream: AudioStream, volume_db: float = 0.0, pitch_spread: floa
 	recent.append({name = StringName(stream.resource_path.get_file().get_basename()), pitch = pitch, ms = Time.get_ticks_msec()})
 	if recent.size() > RECENT_MAX:
 		recent.remove_at(0)
+
+
+## Starts the playlist `name` (fading the music in; fading out whatever else is playing). Does nothing when it is already
+## playing; an unknown name stops the music. Missing files are skipped, like the sounds.
+func music(name: StringName) -> void:
+	if name == music_playlist and _music.playing:
+		return
+	if not PLAYLISTS.has(name):
+		stop_music()
+		return
+	music_playlist = name
+	_order.clear()
+	for t: String in PLAYLISTS[name]:
+		if ResourceLoader.exists(_track_path(t)):
+			_order.append(t)
+	# Shuffle with the music's own generator (the global one is for gameplay).
+	for i in range(_order.size() - 1, 0, -1):
+		var j := _rng.randi_range(0, i)
+		var tmp := _order[i]
+		_order[i] = _order[j]
+		_order[j] = tmp
+	_order_pos = -1
+	if _order.is_empty():
+		stop_music()
+		return
+	_fade_to(MUSIC_SILENT_DB, MUSIC_FADE * 0.5, _next_track)
+
+
+## Fades the music out and stops it.
+func stop_music(fade: float = MUSIC_FADE * 0.5) -> void:
+	music_playlist = &""
+	music_track = ""
+	_order.clear()
+	if _music.playing:
+		_fade_to(MUSIC_SILENT_DB, fade, _music.stop)
+
+
+static func _track_path(track: String) -> String:
+	return "res://assets/music/%s.mp3" % track
+
+
+## The next track of the playlist (the next shuffle when it ran out), faded in.
+func _next_track() -> void:
+	if _order.is_empty():
+		return
+	_order_pos += 1
+	if _order_pos >= _order.size():
+		_order_pos = 0
+		if _order.size() > 1:  # no repeat of the track that just ended
+			var last := _order[_order.size() - 1]
+			var j := _rng.randi_range(0, _order.size() - 1)
+			var tmp := _order[0]
+			_order[0] = _order[j]
+			_order[j] = tmp
+			if _order[0] == last:
+				_order[0] = _order[1]
+				_order[1] = last
+	music_track = _order[_order_pos]
+	var stream: AudioStream = load(_track_path(music_track))
+	if stream == null:
+		return
+	_music.stream = stream
+	_music.volume_db = MUSIC_SILENT_DB
+	_music.play()
+	_fade_to(MUSIC_DB, MUSIC_FADE)
+
+
+func _fade_to(db: float, seconds: float, then := Callable()) -> void:
+	if _music_tween != null and _music_tween.is_valid():
+		_music_tween.kill()
+	_music_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_music_tween.tween_property(_music, "volume_db", db, seconds)
+	if then.is_valid():
+		_music_tween.tween_callback(then)
+
+
+static func _make_bus(bus_name: StringName) -> void:
+	if AudioServer.get_bus_index(bus_name) != -1:
+		return
+	AudioServer.add_bus()
+	var i := AudioServer.bus_count - 1
+	AudioServer.set_bus_name(i, bus_name)
+	AudioServer.set_bus_send(i, &"Master")
+
+
+## Sets the music level (0 to 1) and saves the settings.
+func set_music_volume(v: float, save := true) -> void:
+	music_volume = clampf(v, 0.0, 1.0)
+	_apply_volume(BUS_MUSIC, music_volume)
+	if save:
+		save_settings()
+
+
+## Sets the effects level (0 to 1) and saves the settings.
+func set_effects_volume(v: float, save := true) -> void:
+	effects_volume = clampf(v, 0.0, 1.0)
+	_apply_volume(BUS_SFX, effects_volume)
+	if save:
+		save_settings()
+
+
+static func _apply_volume(bus_name: StringName, v: float) -> void:
+	var i := AudioServer.get_bus_index(bus_name)
+	if i == -1:
+		return
+	AudioServer.set_bus_mute(i, v <= 0.0)
+	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(v, 0.0001)))
+
+
+## Where the settings live: the camp save's path plus ".settings" ("" when saving is off, as under tests that do not set a path).
+static func settings_path() -> String:
+	var base := SaveGame.path()
+	return "" if base == "" else base + ".settings"
+
+
+## Reads the saved levels (a missing or unreadable file keeps full volume) and applies them.
+func load_settings() -> void:
+	music_volume = 1.0
+	effects_volume = 1.0
+	var file_path := settings_path()
+	if file_path != "" and FileAccess.file_exists(file_path):
+		var json := JSON.new()
+		var data = json.data if json.parse(FileAccess.get_file_as_string(file_path)) == OK else null
+		if data is Dictionary:
+			music_volume = clampf(float(data.get("music", 1.0)), 0.0, 1.0)
+			effects_volume = clampf(float(data.get("effects", 1.0)), 0.0, 1.0)
+	set_music_volume(music_volume, false)
+	set_effects_volume(effects_volume, false)
+
+
+## Writes the levels through a temp file renamed over the settings file; false when saving is off or fails.
+func save_settings() -> bool:
+	var file_path := settings_path()
+	if file_path == "":
+		return false
+	var tmp := file_path + ".tmp"
+	var file := FileAccess.open(tmp, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify({version = SETTINGS_VERSION, music = music_volume, effects = effects_volume}, "\t"))
+	file.close()
+	return DirAccess.rename_absolute(tmp, file_path) == OK

@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="HordeRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/horde_rules.gd" id="1_hr"]
+
+[resource]
+script = ExtResource("1_hr")
+seed = 1807
+route_size = Vector2i(4, 7)
+route_radius_px = 96.0
+route_big_chance = 0.17
+route_big_size = Vector2i(12, 18)
+route_big_radius_px = 176.0
+arena_radius_scale = 0.5
+route_weights = Array[Dictionary]([{&"grunt": 1}, {&"grunt": 1}, {&"grunt": 0.9, &"ranged": 0.1}, {&"grunt": 0.85, &"ranged": 0.1, &"dasher": 0.05}, {&"grunt": 0.8, &"ranged": 0.12, &"dasher": 0.08}, {&"grunt": 0.75, &"ranged": 0.15, &"dasher": 0.1}, {&"grunt": 0.7, &"ranged": 0.18, &"dasher": 0.12}, {&"grunt": 0.65, &"ranged": 0.2, &"dasher": 0.15}])
+route_big_weights = Array[Dictionary]([{&"grunt": 0.85, &"ranged": 0.15}, {&"grunt": 0.8, &"ranged": 0.12, &"dasher": 0.08}, {&"grunt": 0.72, &"ranged": 0.16, &"dasher": 0.12}, {&"grunt": 0.66, &"ranged": 0.18, &"dasher": 0.16}, {&"grunt": 0.6, &"ranged": 0.2, &"dasher": 0.2}, {&"grunt": 0.55, &"ranged": 0.22, &"dasher": 0.23}, {&"grunt": 0.5, &"ranged": 0.25, &"dasher": 0.25}, {&"grunt": 0.45, &"ranged": 0.27, &"dasher": 0.28}])
+trail_size = Vector2i(5, 9)
+trail_size_ramp = 0.6
+trail_radius_px = 120.0
+trail_weights = Array[Dictionary]([{&"grunt": 0.8, &"ranged": 0.12, &"dasher": 0.08}, {&"grunt": 0.75, &"ranged": 0.15, &"dasher": 0.1}, {&"grunt": 0.7, &"ranged": 0.18, &"dasher": 0.12}, {&"grunt": 0.65, &"ranged": 0.2, &"dasher": 0.15}, {&"grunt": 0.6, &"ranged": 0.22, &"dasher": 0.18}, {&"grunt": 0.55, &"ranged": 0.25, &"dasher": 0.2}, {&"grunt": 0.5, &"ranged": 0.28, &"dasher": 0.22}, {&"grunt": 0.45, &"ranged": 0.3, &"dasher": 0.25}])
+guard_size = Vector2i(6, 10)
+guard_radius_px = 128.0
+guard_distance_tiles = Vector2i(8, 14)
+guard_weights = Array[Dictionary]([{&"grunt": 0.6, &"ranged": 0.2, &"dasher": 0.2}, {&"grunt": 0.55, &"ranged": 0.22, &"dasher": 0.23}, {&"grunt": 0.5, &"ranged": 0.25, &"dasher": 0.25}, {&"grunt": 0.45, &"ranged": 0.27, &"dasher": 0.28}, {&"grunt": 0.4, &"ranged": 0.3, &"dasher": 0.3}, {&"grunt": 0.35, &"ranged": 0.32, &"dasher": 0.33}, {&"grunt": 0.32, &"ranged": 0.34, &"dasher": 0.34}, {&"grunt": 0.3, &"ranged": 0.35, &"dasher": 0.35}])
+den_size = Vector2i(18, 28)
+cache_den_size = Vector2i(14, 22)
+den_radius_px = 288.0
+den_weights = Array[Dictionary]([{&"grunt": 0.5, &"ranged": 0.25, &"dasher": 0.25}, {&"grunt": 0.45, &"ranged": 0.28, &"dasher": 0.27}, {&"grunt": 0.4, &"ranged": 0.3, &"dasher": 0.3}, {&"grunt": 0.35, &"ranged": 0.33, &"dasher": 0.32}, {&"grunt": 0.3, &"ranged": 0.35, &"dasher": 0.35}, {&"grunt": 0.27, &"ranged": 0.37, &"dasher": 0.36}, {&"grunt": 0.23, &"ranged": 0.39, &"dasher": 0.38}, {&"grunt": 0.2, &"ranged": 0.4, &"dasher": 0.4}])
+den_bonus_coins = 25
+kind_tier_bonus = {
+"den": 2,
+"guard": 1,
+"route": 0,
+"route_big": 1,
+"trail": 1
+}
+hp_per_tier = 0.25
+hp_per_route = 0.2
+xp_per_tier = 0.2
+route_stride = 8
+trail_stride = 40
+squad_size = Vector2i(3, 5)
+squad_spacing_px = 72.0
+squad_radius_px = 28.0
+member_spacing_px = 18.0
+min_home_gap_tiles = 18
+wake_radius = 300.0
+alert_radius = 96.0
+leash_radius = 600.0
+lose_sight_time = 6.0
+return_speed_mult = 1.5
+check_interval = 0.2
+materialise_radius = 800.0
+dematerialise_radius = 1200.0
+materialise_per_frame = 1
+max_alive = 120

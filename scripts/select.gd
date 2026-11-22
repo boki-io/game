@@ -21,6 +21,7 @@ var _starting := false
 
 
 func _ready() -> void:
+	Audio.music(&"menu")
 	if GameSession.path == null:
 		# The scene opened directly from the editor: make a run so there is something to show.
 		GameSession.new_run(GameSession.character, randi())
