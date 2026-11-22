@@ -52,6 +52,8 @@ var _entering_run := false
 @onready var players_root: Node2D = $World/Players
 @onready var camera: CameraFollow = $Camera
 @onready var door: HubDoor = $Door
+## The blue door: the original three-stage runs (the select screen), as before the overworld.
+@onready var stage_door: HubDoor = $StageDoor
 @onready var panel: HubInfoPanel = $UI/InfoPanel
 @onready var hint: Label = $UI/HintBar
 @onready var prompt: Label = $UI/Prompt
@@ -70,6 +72,8 @@ func _ready() -> void:
 	panel.choose_pressed.connect(_confirm)
 	door.player_entered.connect(_enter_run)
 	door.set_open(false)
+	stage_door.player_entered.connect(_enter_stages)
+	stage_door.set_open(false)
 	_build_camp_screen()
 	_build_inventory_screen()
 	_show_reward(GameSession.take_reward())  # before the early return below
@@ -78,7 +82,8 @@ func _ready() -> void:
 	if last:
 		for i in characters.size():
 			if characters[i].id == last.id:
-				_enter_walk(i, Vector2(door.position.x, WALL_BAND + SPAWN_BELOW_DOOR + HubDoor.SIZE.y), true)
+				var back := stage_door if GameSession.last_door == &"stages" else door
+				_enter_walk(i, Vector2(back.position.x, WALL_BAND + SPAWN_BELOW_DOOR + HubDoor.SIZE.y), true)
 				return
 	_enter_browse(0, true)
 
@@ -192,6 +197,7 @@ func _build_cave() -> void:
 	var b := WALL_BAND
 	cave.wall_band = b
 	cave.torches = [Vector2(door.position.x - 44.0, 9.0), Vector2(door.position.x + 44.0, 9.0),
+		Vector2(stage_door.position.x - 44.0, 9.0), Vector2(stage_door.position.x + 44.0, 9.0),
 		Vector2(150.0, size.y - b + 1.0), Vector2(size.x - 150.0, size.y - b + 1.0), Vector2(b - 3.0, 170.0)]
 	for item in CaveDecor.layout(size, b, reserved_areas()):
 		var decor := CaveDecor.new()
@@ -205,6 +211,7 @@ func _build_cave() -> void:
 func reserved_areas() -> Array[Rect2]:
 	var out: Array[Rect2] = [TRAINING_AREA, Rect2(SIGN_POS.x - 70.0, SIGN_POS.y - 30.0, 140.0, 50.0),
 		Rect2(door.position.x - 24.0, 0.0, 48.0, 110.0),
+		Rect2(stage_door.position.x - 24.0, 0.0, 48.0, 110.0),
 		Rect2(CAMP_POS.x - 50.0, CAMP_POS.y - 45.0, 100.0, 80.0),
 		Rect2(CHEST_POS.x - 24.0, CHEST_POS.y - 40.0, 48.0, 56.0)]
 	for p in pedestals:
@@ -251,6 +258,7 @@ func _enter_browse(index: int, instant: bool) -> void:
 	for p in pedestals:
 		p.set_figure_visible(true)
 	door.set_open(false)
+	stage_door.set_open(false)
 	camera.set_base_offset(BROWSE_OFFSET, 0.0 if instant else 0.25)
 	panel.visible = true
 	_place_hint(BROWSE_HINT, false)
@@ -296,6 +304,7 @@ func _enter_walk(index: int, pos: Vector2, instant: bool) -> void:
 	if instant:
 		camera.browse_to(pos - Vector2(0, 12), true)
 	door.set_open(true)
+	stage_door.set_open(true)
 
 
 ## Creates the hub Player as characters[index] at `pos` and binds the HUD to it.
@@ -393,7 +402,18 @@ func _enter_run() -> void:
 		return
 	_entering_run = true
 	Audio.play(&"door_enter")
+	GameSession.last_door = &"overworld"
 	GameSession.enter_overworld(characters[focus_index])  # the door leads to the overworld (spec 1.6)
+
+
+## The blue door: the original path of three stages, through the select screen.
+func _enter_stages() -> void:
+	if _entering_run or mode != Mode.WALK or SceneFader.busy:
+		return
+	_entering_run = true
+	Audio.play(&"door_enter")
+	GameSession.last_door = &"stages"
+	GameSession.start_run(characters[focus_index])
 
 
 ## The title on a wooden post sign.
