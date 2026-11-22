@@ -29,6 +29,8 @@ const SLOTS := [
 
 var player: Player
 var run_manager: RunManager
+## The overworld (spec 1.6): no run manager, but the run's bars (HP, mana, XP, relics, gold) show, without the timer, stage or kills.
+@export var overworld_mode := false
 
 var _stage_text := ""
 var _flash: Dictionary = {}  # slot -> seconds left (failed cast feedback)
@@ -101,7 +103,7 @@ func _draw() -> void:
 	if _hurt_pulse > 0.0:
 		_draw_hurt_pulse()
 	var font := ThemeDB.fallback_font
-	if run_manager == null:
+	if run_manager == null and not overworld_mode:
 		if shows_mana(player.character):
 			_draw_bar(Vector2(6, 6), player.mana.current, player.mana.max_mana(), Color("3f7fe0"), "MP", font,
 				_mana_flash > 0.0)
@@ -114,12 +116,13 @@ func _draw() -> void:
 
 	if player.trait_active():
 		_text(font, Vector2(28, 36), "FOCUS", 8, HORIZONTAL_ALIGNMENT_CENTER, 0)
-	var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
 	var view := get_viewport_rect().size
-	_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
-	if _stage_text != "":
-		_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 200.0)
-	_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
+	if run_manager != null:
+		var remaining := maxf(RunManager.RUN_DURATION - run_manager.elapsed, 0.0)
+		_text(font, Vector2(view.x / 2.0, 14), UiKit.format_time(remaining), 12, HORIZONTAL_ALIGNMENT_CENTER, 0)
+		if _stage_text != "":
+			_text(font, Vector2(view.x / 2.0, 25), _stage_text, 8, HORIZONTAL_ALIGNMENT_CENTER, 200.0)
+		_text(font, Vector2(view.x - 6.0, 12), "Kills %d" % run_manager.kills, 8, HORIZONTAL_ALIGNMENT_RIGHT, 0)
 	_draw_gold(font, view)
 
 	_draw_xp(font)

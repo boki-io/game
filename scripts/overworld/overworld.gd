@@ -127,6 +127,7 @@ func _spawn_player() -> void:
 	RunProgress.restore(player, journey.progress)
 	player.died.connect(_on_player_died)
 	player.xp.leveled_up.connect(func(_level: int) -> void: level_up_menu.queue_level_up(player))
+	hud.overworld_mode = true
 	hud.bind(player)
 
 
