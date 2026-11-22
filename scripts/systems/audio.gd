@@ -37,6 +37,14 @@ const PLAYLISTS := {
 const MUSIC_DB := -12.0  # music sits under the effects
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE := 0.8  # seconds, in and out
+## Two buses under Master, made in code (there is no bus layout file): the music and the effects (gameplay sounds, menus).
+const BUS_MUSIC := &"Music"
+const BUS_SFX := &"SFX"
+const SETTINGS_VERSION := 1
+
+## The volume sliders, 0 to 1 (1 is full, 0 is silent). Saved next to the camp save (`<save path>.settings`), see `load_settings`.
+var music_volume := 1.0
+var effects_volume := 1.0
 
 ## The last RECENT_MAX voices started, {name, pitch, ms}, newest last. Tests read this instead of polling the voices.
 var recent: Array[Dictionary] = []
@@ -56,19 +64,24 @@ var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # menus play clicks while the tree is paused
+	_make_bus(BUS_MUSIC)
+	_make_bus(BUS_SFX)
 	for sound: StringName in SOUNDS:
 		var path := "res://assets/audio/%s.wav" % sound
 		if ResourceLoader.exists(path):
 			_streams[sound] = load(path)
 	for i in POOL_SIZE:
 		var p := AudioStreamPlayer.new()
+		p.bus = BUS_SFX
 		add_child(p)
 		_players.append(p)
 	_rng.randomize()
 	_music = AudioStreamPlayer.new()
+	_music.bus = BUS_MUSIC
 	_music.volume_db = MUSIC_SILENT_DB
 	add_child(_music)
 	_music.finished.connect(_next_track)
+	load_settings()
 
 
 func play(sound: StringName, volume_db: float = 0.0) -> void:
@@ -198,3 +211,71 @@ func _fade_to(db: float, seconds: float, then := Callable()) -> void:
 	_music_tween.tween_property(_music, "volume_db", db, seconds)
 	if then.is_valid():
 		_music_tween.tween_callback(then)
+
+
+static func _make_bus(bus_name: StringName) -> void:
+	if AudioServer.get_bus_index(bus_name) != -1:
+		return
+	AudioServer.add_bus()
+	var i := AudioServer.bus_count - 1
+	AudioServer.set_bus_name(i, bus_name)
+	AudioServer.set_bus_send(i, &"Master")
+
+
+## Sets the music level (0 to 1) and saves the settings.
+func set_music_volume(v: float, save := true) -> void:
+	music_volume = clampf(v, 0.0, 1.0)
+	_apply_volume(BUS_MUSIC, music_volume)
+	if save:
+		save_settings()
+
+
+## Sets the effects level (0 to 1) and saves the settings.
+func set_effects_volume(v: float, save := true) -> void:
+	effects_volume = clampf(v, 0.0, 1.0)
+	_apply_volume(BUS_SFX, effects_volume)
+	if save:
+		save_settings()
+
+
+static func _apply_volume(bus_name: StringName, v: float) -> void:
+	var i := AudioServer.get_bus_index(bus_name)
+	if i == -1:
+		return
+	AudioServer.set_bus_mute(i, v <= 0.0)
+	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(v, 0.0001)))
+
+
+## Where the settings live: the camp save's path plus ".settings" ("" when saving is off, as under tests that do not set a path).
+static func settings_path() -> String:
+	var base := SaveGame.path()
+	return "" if base == "" else base + ".settings"
+
+
+## Reads the saved levels (a missing or unreadable file keeps full volume) and applies them.
+func load_settings() -> void:
+	music_volume = 1.0
+	effects_volume = 1.0
+	var file_path := settings_path()
+	if file_path != "" and FileAccess.file_exists(file_path):
+		var json := JSON.new()
+		var data = json.data if json.parse(FileAccess.get_file_as_string(file_path)) == OK else null
+		if data is Dictionary:
+			music_volume = clampf(float(data.get("music", 1.0)), 0.0, 1.0)
+			effects_volume = clampf(float(data.get("effects", 1.0)), 0.0, 1.0)
+	set_music_volume(music_volume, false)
+	set_effects_volume(effects_volume, false)
+
+
+## Writes the levels through a temp file renamed over the settings file; false when saving is off or fails.
+func save_settings() -> bool:
+	var file_path := settings_path()
+	if file_path == "":
+		return false
+	var tmp := file_path + ".tmp"
+	var file := FileAccess.open(tmp, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify({version = SETTINGS_VERSION, music = music_volume, effects = effects_volume}, "\t"))
+	file.close()
+	return DirAccess.rename_absolute(tmp, file_path) == OK
