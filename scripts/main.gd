@@ -19,6 +19,7 @@ var _item_banner_id := 0  # which showing of the item banner is current; an olde
 
 
 func _ready() -> void:
+	Audio.stop_music()  # the arena has no music
 	spawn_director.run_manager = run_manager
 	spawn_director.enemies_root = $World/Enemies
 	spawn_director.pickups = $Pickups

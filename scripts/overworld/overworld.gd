@@ -51,6 +51,7 @@ var _respawning := false
 
 
 func _ready() -> void:
+	Audio.music(&"world")
 	add_to_group(&"overworld")
 	world = WorldData.shared()
 	journey = GameSession.journey
