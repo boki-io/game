@@ -72,6 +72,7 @@ tests/run_all.sh            # imports first, then every test in tests/, tests/ma
 | `sound_settings.gd` | The Music and SFX buses, volume levels set the buses (0 mutes), saved and read back (a missing or broken file is full volume), the pause menu's Settings panel changes and saves them, Esc closes only the panel. |
 | `music.gd` | Music: the playlists' tracks load, a playlist starts one of its own tracks, asking again changes nothing, another playlist replaces it, a finished track hands over to a different song, stop and an unknown name end it. |
 | `audio_layers.gd` | Pitch variation within each sound's spread, exactly 1.0 without one (also on a reused voice), the voice log, every sound has a file and a generator line, a hit starts 2 or 3 voices by strength and a kill 2 or 3, a missing layer is skipped, Slam starts 2 voices and Slash 1 |
+| `hub_stage_door.gd` | The blue stage door: dark while browsing, lit in walk mode, right of the door and chest and blue, walking in starts a path and the select screen, and the hero returns below it. |
 | `hub_walk.gd` | Walk mode: one Player, infinite mana, interact and `clear()`, confirm/interact lockout, the door |
 | `camp/camp_site.gd` | The camp in the hub: place, clear of other things, interact opens a stub screen (walk mode only, lockout, radius), prompt text near the camp and a pedestal |
 | `hub_dummies.gd` | Every ability of both characters hurts the dummies; they never die, move, tint or stun; the readout |

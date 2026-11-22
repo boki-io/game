@@ -15,6 +15,8 @@ const EXIT_OFFSET := Vector2(0, 40)
 var character: CharacterData
 ## The character last taken into a run this session. Null at boot: the hub then starts in browse mode.
 var last_character: CharacterData
+## The hub door the last run left by (`overworld` or `stages`): the hub puts the hero back below that door.
+var last_door := &"overworld"
 
 ## The generated graph of the current run. Null outside a run.
 var path: StagePath
